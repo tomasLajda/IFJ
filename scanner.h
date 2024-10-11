@@ -1,7 +1,7 @@
 /*
 IFJ project
 
-@brief Scanner .h file
+@brief Scanner header file
 
 @author Vojtěch Gajdušek - xgajduv00
 */

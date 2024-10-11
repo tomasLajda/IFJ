@@ -17,5 +17,8 @@
     }
   },
 
-  "C_Cpp.clang_format_style": "{ IndentWidth: 4, ColumnLimit: 100, BraceWrapping: { AfterFunction: false, AfterClass: false, AfterControlStatement: false, AfterEnum: false, AfterNamespace: false, AfterStruct: false, AfterUnion: false, BeforeCatch: false, BeforeElse: false } }"
+  "C_Cpp.clang_format_style": "{ IndentWidth: 4, ColumnLimit: 100, BraceWrapping: { AfterFunction: false, AfterClass: false, AfterControlStatement: false, AfterEnum: false, AfterNamespace: false, AfterStruct: false, AfterUnion: false, BeforeCatch: false, BeforeElse: false } }",
+  "files.associations": {
+    "stdlib.h": "c"
+  }
 }
