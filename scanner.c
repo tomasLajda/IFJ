@@ -7,6 +7,7 @@ IFJ Project
 */
 
 #include "scanner.h"
+#include "error_codes.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -18,13 +19,31 @@ FILE *sourceFile; // Source file to be used as input for scanner
 
 int getNextToken(Token *token) {
 
+    if (sourceFile == NULL) {
+        return INTERNAL_ERROR;
+    }
+
     int state = STATE_START;
     token->type = TOKEN_TYPE_EMPTY;
 
     while (true) {
+
+        char current = (char)getc(sourceFile);
+
         switch (state) {
-        case /* constant-expression */:
-            /* code */
+        case STATE_START:
+            // WHITESPACE CHARACTER
+            if (isspace(current)) {
+                state = STATE_START;
+            } else if (current == EOF) {
+                token->type = TOKEN_TYPE_EOF;
+                // TODO: RETURN, FREE
+                return 1;
+            } else {
+                // TODO: RETURN, FREE
+                return 1;
+            }
+
             break;
 
         default:
