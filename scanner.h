@@ -9,7 +9,6 @@ IFJ project
 #ifndef _SCANNER_H
 #define _SCANNER_H
 
-#include "dynamic_string.h"
 #include <stdio.h>
 
 typedef enum { KEYWORD_IF, KEYWORD_RETURN } Keyword;
