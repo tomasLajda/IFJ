@@ -23,6 +23,8 @@ IFJ Project
 #define STATE_MORE 3      // Starts with '>', can be '>='
 #define STATE_EQUAL 4     // Starts with '=', can be '=='
 #define STATE_EXCL_MARK 5 // Starts with '!', has to continue with '=' for NOT_EQUAL, else error
+#define STATE_DIVISION 24 // Starts with '/', can be comment '//'
+#define STATE_COMMENT 25  // Comment '//'
 
 // IDENTIFIER
 #define STATE_IDENTIFIER_OR_KEYWORD                                                                \
@@ -55,8 +57,6 @@ IFJ Project
 #define STATE_HEXA0 20  // '\x' was read, reads first part of the hexa number, goes to STATE_HEXA1
 #define STATE_HEXA1 21  // reads second part of the hexa number and goes back to STATE_READ_STRING
 #define STATE_STRING 22 // Second '"' was loaded, string ends
-
-// TODO: STATE FOR / AND //
 
 FILE *sourceFile; // Source file to be used as input for scanner
 
@@ -108,19 +108,75 @@ int getNextToken(Token *token) {
                 return 1;
 
             }
-            // >
+            // > or >=
             else if (current == '>') {
                 return 1;
 
             }
-            // <
+            // < or <=
             else if (current == '<') {
                 return 1;
 
             }
-            // / - division or commentary
+            // / - DIVISION or COMMENT
             else if (current == '/') {
                 return 1;
+
+            }
+            // = can be OPERATOR OR ==
+            else if (current == '=') {
+
+            }
+            // !
+            else if (current == '!') {
+
+            }
+            // {
+            else if (current == '{') {
+
+            }
+            // }
+            else if (current == '}') {
+
+            }
+            // (
+            else if (current == '(') {
+
+            }
+            // )
+            else if (current == ')') {
+
+            }
+            // :
+            else if (current == ':') {
+
+            }
+            // STRING
+            else if (current == '"') {
+
+            }
+            // IMPORT
+            else if (current == '@') {
+
+            }
+            // TYPE - starting with ?
+            else if (current == '?') {
+
+            }
+            // TYPE - starting with [
+            else if (current == '[') {
+
+            }
+            // 0
+            else if (current == '0') {
+
+            }
+            // NUMBER
+            else if (isdigit(current) && current != '0') {
+
+            }
+            // IDENTIFIER OR KEYWORD
+            else if (isalpha(current) || current == '_') {
 
             }
             // else
