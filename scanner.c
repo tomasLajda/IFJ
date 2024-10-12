@@ -56,6 +56,8 @@ IFJ Project
 #define STATE_HEXA1 21  // reads second part of the hexa number and goes back to STATE_READ_STRING
 #define STATE_STRING 22 // Second '"' was loaded, string ends
 
+// TODO: STATE FOR / AND //
+
 FILE *sourceFile; // Source file to be used as input for scanner
 
 int getNextToken(Token *token) {
@@ -73,15 +75,57 @@ int getNextToken(Token *token) {
 
         switch (state) {
         case STATE_START:
+
             // WHITESPACE CHARACTER
             if (isspace(current)) {
                 state = STATE_START;
-            } else if (current == EOF) {
+
+            }
+            // END OF FILE
+            else if (current == EOF) {
                 token->type = TOKEN_TYPE_EOF;
-                // TODO: RETURN, FREE
+                // TODO: RETURN, DYNAMIC STRING + JEHO FREE
                 return 1;
-            } else {
-                // TODO: RETURN, FREE
+
+            }
+            // +
+            else if (current == '+') {
+                return 1;
+
+            }
+            // -
+            else if (current == '-') {
+                return 1;
+
+            }
+            // *
+            else if (current == '*') {
+                return 1;
+
+            }
+            // ;
+            else if (current == ';') {
+                return 1;
+
+            }
+            // >
+            else if (current == '>') {
+                return 1;
+
+            }
+            // <
+            else if (current == '<') {
+                return 1;
+
+            }
+            // / - division or commentary
+            else if (current == '/') {
+                return 1;
+
+            }
+            // else
+            else {
+                // TODO: RETURN, DYNAMIC STRING + JEHO FREE
                 return 1;
             }
 
