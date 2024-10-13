@@ -244,22 +244,55 @@ int getNextToken(Token *token) {
 
         // LESS
         case STATE_LESS:
-            break;
+            if (current == '=') {
+                token->type = TOKEN_TYPE_LEQ;
+            } else {
+                ungetc(current, sourceFile);
+                token->type = TOKEN_TYPE_LTH;
+            }
+
+            return TOKEN_OK;
 
         // MORE
         case STATE_MORE:
-            break;
+            if (current == '=') {
+                token->type = TOKEN_TYPE_GEQ;
+            } else {
+                ungetc(current, sourceFile);
+                token->type = TOKEN_TYPE_GTH;
+            }
+            return TOKEN_OK;
 
         // EQUAL
         case STATE_EQUAL:
-            break;
+            if (current == '=') {
+                token->type = TOKEN_TYPE_EQ;
+            } else {
+                token->type = TOKEN_TYPE_ASSIGN;
+            }
+            return TOKEN_OK;
 
         // EXCL MARK !
         case STATE_EXCL_MARK:
+            if (current == '=') {
+                token->type = TOKEN_TYPE_NEQ;
+                return TOKEN_OK;
+            } else {
+                // TODO: IS IT LEXICAL ERROR? , ungetc ?
+                return LEXICAL_ERROR;
+            }
+
             break;
 
         // DIVISION
         case STATE_DIVISION:
+            if (current == '/') {
+                state = STATE_COMMENT;
+            } else {
+                token->type = TOKEN_TYPE_DIV;
+                return TOKEN_OK;
+            }
+
             break;
 
         // TYPE
