@@ -79,110 +79,113 @@ int getNextToken(Token *token) {
             // WHITESPACE CHARACTER
             if (isspace(current)) {
                 state = STATE_START;
-
             }
             // END OF FILE
             else if (current == EOF) {
                 token->type = TOKEN_TYPE_EOF;
                 // TODO: RETURN, DYNAMIC STRING + JEHO FREE
-                return 1;
-
+                return TOKEN_OK;
             }
             // +
             else if (current == '+') {
-                return 1;
-
+                token->type = TOKEN_TYPE_PLUS;
+                return TOKEN_OK;
             }
             // -
             else if (current == '-') {
-                return 1;
-
+                token->type = TOKEN_TYPE_MINUS;
+                return TOKEN_OK;
             }
             // *
             else if (current == '*') {
-                return 1;
-
+                token->type = TOKEN_TYPE_MUL;
+                return TOKEN_OK;
             }
             // ;
             else if (current == ';') {
-                return 1;
-
+                token->type = TOKEN_TYPE_SEMICOLON;
+                return TOKEN_OK;
             }
             // > or >=
             else if (current == '>') {
-                return 1;
-
+                state = STATE_MORE;
             }
             // < or <=
             else if (current == '<') {
-                return 1;
-
+                state = STATE_LESS;
             }
             // / - DIVISION or COMMENT
             else if (current == '/') {
-                return 1;
-
+                state = STATE_DIVISION;
             }
             // = can be OPERATOR OR ==
             else if (current == '=') {
-
+                state = STATE_EQUAL;
             }
             // !
             else if (current == '!') {
-
+                state = STATE_EXCL_MARK;
             }
             // {
             else if (current == '{') {
-
+                token->type = TOKEN_TYPE_LEFT_CURLY_BR;
+                return TOKEN_OK;
             }
             // }
             else if (current == '}') {
-
+                token->type = TOKEN_TYPE_RIGHT_CURLY_BR;
+                return TOKEN_OK;
             }
             // (
             else if (current == '(') {
-
+                token->type = TOKEN_TYPE_LEFT_BR;
+                return TOKEN_OK;
             }
             // )
             else if (current == ')') {
-
+                token->type = TOKEN_TYPE_RIGHT_BR;
+                return TOKEN_OK;
             }
             // :
             else if (current == ':') {
-
+                token->type = TOKEN_TYPE_COLON;
+                return TOKEN_OK;
             }
             // STRING
             else if (current == '"') {
-
+                state = STATE_READ_STRING;
             }
             // IMPORT
             else if (current == '@') {
-
+                state = STATE_IMPORT;
             }
             // TYPE - starting with ?
             else if (current == '?') {
-
+                state = STATE_TYPE;
             }
             // TYPE - starting with [
             else if (current == '[') {
-
+                state = STATE_OPENING_SQUARE_BRAC;
             }
             // 0
             else if (current == '0') {
-
+                state = STATE_ZERO;
             }
             // NUMBER
             else if (isdigit(current) && current != '0') {
-
+                state = STATE_NUMBER;
             }
             // IDENTIFIER OR KEYWORD
             else if (isalpha(current) || current == '_') {
-
+                state = STATE_IDENTIFIER_OR_KEYWORD;
             }
+
+            // TODO: DOT STATE '.' ?
+
             // else
             else {
                 // TODO: RETURN, DYNAMIC STRING + JEHO FREE
-                return 1;
+                return LEXICAL_ERROR;
             }
 
             break;

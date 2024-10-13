@@ -40,11 +40,14 @@ typedef enum {
     TOKEN_TYPE_MUL,    // Multiplication *
     TOKEN_TYPE_DIV,    // Division /
 
-    TOKE_TYPE_OR,         // Or |
-    TOKEN_TYPE_LEFT_BR,   // Left bracket (
-    TOKEN_TYPE_RIGHT_BR,  // Right bracket )
-    TOKEN_TYPE_COMMA,     // Comma ,
-    TOKEN_TYPE_SEMICOLON, // Semicolon ;
+    TOKE_TYPE_OR,              // Or |
+    TOKEN_TYPE_LEFT_BR,        // Left bracket (
+    TOKEN_TYPE_RIGHT_BR,       // Right bracket )
+    TOKEN_TYPE_LEFT_CURLY_BR,  // Left curly bracket {
+    TOKEN_TYPE_RIGHT_CURLY_BR, // Right curly bracket }
+    TOKEN_TYPE_COMMA,          // Comma ,
+    TOKEN_TYPE_COLON,          // Colon :
+    TOKEN_TYPE_SEMICOLON,      // Semicolon ;
 
 } TokenType;
 

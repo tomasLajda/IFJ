@@ -9,6 +9,7 @@ IFJ Project
 #ifndef _ERROR_H
 #define _ERROR_H
 
+#define TOKEN_OK 0 // Token is OK
 #define LEXICAL_ERROR                                                                              \
     1 // Error in the program during lexical analysis (incorrect structure of the current lexeme)
 
