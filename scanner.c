@@ -216,7 +216,7 @@ int getNextToken(Token *token) {
         case STATE_DOT:
             if (isdigit(current)) {
                 // TODO: add to dynamic string
-                state = STATE_FLOAT
+                state = STATE_FLOAT;
             } else {
                 // TODO: LEXICAL ERROR? , ungetc() ?
                 ungetc(current, sourceFile);
@@ -288,7 +288,6 @@ int getNextToken(Token *token) {
                 state = STATE_START;
                 ungetc(current, sourceFile);
             }
-
             break;
 
         // LESS
