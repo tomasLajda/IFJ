@@ -74,6 +74,8 @@ int getNextToken(Token *token) {
         char current = (char)getc(sourceFile);
 
         switch (state) {
+
+        // START
         case STATE_START:
 
             // WHITESPACE CHARACTER
@@ -188,6 +190,86 @@ int getNextToken(Token *token) {
                 return LEXICAL_ERROR;
             }
 
+            break;
+
+        // IMPORT
+        case STATE_IMPORT:
+            break;
+
+        // NUMBER
+        case STATE_NUMBER:
+            break;
+
+        case STATE_ZERO:
+            break;
+
+        case STATE_DOT:
+            break;
+
+        case STATE_FLOAT:
+            break;
+
+        case STATE_EXPONENT:
+            break;
+
+        case STATE_EXP_SIGN:
+            break;
+
+        case STATE_EXP_NUMBER:
+            break;
+
+        // IDENTIFIER / KEYWORD
+        case STATE_IDENTIFIER_OR_KEYWORD:
+            break;
+
+        // STRING
+        case STATE_READ_STRING:
+            break;
+
+        case STATE_BACKSLASH:
+            break;
+
+        case STATE_HEXA0:
+            break;
+
+        case STATE_HEXA1:
+            break;
+
+        case STATE_STRING:
+            break;
+
+        // COMMENT
+        case STATE_COMMENT:
+            break;
+
+        // LESS
+        case STATE_LESS:
+            break;
+
+        // MORE
+        case STATE_MORE:
+            break;
+
+        // EQUAL
+        case STATE_EQUAL:
+            break;
+
+        // EXCL MARK !
+        case STATE_EXCL_MARK:
+            break;
+
+        // DIVISION
+        case STATE_DIVISION:
+            break;
+
+        // TYPE
+        case STATE_TYPE:
+            break;
+
+        case STATE_OPENING_SQUARE_BRAC:
+            break;
+
+        case STATE_CLOSING_SQUARE_BRAC:
             break;
 
         default:
