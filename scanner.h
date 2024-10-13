@@ -11,6 +11,8 @@ IFJ project
 
 #include <stdio.h>
 
+#include "dynamic_string.h"
+
 typedef enum { KEYWORD_IF, KEYWORD_RETURN } Keyword;
 
 typedef enum {
@@ -54,11 +56,13 @@ typedef enum {
 typedef union {
     int integer;
     double decimal;
+    DynamicString string;
 } TokenAttribute;
 
 typedef struct {
     TokenType type;
     TokenAttribute attribute;
+    unsigned line;
 } Token;
 
 #endif
