@@ -198,24 +198,68 @@ int getNextToken(Token *token) {
 
         // NUMBER
         case STATE_NUMBER:
+            // TODO:
             break;
 
         case STATE_ZERO:
+            if (current == '.') {
+                // TODO: add to dynamic string
+                state = STATE_DOT;
+            } else {
+                ungetc(current, sourceFile);
+                token->type = TOKEN_TYPE_INTEGER;
+                token->attribute.integer = 0;
+                return TOKEN_OK;
+            }
             break;
 
         case STATE_DOT:
+            if (isdigit(current)) {
+                // TODO: add to dynamic string
+                state = STATE_FLOAT
+            } else {
+                // TODO: LEXICAL ERROR? , ungetc() ?
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
             break;
 
         case STATE_FLOAT:
+            // TODO:
             break;
 
         case STATE_EXPONENT:
+            if (isdigit(current)) {
+                // TODO: add to dynamic string
+                state = STATE_EXP_NUMBER;
+            } else if (current == '+' || current == '-') {
+                // TODO: add to dynamic string
+                state = STATE_EXP_SIGN;
+            } else {
+                // TODO: LEXICAL ERROR?
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
             break;
 
         case STATE_EXP_SIGN:
+            if (isdigit(current)) {
+                // TODO: add to dynamic string
+                state = STATE_EXP_NUMBER;
+            } else {
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
+
             break;
 
         case STATE_EXP_NUMBER:
+            if (isdigit(current)) {
+                // TODO: add to dynamic string
+            } else {
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
             break;
 
         // IDENTIFIER / KEYWORD
@@ -240,6 +284,11 @@ int getNextToken(Token *token) {
 
         // COMMENT
         case STATE_COMMENT:
+            if (current == '\n' || current == EOF) {
+                state = STATE_START;
+                ungetc(current, sourceFile);
+            }
+
             break;
 
         // LESS
