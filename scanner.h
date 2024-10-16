@@ -65,4 +65,6 @@ typedef struct {
     unsigned line;
 } Token;
 
+int getNextToken(Token *token);
+
 #endif
