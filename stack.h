@@ -74,7 +74,7 @@ StackElement *top(Stack *stack);
 Token *topToken(Stack *stack);
 
 /**
- * @brief Displays the contents of the stack.
+ * @brief Prints the contents of the stack to standard output.
  *
  * @param stack Pointer to the stack to display.
  */
