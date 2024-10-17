@@ -74,6 +74,13 @@ StackElement *top(Stack *stack);
 Token *topToken(Stack *stack);
 
 /**
+ * @brief Displays the contents of the stack.
+ *
+ * @param stack Pointer to the stack to display.
+ */
+void display(Stack *stack);
+
+/**
  * @brief Cleans up the stack, freeing all allocated memory.
  *
  * @param stack Pointer to the stack to clean up.
