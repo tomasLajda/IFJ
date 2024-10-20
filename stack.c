@@ -13,16 +13,14 @@
 
 void initStack(Stack *stack) {
     if (stack == NULL) {
-        fprintf(stderr, "Stack pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
     stack->top = NULL;
 }
 
 void initStackElement(StackElement *element, Token *tokenPtr) {
     if (element == NULL) {
-        fprintf(stderr, "StackElement pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("StackElement pointer is NULL", INTERNAL_ERROR);
     }
     element->tokenPtr = tokenPtr;
     element->next = NULL;
@@ -30,16 +28,14 @@ void initStackElement(StackElement *element, Token *tokenPtr) {
 
 bool isEmpty(Stack *stack) {
     if (stack == NULL) {
-        fprintf(stderr, "Stack pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
     return stack->top == NULL;
 }
 
 void push(Stack *stack, StackElement *elementPtr) {
     if (stack == NULL || elementPtr == NULL) {
-        fprintf(stderr, "Stack or StackElement pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Stack or StackElement pointer is NULL", INTERNAL_ERROR);
     }
     if (isEmpty(stack)) {
         stack->top = elementPtr;
@@ -51,8 +47,7 @@ void push(Stack *stack, StackElement *elementPtr) {
 
 void pop(Stack *stack) {
     if (stack == NULL) {
-        fprintf(stderr, "Stack pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
     if (isEmpty(stack)) {
         fprintf(stderr, "Stack is empty\n");
@@ -68,8 +63,7 @@ void pop(Stack *stack) {
 
 StackElement *top(Stack *stack) {
     if (stack == NULL) {
-        fprintf(stderr, "Stack pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
     if (isEmpty(stack)) {
         fprintf(stderr, "Stack is empty\n");
@@ -80,8 +74,7 @@ StackElement *top(Stack *stack) {
 
 Token *topToken(Stack *stack) {
     if (stack == NULL) {
-        fprintf(stderr, "Stack pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
     if (isEmpty(stack)) {
         fprintf(stderr, "Stack is empty\n");
@@ -96,8 +89,7 @@ Token *topToken(Stack *stack) {
 
 void display(Stack *stack) {
     if (stack == NULL) {
-        fprintf(stderr, "Stack pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
     if (isEmpty(stack)) {
         printf("Stack is empty\n");
@@ -114,8 +106,7 @@ void display(Stack *stack) {
 
 void cleanupStack(Stack *stack) {
     if (stack == NULL) {
-        fprintf(stderr, "Stack pointer is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
     while (!isEmpty(stack)) {
         pop(stack);
