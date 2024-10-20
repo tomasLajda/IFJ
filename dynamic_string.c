@@ -11,20 +11,20 @@
 
 #define DYNAMIC_STRING_INITIAL_SIZE 8
 
-void DynamicStringInit(DynamicString *ds) {
+void dynamicStringInit(DynamicString *ds) {
     ds->string = NULL;
     ds->length = 0;
     ds->allocated = 0;
 }
 
-void DynamicStringFree(DynamicString *ds) {
+void dynamicStringFree(DynamicString *ds) {
     free(ds->string);
     ds->string = NULL;
     ds->length = 0;
     ds->allocated = 0;
 }
 
-void DynamicStringResize(DynamicString *ds, unsigned size) {
+void dynamicStringResize(DynamicString *ds, unsigned size) {
     if (size == 0) {
         fprintf(stderr, "DynamicStringResize: Invalid size\n");
         exit(INTERNAL_ERROR);
@@ -51,14 +51,7 @@ void DynamicStringResize(DynamicString *ds, unsigned size) {
     }
 }
 
-void DynamicStringClear(DynamicString *ds) {
-    ds->length = 0;
-    DynamicStringResize(ds, 1);
-
-    ds->string[0] = '\0';
-}
-
-void DynamicStringAddChar(DynamicString *ds, char c) {
+void dynamicStringAddChar(DynamicString *ds, char c) {
     if (ds->length + 2 > ds->allocated) {
         DynamicStringResize(ds, ds->length + 2);
     }
@@ -68,7 +61,7 @@ void DynamicStringAddChar(DynamicString *ds, char c) {
     ds->string[ds->length] = '\0';
 }
 
-void DynamicStringAddString(DynamicString *ds, const char *string) {
+void dynamicStringAddString(DynamicString *ds, const char *string) {
     unsigned len = strlen(string);
 
     if (ds->length + len + 1 > ds->allocated) {
@@ -80,7 +73,7 @@ void DynamicStringAddString(DynamicString *ds, const char *string) {
     ds->string[ds->length] = '\0';
 }
 
-void DynamicStringReplaceChar(DynamicString *ds, char c, unsigned index) {
+void dynamicStringReplaceChar(DynamicString *ds, char c, unsigned index) {
     if (index >= ds->length) {
         fprintf(stderr, "Index %u out of string scope. Length is %u.\n", index, ds->length);
         return;
@@ -89,7 +82,7 @@ void DynamicStringReplaceChar(DynamicString *ds, char c, unsigned index) {
     ds->string[index] = c;
 }
 
-void DynamicStringCopy(const DynamicString *ds, DynamicString *copy) {
+void dynamicStringCopy(const DynamicString *ds, DynamicString *copy) {
     if (ds->length + 1 > copy->allocated) {
         DynamicStringResize(copy, ds->length + 1);
     }
@@ -99,7 +92,7 @@ void DynamicStringCopy(const DynamicString *ds, DynamicString *copy) {
     copy->string[copy->length] = '\0';
 }
 
-bool DynamicStringCompare(const DynamicString *ds, const char *string) {
+bool dynamicStringCompare(const DynamicString *ds, const char *string) {
     if (ds->length != strlen(string)) {
         return false;
     }
@@ -107,13 +100,13 @@ bool DynamicStringCompare(const DynamicString *ds, const char *string) {
     return strcmp(ds->string, string);
 }
 
-void DynamicStringPrint(const DynamicString *ds) {
+void dynamicStringPrint(const DynamicString *ds) {
     fprintf(stdout, 'String: %s\n', ds->string);
     fprintf(stdout, 'Length: %d\n', ds->length);
     fprintf(stdout, 'Allocated: %d\n', ds->allocated);
 }
 
-char *DynamicStringToCString(const DynamicString *ds) {
+char *dynamicStringToCString(const DynamicString *ds) {
     if (ds == NULL || ds->length == 0) {
         return NULL;
     }
