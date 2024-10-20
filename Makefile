@@ -13,20 +13,20 @@ all: $(EXECS)
 
 # Compile source files into executables
 %: %.c
-    $(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 # Clean up build files
 clean:
-    rm -f $(EXECS)
+	rm -f $(EXECS)
 
 # Build specific file for production
 build: $(FILE)
-    $(CC) $(CFLAGS) -o $(FILE:.c=) $(FILE)
+	$(CC) $(CFLAGS) -o $(FILE:.c=) $(FILE)
 
 # Build specific file for testing
 build_test: CFLAGS += -DTEST_MODE
 build_test: $(FILE)
-    $(CC) $(CFLAGS) -o $(FILE:.c=) $(FILE)
+	$(CC) $(CFLAGS) -o $(FILE:.c=) $(FILE)
 
 .PHONY: all clean build build_test
 
