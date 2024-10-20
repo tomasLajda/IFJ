@@ -28,7 +28,7 @@ void initStackElement(StackElement *element, Token *tokenPtr) {
 
 bool isEmpty(Stack *stack) {
     if (stack == NULL) {
-        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, true);
     }
     return stack->top == NULL;
 }
@@ -63,7 +63,7 @@ void pop(Stack *stack) {
 
 StackElement *top(Stack *stack) {
     if (stack == NULL) {
-        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, NULL);
     }
     if (isEmpty(stack)) {
         fprintf(stderr, "Stack is empty\n");
@@ -74,7 +74,7 @@ StackElement *top(Stack *stack) {
 
 Token *topToken(Stack *stack) {
     if (stack == NULL) {
-        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, NULL);
     }
     if (isEmpty(stack)) {
         fprintf(stderr, "Stack is empty\n");
