@@ -69,7 +69,7 @@ void pop(Stack *stack);
  * @brief Peeks at the top element of the stack without removing it.
  *
  * @param stack Pointer to the stack.
- * @return A pointer to the element at the top of the stack.
+ * @return A pointer to the element at the top of the stack, or NULL if the stack is empty.
  */
 StackElement *top(Stack *stack);
 
@@ -77,7 +77,8 @@ StackElement *top(Stack *stack);
  * @brief Peeks at the token of top element of the stack without removing it.
  *
  * @param stack Pointer to the stack.
- * @return Pointer to the token of the element at the top of the stack.
+ * @return Pointer to the token of the element at the top of the stack, or NULL if the stack is
+ * empty or the token is NULL.
  */
 Token *topToken(Stack *stack);
 
