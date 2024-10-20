@@ -35,6 +35,14 @@ typedef struct {
 void initStack(Stack *stack);
 
 /**
+ * @brief Initializes a stack element.
+ *
+ * @param element Pointer to the element to initialize.
+ * @param tokenPtr Pointer to the token to store in the element.
+ */
+void initStackElement(StackElement *element, Token *tokenPtr);
+
+/**
  * @brief Checks if the stack is empty.
  *
  * @param stack Pointer to the stack to check.
