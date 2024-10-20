@@ -96,4 +96,4 @@ void display(Stack *stack);
  */
 void cleanupStack(Stack *stack);
 
-#endif // _STACK_H
+#endif // STACK_H
