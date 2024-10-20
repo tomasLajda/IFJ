@@ -10,13 +10,13 @@ IFJ Project
 
 // Macro for handling errors
 #ifdef TEST_MODE
-#define HANDLE_ERROR(msg, code)                                                                    \
+#define HANDLE_ERROR(msg, code, ...)                                                               \
     do {                                                                                           \
         fprintf(stderr, "%s\n", msg);                                                              \
-        return;                                                                                    \
+        return __VA_ARGS__;                                                                        \
     } while (0)
 #else
-#define HANDLE_ERROR(msg, code)                                                                    \
+#define HANDLE_ERROR(msg, code, ...)                                                               \
     do {                                                                                           \
         fprintf(stderr, "%s\n", msg);                                                              \
         exit(code);                                                                                \
