@@ -9,13 +9,27 @@
 #ifndef _LINKED_LIST_H
 #define _LINKED_LIST_H
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "error_codes.h"
 
-struct list_element_t {
+enum DataType { I_32, I_32_NULL, F_64, F_64_NULL, U_8_ARRAY, U_8_ARRAY_NULL, VOID };
+
+struct list_data_t {
     char *key;
+    DataType type;
+    union {
+        bool null;
+        int i32;
+        double f64;
+        char *u8;
+    } value;
+} typedef ListData;
+
+struct list_element_t {
+    ListData data;
     struct list_element_t *nextElement;
 } typedef ListElement;
 
@@ -45,9 +59,9 @@ void listDispose(List *list);
  * @brief Inserts a new element at the beginning of the list.
  *
  * @param list Pointer to the list.
- * @param key Key to be inserted.
+ * @param data Data to be inserted.
  */
-void listInsertFirst(List *list, char *key);
+void listInsertFirst(List *list, ListData data);
 
 /**
  * @brief Sets the first element of the list as the active element.
@@ -57,12 +71,12 @@ void listInsertFirst(List *list, char *key);
 void listFirst(List *list);
 
 /**
- * @brief Retrieves the key of the first element in the list.
+ * @brief Retrieves the data of the first element in the list.
  *
  * @param list Pointer to the list.
- * @param key Pointer to store the retrieved key.
+ * @param data Pointer to store the retrieved data.
  */
-void listGetFirst(List *list, char **key);
+void listGetFirst(List *list, ListData *data);
 
 /**
  * @brief Deletes the first element of the list.
@@ -82,9 +96,9 @@ void listDeleteAfter(List *list);
  * @brief Inserts a new element after the active element.
  *
  * @param list Pointer to the list.
- * @param key Key to be inserted.
+ * @param data Data to be inserted.
  */
-void listInsertAfter(List *list, char *key);
+void listInsertAfter(List *list, ListData data);
 
 /**
  * @brief Moves the active element to the next element in the list.
@@ -94,20 +108,20 @@ void listInsertAfter(List *list, char *key);
 void listNext(List *list);
 
 /**
- * @brief Retrieves the key of the active element in the list.
+ * @brief Retrieves the data of the active element in the list.
  *
  * @param list Pointer to the list.
- * @param key Pointer to store the retrieved key.
+ * @param data Pointer to store the retrieved data.
  */
-void listGetValue(List *list, char **key);
+void listGetValue(List *list, ListData *data);
 
 /**
- * @brief Sets the key of the active element in the list.
+ * @brief Sets the data of the active element in the list.
  *
  * @param list Pointer to the list.
- * @param key Key to be set.
+ * @param data Data to be set.
  */
-void listSetValue(List *list, char *key);
+void listSetValue(List *list, ListData data);
 
 /**
  * @brief Checks if the list is active.
