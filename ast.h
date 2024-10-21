@@ -67,6 +67,13 @@ typedef enum {
     OP_GET
 } BinaryOperator;
 
+// Structure for binary operations
+typedef struct {
+    BinaryOperator op;
+    struct Expression* left;
+    struct Expression* right;
+} BinaryOperation;
+
 typedef union {
     DataType type;
 } ExpressionData;
@@ -75,6 +82,77 @@ typedef union {
 struct Expression {
     NodeType type;
     ExpressionData data;
+};
+
+// Structure for function parameters
+typedef struct Parameter {
+    DynamicString name;
+    DataType type;
+    struct Parameter* next;
+} Parameter;
+
+// Structure for variable declaration
+typedef struct {
+    DynamicString name;
+    DataType type;
+    Expression* initialValue;
+    bool isConst;
+} VarDeclaration;
+
+// Structure for variable assignment
+typedef struct {
+    DynamicString name;
+    Expression* value;
+} VarAssignment;
+
+// Structure if statement
+typedef struct {
+    Expression* condition;
+    StatementList* ifBody;
+    StatementList* elseBody;
+} IfStatement;
+
+// Structure for while statement
+typedef struct {
+    Expression* condition;
+    StatementList* body;
+} WhileStatement;
+
+// Structure for return statement
+typedef struct {
+    Expression* returnValue;
+} ReturnStatement;
+
+// Structure for function definition
+typedef struct {
+    DynamicString name;
+    Parameter* parameters;
+    DataType type;
+    StatementList* body;
+} FunctionDefinition;
+
+// Union for statement data
+typedef union {
+    VarDeclaration varDecl;
+    VarAssignment varAssign;
+    IfStatement ifStmt;
+    WhileStatement whileStmt;
+    ReturnStatement returnStmt;
+    FunctionDefinition funcDef;
+    Expression* discardExpr;
+} StatementData;
+
+// Statement node
+struct Statement {
+    NodeType type;
+    StatementData data;
+    Statement* next;
+};
+
+// Statement list for function bodies and block statements
+struct StatementList {
+    Statement* first;
+    Statement* last;
 };
 
 #endif _AST_H
