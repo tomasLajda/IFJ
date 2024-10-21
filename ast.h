@@ -79,6 +79,7 @@ typedef struct {
 
 typedef union {
     DataType type;
+    // TODO: FIX
 } ExpressionData;
 
 // Expression node
@@ -169,5 +170,24 @@ struct ASTNode {
 struct AST {
     StatementList* statements;
 };
+
+/**
+ * @brief Creates AST
+ */
+AST* createAST();
+
+/**
+ * @brief Frees AST from memory
+ */
+void freeAST(AST* ast);
+
+/**
+ * @brief Creates Binary Operation node
+ * 
+ * @param op Binary operator
+ * @param left Left operand
+ * @param right Right operand
+ */
+ASTNode* createBinaryOpNode(BinaryOperator op, Expression* left, Expression* right);
 
 #endif _AST_H
