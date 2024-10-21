@@ -16,10 +16,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+* TODO: FIX EXPR, ADD MORE STRUCTURES
+*/
+
 // Type of AST nodes
 typedef enum {
     NODE_FUNC_DEF,
-    NODE_FUNC_TYPE,
     NODE_PARAMS,
     NODE_STATEMENT,
     NODE_EXPR,
@@ -97,7 +100,7 @@ typedef struct {
     DataType type;
     Expression* initialValue;
     bool isConst;
-} VarDeclaration;
+} VarDefinition;
 
 // Structure for variable assignment
 typedef struct {
@@ -133,7 +136,7 @@ typedef struct {
 
 // Union for statement data
 typedef union {
-    VarDeclaration varDecl;
+    VarDefinition varDef;
     VarAssignment varAssign;
     IfStatement ifStmt;
     WhileStatement whileStmt;
@@ -153,6 +156,18 @@ struct Statement {
 struct StatementList {
     Statement* first;
     Statement* last;
+};
+
+// Structure of AST node
+struct ASTNode {
+    NodeType type;
+    struct ASTNode* left;
+    struct ASTNode* right;
+};
+
+// Structure of AST root node
+struct AST {
+    StatementList* statements;
 };
 
 #endif _AST_H
