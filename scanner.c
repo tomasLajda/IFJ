@@ -184,11 +184,11 @@ int getNextToken(Token *token) {
             if (current == '.') {
                 // TODO: add to dynamic string
                 // TODO: dynamic string -> token.attribute.decimal
-                token->type = TOKEN_TYPE_DOUBLE;
+                token->type = TOKEN_TYPE_DOUBLE_VALUE;
                 state = STATE_NUMBER_DOT;
             } else {
                 ungetc(current, sourceFile);
-                token->type = TOKEN_TYPE_INTEGER;
+                token->type = TOKEN_TYPE_INTEGER_VALUE;
                 token->attribute.integer = 0;
                 return TOKEN_OK;
             }
