@@ -248,7 +248,16 @@ int getNextToken(Token *token) {
             break;
 
         case STATE_FLOAT:
-            // TODO:
+            if (isdigit(current)) {
+                dynamicStringAddChar(&buffer, current);
+            } else if (current == 'e' || current == 'E') {
+                dynamicStringAddChar(&buffer, current);
+                state = STATE_EXPONENT;
+            } else {
+                ungetc(current, sourceFile);
+                dynamicStringFree(&buffer);
+                return LEXICAL_ERROR;
+            }
             break;
 
         case STATE_EXPONENT:
