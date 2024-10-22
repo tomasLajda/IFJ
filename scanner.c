@@ -37,10 +37,10 @@ IFJ Project
 
 // NUMBER
 #define STATE_NUMBER                                                                               \
-    12 // Loads a number (1-9) and either return INT or if dot comes next continues to STATE_DOT, or
-       // if (e/E) is loaded, goes to STATE_EXPONENT
-#define STATE_ZERO 23 // Loads '0' (zero can't be int, only 0.smth)
-#define STATE_DOT 13  // '.' was loaded after a number, loads next number, goes to STATE_FLOAT
+    12 // Loads a number (1-9) and either return INT or if dot comes next continues to
+       // STATE_NUMBER_DOT, or if (e/E) is loaded, goes to STATE_EXPONENT
+#define STATE_ZERO 23       // Loads '0' (zero can't be int, only 0.smth)
+#define STATE_NUMBER_DOT 13 // '.' was loaded after a number, loads next number, goes to STATE_FLOAT
 #define STATE_FLOAT                                                                                \
     14 // Loads numbers and returns FLOAT or IF (e/E) is loaded goes to STATE_EXPONENT
 #define STATE_EXPONENT                                                                             \
@@ -128,6 +128,11 @@ int getNextToken(Token *token) {
             else if (current == '!') {
                 state = STATE_EXCL_MARK;
             }
+            // DOT STATE '.'
+            else if (current == '.') {
+                token->type = TOKEN_TYPE_DOT;
+                return TOKEN_OK;
+            }
             // {
             else if (current == '{') {
                 token->type = TOKEN_TYPE_LEFT_CURLY_BR;
@@ -181,9 +186,6 @@ int getNextToken(Token *token) {
             else if (isalpha(current) || current == '_') {
                 state = STATE_IDENTIFIER_OR_KEYWORD;
             }
-
-            // TODO: DOT STATE '.' ?
-
             // else
             else {
                 // TODO: RETURN, DYNAMIC STRING + JEHO FREE
@@ -204,7 +206,7 @@ int getNextToken(Token *token) {
         case STATE_ZERO:
             if (current == '.') {
                 // TODO: add to dynamic string
-                state = STATE_DOT;
+                state = STATE_NUMBER_DOT;
             } else {
                 ungetc(current, sourceFile);
                 token->type = TOKEN_TYPE_INTEGER;
@@ -213,7 +215,7 @@ int getNextToken(Token *token) {
             }
             break;
 
-        case STATE_DOT:
+        case STATE_NUMBER_DOT:
             if (isdigit(current)) {
                 // TODO: add to dynamic string
                 state = STATE_FLOAT;
