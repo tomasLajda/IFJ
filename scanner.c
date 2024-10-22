@@ -206,6 +206,7 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
             } else if (current == '.') {
                 dynamicStringAddChar(&buffer, current);
+                token->type = TOKEN_TYPE_DOUBLE_VALUE;
                 state = STATE_NUMBER_DOT;
             } else if (current == 'e' || current == 'E') {
                 dynamicStringAddChar(&buffer, current);
@@ -223,25 +224,25 @@ int getNextToken(Token *token) {
 
         case STATE_ZERO:
             if (current == '.') {
-                // TODO: add to dynamic string
-                // TODO: dynamic string -> token.attribute.decimal
+                dynamicStringAddChar(&buffer, current);
                 token->type = TOKEN_TYPE_DOUBLE_VALUE;
                 state = STATE_NUMBER_DOT;
             } else {
                 ungetc(current, sourceFile);
                 token->type = TOKEN_TYPE_INTEGER_VALUE;
                 token->attribute.integer = 0;
+                dynamicStringFree(&buffer);
                 return TOKEN_OK;
             }
             break;
 
         case STATE_NUMBER_DOT:
             if (isdigit(current)) {
-                // TODO: add to dynamic string
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_FLOAT;
             } else {
-                // TODO: LEXICAL ERROR? , ungetc() ?
                 ungetc(current, sourceFile);
+                dynamicStringFree(&buffer);
                 return LEXICAL_ERROR;
             }
             break;
