@@ -13,30 +13,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "enums.h"
 #include "error_codes.h"
 
-typedef enum { I_32, I_32_NULL, F_64, F_64_NULL, U_8_ARRAY, U_8_ARRAY_NULL, VOID } DataType;
-
-struct list_data_t {
+typedef struct ListData {
     char *key;
     DataType type;
-};
+} ListData;
 
-typedef struct list_data_t ListData;
-
-struct list_element_t {
+typedef struct ListElement {
     ListData data;
     struct list_element_t *nextElement;
-};
+} ListElement;
 
-typedef struct list_element_t ListElement;
 typedef ListElement *ListElementPtr;
 
-struct list_t {
+typedef struct List {
     ListElementPtr firstElement;
     ListElementPtr activeElement;
     int currentLength;
-} typedef List;
+} List;
 
 /**
  * @brief Initializes the list.

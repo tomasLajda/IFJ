@@ -14,13 +14,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct dynamic_string_t {
+typedef struct DynamicString {
     char *string;
     unsigned length;
     unsigned allocated;
-};
-
-typedef struct dynamic_string_t DynamicString;
+} DynamicString;
 
 /**
  * @brief Initializes a dynamic string.

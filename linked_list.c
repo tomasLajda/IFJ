@@ -1,6 +1,6 @@
 /*
  * IFJ Project
- * @brief Header file for linked list
+ * @brief Implementation file for linked list
  *
  * @author Tomáš Lajda - xlajdat00
  *
