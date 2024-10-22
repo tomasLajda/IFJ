@@ -291,7 +291,9 @@ int getNextToken(Token *token) {
             } else {
                 ungetc(current, sourceFile);
                 dynamicStringFree(&buffer);
-                return LEXICAL_ERROR;
+                // TODO: token attribute
+                // TODO: whitespace?
+                return TOKEN_OK;
             }
             break;
 
@@ -301,7 +303,7 @@ int getNextToken(Token *token) {
                 state = STATE_IDENTIFIER_OR_KEYWORD;
                 DynamicStringAddChar(&token->attribute.string, current);
             } else {
-
+                // TODO: elseif for whitespace?
                 // TODO: token_ok? function for token type - identifier/keyword
                 ungetc(current, sourceFile);
                 return LEXICAL_ERROR;
@@ -328,8 +330,8 @@ int getNextToken(Token *token) {
         // COMMENT
         case STATE_COMMENT:
             if (current == '\n' || current == EOF) {
-                state = STATE_START;
                 ungetc(current, sourceFile);
+                state = STATE_START;
             }
             break;
 
