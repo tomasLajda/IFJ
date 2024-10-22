@@ -280,15 +280,17 @@ int getNextToken(Token *token) {
                 state = STATE_EXP_NUMBER;
             } else {
                 ungetc(current, sourceFile);
+                dynamicStringFree(&buffer);
                 return LEXICAL_ERROR;
             }
             break;
 
         case STATE_EXP_NUMBER:
             if (isdigit(current)) {
-                // TODO: add to dynamic string
+                dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
+                dynamicStringFree(&buffer);
                 return LEXICAL_ERROR;
             }
             break;
