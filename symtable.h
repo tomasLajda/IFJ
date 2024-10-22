@@ -11,6 +11,7 @@
 
 #include <stdbool.h>
 
+#include "error_codes.h"
 #include "linked_list.h"
 #include "scanner.h"
 
@@ -18,81 +19,117 @@ struct symbol_t {
     char *key;
     DataType type;
     bool function;
-    union {
-        bool null;
-        int i32;
-        double f64;
-        char *u8;
-    } value;
+    bool defined;
     List *params;
-} typedef Symbol;
+};
+
+typedef struct symbol_t Symbol;
 
 struct binary_tree_node_t {
     Symbol data;
     struct binary_tree_node_t *left;
     struct binary_tree_node_t *right;
     unsigned height;
-} typedef *BinaryTreeNodePtr;
+};
 
-struct binary_search_tree_t {
-    BinaryTreeNodePtr *root;
-} typedef BinarySearchTree;
+typedef struct binary_tree_node_t BinaryTreeNode;
+
+typedef BinaryTreeNode *BinaryTreeNodePtr;
+
+struct symbol_table_t {
+    BinaryTreeNodePtr root;
+    struct symbol_table_t *previousTable;
+} typedef SymbolTable;
 
 /**
- * @brief Initializes the binary search tree.
+ * @brief Initializes the symbol table.
  *
- * @param bst Pointer to the binary search tree to be initialized.
+ * @param table Pointer to the symbol table to be initialized.
+ * @param previousTable Pointer to the previous symbol table.
  */
-void binaryTreeInit(BinarySearchTree *bst);
+void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
 
 /**
- * @brief Frees the binary search tree and all its nodes.
+ * @brief Frees the symbol table and all its nodes.
  *
- * @param bst Pointer to the binary search tree to be freed.
+ * @param table Pointer to the symbol table to be freed.
  */
-void binaryTreeFree(BinarySearchTree *bst);
+void symbolTableDispose(SymbolTable *table);
 
 /**
- * @brief Inserts a new symbol into the binary search tree.
+ * @brief Frees a node of the symbol table.
  *
- * @param bst Pointer to the binary search tree.
+ * @param node Pointer to the node to be freed.
+ */
+void treeDispose(BinaryTreeNodePtr node);
+
+/**
+ * @brief Inserts a new symbol into the symbol table.
+ *
+ * @param table Pointer to the symbol table.
  * @param data Symbol to be inserted.
  */
-void binaryTreeInsert(BinarySearchTree *bst, Symbol data);
+void symbolTableInsert(SymbolTable *table, Symbol data);
 
 /**
- * @brief Searches for a symbol in the binary search tree by its key.
+ * @brief Searches for a symbol in the symbol table by its key.
  *
- * @param bst Pointer to the binary search tree.
+ * @param table Pointer to the symbol table.
  * @param key The key of the symbol to search for.
- * @param data Pointer to a symbol where the found data will be stored.
  * @return true if the symbol is found, false otherwise.
  */
-bool binaryTreeSearch(BinarySearchTree *bst, const char *key);
+bool symbolTableSearch(SymbolTable *table, const char *key);
 
 /**
- * @brief Retrieves the data of a symbol in the binary search tree by its key.
+ * @brief Creates a new node with the given data.
  *
- * @param bst Pointer to the binary search tree.
- * @param key The key of the symbol to search for.
- * @param data Pointer to a symbol where the found data will be stored.
+ * @param node Pointer to the node to be created.
+ * @param data Data to be stored in the node.
  */
-void binaryTreeGetData(BinarySearchTree *bst, const char *key, Symbol *data);
+void treeCreate(BinaryTreeNodePtr *node, Symbol data);
 
 /**
- * @brief Deletes a symbol from the binary search tree by its key.
+ * @brief Performs a left rotation on the given node.
  *
- * @param bst Pointer to the binary search tree.
- * @param key The key of the symbol to delete.
+ * @param node Pointer to the node to be rotated.
  */
-void binaryTreeDelete(BinarySearchTree *bst, const char *key);
+void treeRotateLeft(BinaryTreeNodePtr *node);
 
 /**
- * @brief Checks if the binary search tree is balanced.
+ * @brief Performs a right rotation on the given node.
  *
- * @param bst Pointer to the binary search tree.
- * @return true if the binary search tree is balanced, false otherwise.
+ * @param node Pointer to the node to be rotated.
  */
-bool binaryTreeGetBalance(BinarySearchTree *bst);
+void treeRotateRight(BinaryTreeNodePtr *node);
+
+/**
+ * @brief Calculates the height of a node.
+ *
+ * @param node Pointer to the node.
+ * @return The height of the node.
+ */
+unsigned treeHeight(BinaryTreeNodePtr node);
+
+/**
+ * @brief Calculates the balance factor of a node.
+ *
+ * @param node Pointer to the node.
+ * @return The balance factor of the node.
+ */
+int treeBalanceFactor(BinaryTreeNodePtr node);
+
+/**
+ * @brief Updates the height of a node.
+ *
+ * @param node Pointer to the node.
+ */
+void treeUpdateHeight(BinaryTreeNodePtr node);
+
+/**
+ * @brief Rebalances the tree at the given node.
+ *
+ * @param node Pointer to the node to be rebalanced.
+ */
+void treeRebalance(BinaryTreeNodePtr *node);
 
 #endif
