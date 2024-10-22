@@ -202,7 +202,23 @@ int getNextToken(Token *token) {
 
         // NUMBER
         case STATE_NUMBER:
-            // TODO:
+            if (isdigit(current)) {
+                dynamicStringAddChar(&buffer, current);
+            } else if (current == '.') {
+                dynamicStringAddChar(&buffer, current);
+                state = STATE_NUMBER_DOT;
+            } else if (current == 'e' || current == 'E') {
+                dynamicStringAddChar(&buffer, current);
+                token->type = TOKEN_TYPE_INTEGER_VALUE;
+                state = STATE_EXPONENT;
+            } else {
+                ungetc(current, sourceFile);
+                token->type = TOKEN_TYPE_INTEGER_VALUE;
+                token->attribute.integer = atoi(dynamicStringToCString(&buffer));
+                dynamicStringFree(&buffer);
+                return TOKEN_OK;
+            }
+
             break;
 
         case STATE_ZERO:
