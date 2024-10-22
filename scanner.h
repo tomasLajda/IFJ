@@ -42,6 +42,8 @@ typedef enum {
     TOKEN_TYPE_MUL,    // Multiplication *
     TOKEN_TYPE_DIV,    // Division /
 
+    // SPECIAL CHARACTERS
+    TOKEN_TYPE_DOT,            // Dot .
     TOKE_TYPE_OR,              // Or |
     TOKEN_TYPE_LEFT_BR,        // Left bracket (
     TOKEN_TYPE_RIGHT_BR,       // Right bracket )
