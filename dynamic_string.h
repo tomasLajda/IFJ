@@ -18,7 +18,9 @@ struct dynamic_string_t {
     char *string;
     unsigned length;
     unsigned allocated;
-} typedef DynamicString;
+};
+
+typedef struct dynamic_string_t DynamicString;
 
 /**
  * @brief Initializes a dynamic string.
@@ -99,4 +101,4 @@ void dynamicStringPrint(const DynamicString *ds);
  */
 char *dynamicStringToCString(const DynamicString *ds);
 
-#endif _DYNAMIC_STRING_H
+#endif
