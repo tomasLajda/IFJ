@@ -15,24 +15,21 @@
 
 #include "error_codes.h"
 
-enum DataType { I_32, I_32_NULL, F_64, F_64_NULL, U_8_ARRAY, U_8_ARRAY_NULL, VOID };
+typedef enum { I_32, I_32_NULL, F_64, F_64_NULL, U_8_ARRAY, U_8_ARRAY_NULL, VOID } DataType;
 
 struct list_data_t {
     char *key;
     DataType type;
-    union {
-        bool null;
-        int i32;
-        double f64;
-        char *u8;
-    } value;
-} typedef ListData;
+};
+
+typedef struct list_data_t ListData;
 
 struct list_element_t {
     ListData data;
     struct list_element_t *nextElement;
-} typedef ListElement;
+};
 
+typedef struct list_element_t ListElement;
 typedef ListElement *ListElementPtr;
 
 struct list_t {
