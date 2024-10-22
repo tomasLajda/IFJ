@@ -12,20 +12,21 @@ IFJ project
 #include <stdio.h>
 
 #include "dynamic_string.h"
-
-typedef enum { KEYWORD_IF, KEYWORD_RETURN } Keyword;
+#include "enums.h"
 
 typedef enum {
-    TOKEN_TYPE_EMPTY, // Empty token
-    TOKEN_TYPE_EOF,   // End of file
-    TOKEN_TYPE_EOL,   // End of line
+    TOKEN_TYPE_EMPTY,   // Empty token
+    TOKEN_TYPE_EOF,     // End of file
+    TOKEN_TYPE_EOL,     // End of line
+    TOKEN_TYPE_COMMENT, // Comment
 
     TOKEN_TYPE_IDENTIFIER, // Identifier
     TOKEN_TYPE_KEYWORD,    // Keyword
 
-    TOKEN_TYPE_INTEGER, // Number integer
-    TOKEN_TYPE_DOUBLE,  // Number double
-    TOKEN_TYPE_STRING,  // String
+    // VALUES
+    TOKEN_TYPE_INTEGER_VALUE, // Number integer
+    TOKEN_TYPE_DOUBLE_VALUE,  // Number double
+    TOKEN_TYPE_STRING_VALUE,  // String
 
     // COMPARE
     TOKEN_TYPE_EQ,  // Equal ==
@@ -42,7 +43,7 @@ typedef enum {
     TOKEN_TYPE_MUL,    // Multiplication *
     TOKEN_TYPE_DIV,    // Division /
 
-    TOKE_TYPE_OR,              // Or |
+    TOKEN_TYPE_OR,             // Or |
     TOKEN_TYPE_LEFT_BR,        // Left bracket (
     TOKEN_TYPE_RIGHT_BR,       // Right bracket )
     TOKEN_TYPE_LEFT_CURLY_BR,  // Left curly bracket {
@@ -50,13 +51,15 @@ typedef enum {
     TOKEN_TYPE_COMMA,          // Comma ,
     TOKEN_TYPE_COLON,          // Colon :
     TOKEN_TYPE_SEMICOLON,      // Semicolon ;
-
+    TOKEN_TYPE_DOT,            // Dot .
+    TOKEN_TYPE_AT,             // At @
 } TokenType;
 
 typedef union {
     int integer;
     double decimal;
-    DynamicString string;
+    char *string;
+    Keyword keyword;
 } TokenAttribute;
 
 typedef struct {
