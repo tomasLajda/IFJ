@@ -63,6 +63,7 @@ FILE *sourceFile; // Source file to be used as input for scanner
 int getNextToken(Token *token) {
 
     DynamicString buffer;
+    dynamicStringInit(&buffer);
 
     if (sourceFile == NULL) {
         return INTERNAL_ERROR;
@@ -181,185 +182,190 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
-                if (strcmp(buffer.string, "@import(\"ifj24.zig\")") == 0) {
-                    token->type = TOKEN_TYPE_IMPORT;
+                if (dynamicStringCompare(&buffer, "@import(\"ifj24.zig\")")) {
+                    token->type = TOKEN_TYPE_KEYWORD;
+                    token->attribute.keyword = KEYWORD_IMPORT;
+                    dynamicStringFree(&buffer);
                     return TOKEN_OK;
                 } else {
-                }
-
-                break;
-
-            // NUMBER
-            case STATE_NUMBER:
-                // TODO:
-                break;
-
-            case STATE_ZERO:
-                if (current == '.') {
-                    // TODO: add to dynamic string
-                    // TODO: dynamic string -> token.attribute.decimal
-                    token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                    state = STATE_NUMBER_DOT;
-                } else {
-                    ungetc(current, sourceFile);
-                    token->type = TOKEN_TYPE_INTEGER_VALUE;
-                    token->attribute.integer = 0;
-                    return TOKEN_OK;
-                }
-                break;
-
-            case STATE_NUMBER_DOT:
-                if (isdigit(current)) {
-                    // TODO: add to dynamic string
-                    state = STATE_FLOAT;
-                } else {
-                    // TODO: LEXICAL ERROR? , ungetc() ?
-                    ungetc(current, sourceFile);
+                    dynamicStringFree(&buffer);
                     return LEXICAL_ERROR;
                 }
-                break;
-
-            case STATE_FLOAT:
-                // TODO:
-                break;
-
-            case STATE_EXPONENT:
-                if (isdigit(current)) {
-                    // TODO: add to dynamic string
-                    state = STATE_EXP_NUMBER;
-                } else if (current == '+' || current == '-') {
-                    // TODO: add to dynamic string
-                    state = STATE_EXP_SIGN;
-                } else {
-                    // TODO: LEXICAL ERROR?
-                    ungetc(current, sourceFile);
-                    return LEXICAL_ERROR;
-                }
-                break;
-
-            case STATE_EXP_SIGN:
-                if (isdigit(current)) {
-                    // TODO: add to dynamic string
-                    state = STATE_EXP_NUMBER;
-                } else {
-                    ungetc(current, sourceFile);
-                    return LEXICAL_ERROR;
-                }
-
-                break;
-
-            case STATE_EXP_NUMBER:
-                if (isdigit(current)) {
-                    // TODO: add to dynamic string
-                } else {
-                    ungetc(current, sourceFile);
-                    return LEXICAL_ERROR;
-                }
-                break;
-
-            // IDENTIFIER / KEYWORD
-            case STATE_IDENTIFIER_OR_KEYWORD:
-                if (isalpha(current) || isdigit(current) || current == '_') {
-                    state = STATE_IDENTIFIER_OR_KEYWORD;
-                    DynamicStringAddChar(&token->attribute.string, current);
-                } else {
-
-                    // TODO: token_ok? function for token type - identifier/keyword
-                    ungetc(current, sourceFile);
-                    return LEXICAL_ERROR;
-                }
-
-                break;
-
-            // STRING
-            case STATE_READ_STRING:
-                break;
-
-            case STATE_BACKSLASH:
-                break;
-
-            case STATE_HEXA0:
-                break;
-
-            case STATE_HEXA1:
-                break;
-
-            case STATE_STRING:
-                break;
-
-            // COMMENT
-            case STATE_COMMENT:
-                if (current == '\n' || current == EOF) {
-                    state = STATE_START;
-                    ungetc(current, sourceFile);
-                }
-                break;
-
-            // LESS
-            case STATE_LESS:
-                if (current == '=') {
-                    token->type = TOKEN_TYPE_LEQ;
-                } else {
-                    ungetc(current, sourceFile);
-                    token->type = TOKEN_TYPE_LTH;
-                }
-                return TOKEN_OK;
-
-            // MORE
-            case STATE_MORE:
-                if (current == '=') {
-                    token->type = TOKEN_TYPE_GEQ;
-                } else {
-                    ungetc(current, sourceFile);
-                    token->type = TOKEN_TYPE_GTH;
-                }
-                return TOKEN_OK;
-
-            // EQUAL
-            case STATE_EQUAL:
-                if (current == '=') {
-                    token->type = TOKEN_TYPE_EQ;
-                } else {
-                    token->type = TOKEN_TYPE_ASSIGN;
-                }
-                return TOKEN_OK;
-
-            // EXCL MARK !
-            case STATE_EXCL_MARK:
-                if (current == '=') {
-                    token->type = TOKEN_TYPE_NEQ;
-                    return TOKEN_OK;
-                } else {
-                    // TODO: ungetc ?
-                    return LEXICAL_ERROR;
-                }
-
-                break;
-
-            // DIVISION
-            case STATE_DIVISION:
-                if (current == '/') {
-                    state = STATE_COMMENT;
-                } else {
-                    token->type = TOKEN_TYPE_DIV;
-                    ungetc(current, sourceFile);
-                    return TOKEN_OK;
-                }
-
-                break;
-
-            // TYPE
-            case STATE_TYPE:
-                break;
-
-            case STATE_OPENING_SQUARE_BRAC:
-                break;
-
-            case STATE_CLOSING_SQUARE_BRAC:
-                break;
-
-            default:
-                break;
             }
+
+            break;
+
+        // NUMBER
+        case STATE_NUMBER:
+            // TODO:
+            break;
+
+        case STATE_ZERO:
+            if (current == '.') {
+                // TODO: add to dynamic string
+                // TODO: dynamic string -> token.attribute.decimal
+                token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                state = STATE_NUMBER_DOT;
+            } else {
+                ungetc(current, sourceFile);
+                token->type = TOKEN_TYPE_INTEGER_VALUE;
+                token->attribute.integer = 0;
+                return TOKEN_OK;
+            }
+            break;
+
+        case STATE_NUMBER_DOT:
+            if (isdigit(current)) {
+                // TODO: add to dynamic string
+                state = STATE_FLOAT;
+            } else {
+                // TODO: LEXICAL ERROR? , ungetc() ?
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
+            break;
+
+        case STATE_FLOAT:
+            // TODO:
+            break;
+
+        case STATE_EXPONENT:
+            if (isdigit(current)) {
+                // TODO: add to dynamic string
+                state = STATE_EXP_NUMBER;
+            } else if (current == '+' || current == '-') {
+                // TODO: add to dynamic string
+                state = STATE_EXP_SIGN;
+            } else {
+                // TODO: LEXICAL ERROR?
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
+            break;
+
+        case STATE_EXP_SIGN:
+            if (isdigit(current)) {
+                // TODO: add to dynamic string
+                state = STATE_EXP_NUMBER;
+            } else {
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
+
+            break;
+
+        case STATE_EXP_NUMBER:
+            if (isdigit(current)) {
+                // TODO: add to dynamic string
+            } else {
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
+            break;
+
+        // IDENTIFIER / KEYWORD
+        case STATE_IDENTIFIER_OR_KEYWORD:
+            if (isalpha(current) || isdigit(current) || current == '_') {
+                state = STATE_IDENTIFIER_OR_KEYWORD;
+                DynamicStringAddChar(&token->attribute.string, current);
+            } else {
+
+                // TODO: token_ok? function for token type - identifier/keyword
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
+
+            break;
+
+        // STRING
+        case STATE_READ_STRING:
+            break;
+
+        case STATE_BACKSLASH:
+            break;
+
+        case STATE_HEXA0:
+            break;
+
+        case STATE_HEXA1:
+            break;
+
+        case STATE_STRING:
+            break;
+
+        // COMMENT
+        case STATE_COMMENT:
+            if (current == '\n' || current == EOF) {
+                state = STATE_START;
+                ungetc(current, sourceFile);
+            }
+            break;
+
+        // LESS
+        case STATE_LESS:
+            if (current == '=') {
+                token->type = TOKEN_TYPE_LEQ;
+            } else {
+                ungetc(current, sourceFile);
+                token->type = TOKEN_TYPE_LTH;
+            }
+            return TOKEN_OK;
+
+        // MORE
+        case STATE_MORE:
+            if (current == '=') {
+                token->type = TOKEN_TYPE_GEQ;
+            } else {
+                ungetc(current, sourceFile);
+                token->type = TOKEN_TYPE_GTH;
+            }
+            return TOKEN_OK;
+
+        // EQUAL
+        case STATE_EQUAL:
+            if (current == '=') {
+                token->type = TOKEN_TYPE_EQ;
+            } else {
+                token->type = TOKEN_TYPE_ASSIGN;
+            }
+            return TOKEN_OK;
+
+        // EXCL MARK !
+        case STATE_EXCL_MARK:
+            if (current == '=') {
+                token->type = TOKEN_TYPE_NEQ;
+                return TOKEN_OK;
+            } else {
+                // TODO: ungetc ?
+                return LEXICAL_ERROR;
+            }
+
+            break;
+
+        // DIVISION
+        case STATE_DIVISION:
+            if (current == '/') {
+                state = STATE_COMMENT;
+            } else {
+                token->type = TOKEN_TYPE_DIV;
+                ungetc(current, sourceFile);
+                return TOKEN_OK;
+            }
+
+            break;
+
+        // TYPE
+        case STATE_TYPE:
+            break;
+
+        case STATE_OPENING_SQUARE_BRAC:
+            break;
+
+        case STATE_CLOSING_SQUARE_BRAC:
+            break;
+
+        default:
+            break;
         }
     }
+}
