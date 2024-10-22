@@ -262,14 +262,14 @@ int getNextToken(Token *token) {
 
         case STATE_EXPONENT:
             if (isdigit(current)) {
-                // TODO: add to dynamic string
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_EXP_NUMBER;
             } else if (current == '+' || current == '-') {
-                // TODO: add to dynamic string
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_EXP_SIGN;
             } else {
-                // TODO: LEXICAL ERROR?
                 ungetc(current, sourceFile);
+                dynamicStringFree(&buffer);
                 return LEXICAL_ERROR;
             }
             break;
