@@ -169,7 +169,7 @@ int getNextToken(Token *token) {
             }
             // else
             else {
-                // TODO: RETURN, DYNAMIC STRING + JEHO FREE
+                dynamicStringFree(&buffer);
                 return LEXICAL_ERROR;
             }
 
