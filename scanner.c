@@ -150,25 +150,30 @@ int getNextToken(Token *token) {
             }
             // TYPE - starting with ?
             else if (current == '?') {
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_TYPE;
             }
             // TYPE - starting with [
             else if (current == '[') {
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_OPENING_SQUARE_BRAC;
             } else if (current == '0') {
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_ZERO;
             }
             // NUMBER
             else if (isdigit(current) && current != '0') {
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_NUMBER;
             }
             // IDENTIFIER OR KEYWORD
             else if (isalpha(current) || current == '_') {
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_IDENTIFIER_OR_KEYWORD;
-                DynamicStringAddChar(&token->attribute.string, current);
             }
             // else
             else {
+                // TODO: LEXICAL ERROR / INTERNAL ERROR
                 dynamicStringFree(&buffer);
                 return LEXICAL_ERROR;
             }
