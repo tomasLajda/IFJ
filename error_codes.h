@@ -4,7 +4,24 @@ IFJ Project
 @brief Header file to define error codes
 
 @author Vojtěch Gajdušek - xgajduv00
+@author Matúš Csirik - xcsirim00
+
 */
+
+// Macro for handling errors
+#ifdef TEST_MODE
+#define HANDLE_ERROR(msg, code, ...)                                                               \
+    do {                                                                                           \
+        fprintf(stderr, "%s\n", msg);                                                              \
+        return __VA_ARGS__;                                                                        \
+    } while (0)
+#else
+#define HANDLE_ERROR(msg, code, ...)                                                               \
+    do {                                                                                           \
+        fprintf(stderr, "%s\n", msg);                                                              \
+        exit(code);                                                                                \
+    } while (0)
+#endif
 
 #ifndef _ERROR_H
 #define _ERROR_H
