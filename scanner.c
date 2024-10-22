@@ -161,6 +161,7 @@ int getNextToken(Token *token) {
             // IDENTIFIER OR KEYWORD
             else if (isalpha(current) || current == '_') {
                 state = STATE_IDENTIFIER_OR_KEYWORD;
+                DynamicStringAddChar(&token->attribute.string, current);
             }
             // else
             else {
@@ -244,6 +245,16 @@ int getNextToken(Token *token) {
 
         // IDENTIFIER / KEYWORD
         case STATE_IDENTIFIER_OR_KEYWORD:
+            if (isalpha(current) || isdigit(current) || current == '_') {
+                state = STATE_IDENTIFIER_OR_KEYWORD;
+                DynamicStringAddChar(&token->attribute.string, current);
+            } else {
+
+                // TODO: token_ok? function for token type - identifier/keyword
+                ungetc(current, sourceFile);
+                return LEXICAL_ERROR;
+            }
+
             break;
 
         // STRING
@@ -278,7 +289,6 @@ int getNextToken(Token *token) {
                 ungetc(current, sourceFile);
                 token->type = TOKEN_TYPE_LTH;
             }
-
             return TOKEN_OK;
 
         // MORE
@@ -306,7 +316,7 @@ int getNextToken(Token *token) {
                 token->type = TOKEN_TYPE_NEQ;
                 return TOKEN_OK;
             } else {
-                // TODO: IS IT LEXICAL ERROR? , ungetc ?
+                // TODO: ungetc ?
                 return LEXICAL_ERROR;
             }
 
@@ -318,6 +328,7 @@ int getNextToken(Token *token) {
                 state = STATE_COMMENT;
             } else {
                 token->type = TOKEN_TYPE_DIV;
+                ungetc(current, sourceFile);
                 return TOKEN_OK;
             }
 
