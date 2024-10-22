@@ -87,24 +87,16 @@ int getNextToken(Token *token) {
                 token->type = TOKEN_TYPE_EOF;
                 // TODO: RETURN, DYNAMIC STRING + JEHO FREE
                 return TOKEN_OK;
-            }
-            // +
-            else if (current == '+') {
+            } else if (current == '+') {
                 token->type = TOKEN_TYPE_PLUS;
                 return TOKEN_OK;
-            }
-            // -
-            else if (current == '-') {
+            } else if (current == '-') {
                 token->type = TOKEN_TYPE_MINUS;
                 return TOKEN_OK;
-            }
-            // *
-            else if (current == '*') {
+            } else if (current == '*') {
                 token->type = TOKEN_TYPE_MUL;
                 return TOKEN_OK;
-            }
-            // ;
-            else if (current == ';') {
+            } else if (current == ';') {
                 token->type = TOKEN_TYPE_SEMICOLON;
                 return TOKEN_OK;
             }
@@ -123,38 +115,24 @@ int getNextToken(Token *token) {
             // = can be OPERATOR OR ==
             else if (current == '=') {
                 state = STATE_EQUAL;
-            }
-            // !
-            else if (current == '!') {
+            } else if (current == '!') {
                 state = STATE_EXCL_MARK;
-            }
-            // DOT STATE '.'
-            else if (current == '.') {
+            } else if (current == '.') {
                 token->type = TOKEN_TYPE_DOT;
                 return TOKEN_OK;
-            }
-            // {
-            else if (current == '{') {
+            } else if (current == '{') {
                 token->type = TOKEN_TYPE_LEFT_CURLY_BR;
                 return TOKEN_OK;
-            }
-            // }
-            else if (current == '}') {
+            } else if (current == '}') {
                 token->type = TOKEN_TYPE_RIGHT_CURLY_BR;
                 return TOKEN_OK;
-            }
-            // (
-            else if (current == '(') {
+            } else if (current == '(') {
                 token->type = TOKEN_TYPE_LEFT_BR;
                 return TOKEN_OK;
-            }
-            // )
-            else if (current == ')') {
+            } else if (current == ')') {
                 token->type = TOKEN_TYPE_RIGHT_BR;
                 return TOKEN_OK;
-            }
-            // :
-            else if (current == ':') {
+            } else if (current == ':') {
                 token->type = TOKEN_TYPE_COLON;
                 return TOKEN_OK;
             }
@@ -173,9 +151,7 @@ int getNextToken(Token *token) {
             // TYPE - starting with [
             else if (current == '[') {
                 state = STATE_OPENING_SQUARE_BRAC;
-            }
-            // 0
-            else if (current == '0') {
+            } else if (current == '0') {
                 state = STATE_ZERO;
             }
             // NUMBER
@@ -206,6 +182,8 @@ int getNextToken(Token *token) {
         case STATE_ZERO:
             if (current == '.') {
                 // TODO: add to dynamic string
+                // TODO: dynamic string -> token.attribute.decimal
+                token->type = TOKEN_TYPE_DOUBLE;
                 state = STATE_NUMBER_DOT;
             } else {
                 ungetc(current, sourceFile);
