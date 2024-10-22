@@ -276,13 +276,12 @@ int getNextToken(Token *token) {
 
         case STATE_EXP_SIGN:
             if (isdigit(current)) {
-                // TODO: add to dynamic string
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_EXP_NUMBER;
             } else {
                 ungetc(current, sourceFile);
                 return LEXICAL_ERROR;
             }
-
             break;
 
         case STATE_EXP_NUMBER:
