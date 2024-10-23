@@ -93,8 +93,7 @@ int getNextToken(Token *token) {
             // END OF FILE
             else if (current == EOF) {
                 token->type = TOKEN_TYPE_EOF;
-                dynamicStringFree(&buffer);
-                return TOKEN_OK;
+                return freeAndReturn(&buffer, TOKEN_OK);
             } else if (current == '+') {
                 token->type = TOKEN_TYPE_PLUS;
                 return TOKEN_OK;
@@ -179,8 +178,7 @@ int getNextToken(Token *token) {
             // else
             else {
                 // TODO: LEXICAL ERROR / INTERNAL ERROR
-                dynamicStringFree(&buffer);
-                return LEXICAL_ERROR;
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
 
             break;
@@ -195,11 +193,9 @@ int getNextToken(Token *token) {
                 if (dynamicStringCompare(&buffer, "@import(\"ifj24.zig\")")) {
                     token->type = TOKEN_TYPE_KEYWORD;
                     token->attribute.keyword = KEYWORD_IMPORT;
-                    dynamicStringFree(&buffer);
-                    return TOKEN_OK;
+                    return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
-                    dynamicStringFree(&buffer);
-                    return LEXICAL_ERROR;
+                    return freeAndReturn(&buffer, LEXICAL_ERROR);
                 }
             }
 
@@ -221,8 +217,7 @@ int getNextToken(Token *token) {
                 ungetc(current, sourceFile);
                 token->type = TOKEN_TYPE_INTEGER_VALUE;
                 token->attribute.integer = atoi(dynamicStringToCString(&buffer));
-                dynamicStringFree(&buffer);
-                return TOKEN_OK;
+                return freeAndReturn(&buffer, TOKEN_OK);
             }
 
             break;
@@ -236,8 +231,7 @@ int getNextToken(Token *token) {
                 ungetc(current, sourceFile);
                 token->type = TOKEN_TYPE_INTEGER_VALUE;
                 token->attribute.integer = 0;
-                dynamicStringFree(&buffer);
-                return TOKEN_OK;
+                return freeAndReturn(&buffer, TOKEN_OK);
             }
             break;
 
@@ -247,8 +241,7 @@ int getNextToken(Token *token) {
                 state = STATE_FLOAT;
             } else {
                 ungetc(current, sourceFile);
-                dynamicStringFree(&buffer);
-                return LEXICAL_ERROR;
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
 
@@ -260,8 +253,7 @@ int getNextToken(Token *token) {
                 state = STATE_EXPONENT;
             } else {
                 ungetc(current, sourceFile);
-                dynamicStringFree(&buffer);
-                return LEXICAL_ERROR;
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
 
@@ -274,8 +266,7 @@ int getNextToken(Token *token) {
                 state = STATE_EXP_SIGN;
             } else {
                 ungetc(current, sourceFile);
-                dynamicStringFree(&buffer);
-                return LEXICAL_ERROR;
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
 
@@ -285,8 +276,7 @@ int getNextToken(Token *token) {
                 state = STATE_EXP_NUMBER;
             } else {
                 ungetc(current, sourceFile);
-                dynamicStringFree(&buffer);
-                return LEXICAL_ERROR;
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
 
@@ -295,10 +285,9 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
-                dynamicStringFree(&buffer);
                 // TODO: token attribute
                 // TODO: whitespace?
-                return TOKEN_OK;
+                return freeAndReturn(&buffer, TOKEN_OK);
             }
             break;
 
