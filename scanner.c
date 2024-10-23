@@ -385,10 +385,7 @@ int getNextToken(Token *token) {
             if (isalpha(current) || isdigit(current) || current == '_') {
                 state = STATE_IDENTIFIER_OR_KEYWORD;
                 DynamicStringAddChar(&token->attribute.string, current);
-            } else if (dynamicStringCompare(&buffer, "_")) {
-                // TODO: special case for '_' -> KEYWORD_UNDERSCORE?
             } else {
-                // TODO: token_ok? function for token type - identifier/keyword
                 ungetc(current, sourceFile);
                 return handleIdentifierOrKeyword(&buffer, token);
             }
