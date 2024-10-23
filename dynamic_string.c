@@ -97,7 +97,7 @@ bool dynamicStringCompare(const DynamicString *ds, const char *string) {
         return false;
     }
 
-    return strcmp(ds->string, string);
+    return !strcmp(ds->string, string);
 }
 
 void dynamicStringPrint(const DynamicString *ds) {
