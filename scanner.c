@@ -347,6 +347,7 @@ int getNextToken(Token *token) {
                 state = STATE_EXPONENT;
             } else {
                 ungetc(current, sourceFile);
+                token->attribute.decimal = atof(dynamicStringToCString(&buffer));
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -380,11 +381,11 @@ int getNextToken(Token *token) {
             } else {
                 ungetc(current, sourceFile);
                 if (token->type == TOKEN_TYPE_INTEGER_VALUE) {
-                    // TODO: atoi -> strtol
+                    // TODO: atoi -> strtol (not only here)
                     token->attribute.integer = atoi(dynamicStringToCString(&buffer));
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else if (token->type == TOKEN_TYPE_DOUBLE_VALUE) {
-                    // TODO: atof -> strtod
+                    // TODO: atof -> strtod (not only here)
                     token->attribute.decimal = atof(dynamicStringToCString(&buffer));
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
