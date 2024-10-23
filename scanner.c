@@ -88,7 +88,7 @@ int getNextToken(Token *token) {
             // END OF FILE
             else if (current == EOF) {
                 token->type = TOKEN_TYPE_EOF;
-                // TODO: RETURN, DYNAMIC STRING + JEHO FREE
+                dynamicStringFree(&buffer);
                 return TOKEN_OK;
             } else if (current == '+') {
                 token->type = TOKEN_TYPE_PLUS;

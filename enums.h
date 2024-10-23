@@ -65,7 +65,6 @@ typedef enum {
 
     TOKEN_TYPE_IDENTIFIER, // Identifier
     TOKEN_TYPE_KEYWORD,    // Keyword
-    TOKEN_TYPE_IMPORT,     // Import
 
     // VALUES
     TOKEN_TYPE_INTEGER_VALUE, // Number integer
