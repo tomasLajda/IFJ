@@ -29,4 +29,6 @@ typedef struct {
 
 int getNextToken(Token *token);
 
+int freeAndReturn(DynamicString *string, int errorCode);
+
 #endif

@@ -60,6 +60,11 @@ IFJ Project
 
 FILE *sourceFile; // Source file to be used as input for scanner
 
+int freeAndReturn(DynamicString *string, int errorCode) {
+    dynamicStringFree(string);
+    return errorCode;
+}
+
 int getNextToken(Token *token) {
 
     DynamicString buffer;
