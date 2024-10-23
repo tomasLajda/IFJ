@@ -285,9 +285,17 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
-                // TODO: token attribute
-                // TODO: whitespace?
-                return freeAndReturn(&buffer, TOKEN_OK);
+                if (token->type == TOKEN_TYPE_INTEGER_VALUE) {
+                    // TODO: atoi -> strtol
+                    token->attribute.integer = atoi(dynamicStringToCString(&buffer));
+                    return freeAndReturn(&buffer, TOKEN_OK);
+                } else if (token->type == TOKEN_TYPE_DOUBLE_VALUE) {
+                    // TODO: atof -> strtod
+                    token->attribute.decimal = atof(dynamicStringToCString(&buffer));
+                    return freeAndReturn(&buffer, TOKEN_OK);
+                } else {
+                    return freeAndReturn(&buffer, INTERNAL_ERROR);
+                }
             }
             break;
 
