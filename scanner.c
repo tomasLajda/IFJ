@@ -135,6 +135,15 @@ int handleIdentifierOrKeyword(DynamicString *string, Token *token) {
         token->attribute.keyword = KEYWORD_F2I;
     else
         token->type = TOKEN_TYPE_IDENTIFIER;
+
+    if (token->type == TOKEN_TYPE_IDENTIFIER) {
+        // TODO: dynamicStringCopy(&string, &token->attribute.string) ?
+        token->attribute.string = dynamicStringToCString(string);
+    } else {
+        token->type = TOKEN_TYPE_KEYWORD;
+    }
+
+    return freeAndReturn(string, TOKEN_OK);
 }
 
 int getNextToken(Token *token) {
