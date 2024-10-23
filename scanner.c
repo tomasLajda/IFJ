@@ -65,6 +65,25 @@ int freeAndReturn(DynamicString *string, int errorCode) {
     return errorCode;
 }
 
+int checkTypeValid(DynamicString *string, Token *token) {
+    if (dynamicStringCompare(string, "?i32")) {
+        token->type = TOKEN_TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_I_32_NULL;
+    } else if (dynamicStringCompare(string, "?f64")) {
+        token->type = TOKEN_TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_F_64_NULL;
+    } else if (dynamicStringCompare(string, "[]u8")) {
+        token->type = TOKEN_TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_U_8_ARRAY;
+    } else if (dynamicStringCompare(string, "?[]u8")) {
+        token->type = TOKEN_TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_U_8_ARRAY_NULL;
+    } else {
+        return LEXICAL_ERROR;
+    }
+    return TOKEN_OK;
+}
+
 int handleIdentifierOrKeyword(DynamicString *string, Token *token) {
 
     // TODO: check if all keywords are here or if there are some extra or missing
@@ -521,15 +540,29 @@ int getNextToken(Token *token) {
             } else {
                 ungetc(current, sourceFile);
                 // TODO: check if it is existing token type
+                checkTypeValid(&buffer, token);
                 return freeAndReturn(&buffer, TOKEN_OK);
             }
 
             break;
 
         case STATE_OPENING_SQUARE_BRAC:
+            if (current == ']') {
+                state = STATE_CLOSING_SQUARE_BRAC;
+            } else {
+                ungetc(current, sourceFile);
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
+            }
             break;
 
         case STATE_CLOSING_SQUARE_BRAC:
+            if (islower(current) || isdigit(current)) {
+                dynamicStringAddChar(&buffer, current);
+                state = STATE_TYPE;
+            } else {
+                ungetc(current, sourceFile);
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
+            }
             break;
 
         default:
