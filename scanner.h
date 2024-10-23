@@ -31,4 +31,6 @@ int getNextToken(Token *token);
 
 int freeAndReturn(DynamicString *string, int errorCode);
 
+int handleIdentifierOrKeyword(DynamicString *string, Token *token);
+
 #endif
