@@ -93,10 +93,6 @@ void dynamicStringCopy(const DynamicString *ds, DynamicString *copy) {
 }
 
 bool dynamicStringCompare(const DynamicString *ds, const char *string) {
-    if (ds->length != strlen(string)) {
-        return false;
-    }
-
     return !strcmp(ds->string, string);
 }
 
