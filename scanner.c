@@ -65,6 +65,78 @@ int freeAndReturn(DynamicString *string, int errorCode) {
     return errorCode;
 }
 
+int handleIdentifierOrKeyword(DynamicString *string, Token *token) {
+
+    // TODO: check if all keywords are here or if there are some extra or missing
+    // TODO: fix nullable keywords
+    if (dynamicStringCompare(string, "i32"))
+        token->attribute.keyword = KEYWORD_I_32;
+    else if (dynamicStringCompare(string, "i32_null"))
+        token->attribute.keyword = KEYWORD_I_32_NULL;
+    else if (dynamicStringCompare(string, "f64"))
+        token->attribute.keyword = KEYWORD_F_64;
+    else if (dynamicStringCompare(string, "f64_null"))
+        token->attribute.keyword = KEYWORD_F_64_NULL;
+    else if (dynamicStringCompare(string, "u8_array"))
+        token->attribute.keyword = KEYWORD_U_8_ARRAY;
+    else if (dynamicStringCompare(string, "u8_array_null"))
+        token->attribute.keyword = KEYWORD_U_8_ARRAY_NULL;
+    else if (dynamicStringCompare(string, "void"))
+        token->attribute.keyword = KEYWORD_VOID;
+    else if (dynamicStringCompare(string, "null"))
+        token->attribute.keyword = KEYWORD_NULL;
+    else if (dynamicStringCompare(string, "if"))
+        token->attribute.keyword = KEYWORD_IF;
+    else if (dynamicStringCompare(string, "else"))
+        token->attribute.keyword = KEYWORD_ELSE;
+    else if (dynamicStringCompare(string, "while"))
+        token->attribute.keyword = KEYWORD_WHILE;
+    else if (dynamicStringCompare(string, "pub"))
+        token->attribute.keyword = KEYWORD_PUB;
+    else if (dynamicStringCompare(string, "fn"))
+        token->attribute.keyword = KEYWORD_FN;
+    else if (dynamicStringCompare(string, "return"))
+        token->attribute.keyword = KEYWORD_RETURN;
+    else if (dynamicStringCompare(string, "var"))
+        token->attribute.keyword = KEYWORD_VAR;
+    else if (dynamicStringCompare(string, "const"))
+        token->attribute.keyword = KEYWORD_CONST;
+    else if (dynamicStringCompare(string, "_"))
+        token->attribute.keyword = KEYWORD_UNDERSCORE;
+    else if (dynamicStringCompare(string, "main"))
+        token->attribute.keyword = KEYWORD_MAIN;
+    else if (dynamicStringCompare(string, "ifj"))
+        token->attribute.keyword = KEYWORD_IFJ;
+    else if (dynamicStringCompare(string, "string"))
+        token->attribute.keyword = KEYWORD_STRING;
+    else if (dynamicStringCompare(string, "length"))
+        token->attribute.keyword = KEYWORD_LENGTH;
+    else if (dynamicStringCompare(string, "concat"))
+        token->attribute.keyword = KEYWORD_CONCAT;
+    else if (dynamicStringCompare(string, "substring"))
+        token->attribute.keyword = KEYWORD_SUBSTRING;
+    else if (dynamicStringCompare(string, "strcmp"))
+        token->attribute.keyword = KEYWORD_STRCMP;
+    else if (dynamicStringCompare(string, "ord"))
+        token->attribute.keyword = KEYWORD_ORD;
+    else if (dynamicStringCompare(string, "chr"))
+        token->attribute.keyword = KEYWORD_CHR;
+    else if (dynamicStringCompare(string, "write"))
+        token->attribute.keyword = KEYWORD_WRITE;
+    else if (dynamicStringCompare(string, "readstr"))
+        token->attribute.keyword = KEYWORD_READSTR;
+    else if (dynamicStringCompare(string, "readi32"))
+        token->attribute.keyword = KEYWORD_READI32;
+    else if (dynamicStringCompare(string, "readf64"))
+        token->attribute.keyword = KEYWORD_READF64;
+    else if (dynamicStringCompare(string, "i2f"))
+        token->attribute.keyword = KEYWORD_I2F;
+    else if (dynamicStringCompare(string, "f2i"))
+        token->attribute.keyword = KEYWORD_F2I;
+    else
+        token->type = TOKEN_TYPE_IDENTIFIER;
+}
+
 int getNextToken(Token *token) {
 
     DynamicString buffer;
@@ -304,11 +376,12 @@ int getNextToken(Token *token) {
             if (isalpha(current) || isdigit(current) || current == '_') {
                 state = STATE_IDENTIFIER_OR_KEYWORD;
                 DynamicStringAddChar(&token->attribute.string, current);
+            } else if (dynamicStringCompare(&buffer, "_")) {
+                // TODO: special case for '_' -> KEYWORD_UNDERSCORE?
             } else {
-                // TODO: elseif for whitespace?
                 // TODO: token_ok? function for token type - identifier/keyword
                 ungetc(current, sourceFile);
-                return LEXICAL_ERROR;
+                return handleIdentifierOrKeyword(&buffer, token);
             }
 
             break;
