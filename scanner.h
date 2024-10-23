@@ -33,4 +33,6 @@ int freeAndReturn(DynamicString *string, int errorCode);
 
 int handleIdentifierOrKeyword(DynamicString *string, Token *token);
 
+int checkTypeValid(DynamicString *string, Token *token);
+
 #endif
