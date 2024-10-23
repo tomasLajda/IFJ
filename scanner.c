@@ -532,11 +532,11 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
-                // TODO: check if it is existing token type
-                checkTypeValid(&buffer, token);
-                return freeAndReturn(&buffer, TOKEN_OK);
+                if (checkTypeValid(&buffer, token) == TOKEN_OK)
+                    return freeAndReturn(&buffer, TOKEN_OK);
+                else
+                    return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
-
             break;
 
         case STATE_OPENING_SQUARE_BRAC:
