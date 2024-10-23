@@ -496,10 +496,9 @@ int getNextToken(Token *token) {
                 return TOKEN_OK;
             } else {
                 // TODO: ungetc ?
+                ungetc(current, sourceFile);
                 return LEXICAL_ERROR;
             }
-
-            break;
 
         // DIVISION
         case STATE_DIVISION:
