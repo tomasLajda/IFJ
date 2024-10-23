@@ -226,6 +226,7 @@ int getNextToken(Token *token) {
             }
             // STRING
             else if (current == '"') {
+                token->type = TOKEN_TYPE_STRING_VALUE;
                 state = STATE_READ_STRING;
             }
             // IMPORT
@@ -394,19 +395,62 @@ int getNextToken(Token *token) {
 
         // STRING
         case STATE_READ_STRING:
+            if (current > 31) {
+                dynamicStringAddChar(&buffer, current);
+            } else if (current == '\\') {
+                state = STATE_BACKSLASH;
+            } else if (current == '"') {
+                state = STATE_STRING;
+            } else {
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
+            }
             break;
 
         case STATE_BACKSLASH:
+            if (current == 'n') {
+                dynamicStringAddChar(&buffer, '\n');
+                state = STATE_READ_STRING;
+            } else if (current == 't') {
+                dynamicStringAddChar(&buffer, '\t');
+                state = STATE_READ_STRING;
+            } else if (current == '"') {
+                dynamicStringAddChar(&buffer, '\"');
+                state = STATE_READ_STRING;
+            } else if (current == '\\') {
+                dynamicStringAddChar(&buffer, '\\');
+                state = STATE_READ_STRING;
+            } else if (current == 'r') {
+                dynamicStringAddChar(&buffer, '\r');
+                state = STATE_READ_STRING;
+            } else if (current == 'x') {
+                state = STATE_HEXA0;
+            } else {
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
+            }
             break;
 
         case STATE_HEXA0:
+            if (isxdigit(current)) {
+                dynamicStringAddChar(&buffer, current);
+                state = STATE_HEXA1;
+            } else {
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
+            }
             break;
 
         case STATE_HEXA1:
+            if (isxdigit(current)) {
+                dynamicStringAddChar(&buffer, current);
+                state = STATE_READ_STRING;
+            } else {
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
+            }
             break;
 
         case STATE_STRING:
-            break;
+            ungetc(current, sourceFile);
+            token->attribute.string = dynamicStringToCString(&buffer);
+            return freeAndReturn(&buffer, TOKEN_OK);
 
         // COMMENT
         case STATE_COMMENT:
