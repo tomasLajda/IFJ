@@ -384,7 +384,7 @@ int getNextToken(Token *token) {
         case STATE_IDENTIFIER_OR_KEYWORD:
             if (isalpha(current) || isdigit(current) || current == '_') {
                 state = STATE_IDENTIFIER_OR_KEYWORD;
-                DynamicStringAddChar(&token->attribute.string, current);
+                dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
                 return handleIdentifierOrKeyword(&buffer, token);
