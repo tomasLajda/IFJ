@@ -36,7 +36,16 @@ typedef enum {
     NODE_DISCARD,
     NODE_ARGS,
     NODE_VAL,
-    NODE_BIN_OP
+    OP_ADD,
+    OP_SUB,
+    OP_MUL,
+    OP_DIV,
+    OP_EQ,
+    OP_NEQ,
+    OP_LT,
+    OP_LET,
+    OP_GT,
+    OP_GET
 } NodeType;
 
 // Enum for variable types
@@ -56,27 +65,6 @@ typedef enum {
     VAR_TYPE_CONST
 } VarType;
 
-// Enum for binary operators
-typedef enum {
-    OP_ADD,
-    OP_SUB,
-    OP_MUL,
-    OP_DIV,
-    OP_EQ,
-    OP_NEQ,
-    OP_LT,
-    OP_LET,
-    OP_GT,
-    OP_GET
-} BinaryOperator;
-
-// Structure for binary operations
-typedef struct {
-    BinaryOperator op;
-    struct Expression* left;
-    struct Expression* right;
-} BinaryOperation;
-
 typedef union {
     DataType type;
     // TODO: FIX
@@ -88,87 +76,19 @@ struct Expression {
     ExpressionData data;
 };
 
-// Structure for function parameters
-typedef struct Parameter {
-    DynamicString name;
-    DataType type;
-    struct Parameter* next;
-} Parameter;
-
-// Structure for variable declaration
-typedef struct {
-    DynamicString name;
-    DataType type;
-    Expression* initialValue;
-    bool isConst;
-} VarDefinition;
-
-// Structure for variable assignment
-typedef struct {
-    DynamicString name;
-    Expression* value;
-} VarAssignment;
-
-// Structure if statement
-typedef struct {
-    Expression* condition;
-    StatementList* ifBody;
-    StatementList* elseBody;
-} IfStatement;
-
-// Structure for while statement
-typedef struct {
-    Expression* condition;
-    StatementList* body;
-} WhileStatement;
-
-// Structure for return statement
-typedef struct {
-    Expression* returnValue;
-} ReturnStatement;
-
-// Structure for function definition
-typedef struct {
-    DynamicString name;
-    Parameter* parameters;
-    DataType type;
-    StatementList* body;
-} FunctionDefinition;
-
-// Union for statement data
-typedef union {
-    VarDefinition varDef;
-    VarAssignment varAssign;
-    IfStatement ifStmt;
-    WhileStatement whileStmt;
-    ReturnStatement returnStmt;
-    FunctionDefinition funcDef;
-    Expression* discardExpr;
-} StatementData;
-
-// Statement node
-struct Statement {
-    NodeType type;
-    StatementData data;
-    Statement* next;
-};
-
-// Statement list for function bodies and block statements
-struct StatementList {
-    Statement* first;
-    Statement* last;
-};
-
 // Structure of AST node
 struct ASTNode {
     NodeType type;
-    struct ASTNode* left;
-    struct ASTNode* right;
+    ASTNode* left;
+    ASTNode* right;
+    ASTNode* parent;
+    ASTNode* absParent;
+    AST* exprTree;
+    Token* token;
 };
 
-// Structure of AST root node
 struct AST {
-    StatementList* statements;
+    ASTNode* root;
 };
 
 /**
@@ -179,15 +99,16 @@ AST* createAST();
 /**
  * @brief Frees AST from memory
  */
-void freeAST(AST* ast);
+void freeAST(ASTNode* ast);
 
 /**
- * @brief Creates Binary Operation node
- * 
- * @param op Binary operator
- * @param left Left operand
- * @param right Right operand
+ * @brief Adds node to AST
  */
-ASTNode* createBinaryOpNode(BinaryOperator op, Expression* left, Expression* right);
+void addNode(AST* ast, ASTNode* node);
 
-#endif _AST_H
+/**
+ * @brief Frees AST node from memory
+ */
+void freeNode(ASTNode* node);
+
+#endif //_AST_H
