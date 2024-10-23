@@ -514,6 +514,16 @@ int getNextToken(Token *token) {
 
         // TYPE
         case STATE_TYPE:
+            if (current == '[') {
+                state = STATE_OPENING_SQUARE_BRAC;
+            } else if (islower(current) || isdigit(current)) {
+                dynamicStringAddChar(&buffer, current);
+            } else {
+                ungetc(current, sourceFile);
+                // TODO: check if it is existing token type
+                return freeAndReturn(&buffer, TOKEN_OK);
+            }
+
             break;
 
         case STATE_OPENING_SQUARE_BRAC:
