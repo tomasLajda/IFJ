@@ -87,19 +87,12 @@ int checkTypeValid(DynamicString *string, Token *token) {
 int handleIdentifierOrKeyword(DynamicString *string, Token *token) {
 
     // TODO: check if all keywords are here or if there are some extra or missing
-    // TODO: fix nullable keywords
     if (dynamicStringCompare(string, "i32"))
         token->attribute.keyword = KEYWORD_I_32;
-    else if (dynamicStringCompare(string, "i32_null"))
-        token->attribute.keyword = KEYWORD_I_32_NULL;
     else if (dynamicStringCompare(string, "f64"))
         token->attribute.keyword = KEYWORD_F_64;
-    else if (dynamicStringCompare(string, "f64_null"))
-        token->attribute.keyword = KEYWORD_F_64_NULL;
     else if (dynamicStringCompare(string, "u8_array"))
         token->attribute.keyword = KEYWORD_U_8_ARRAY;
-    else if (dynamicStringCompare(string, "u8_array_null"))
-        token->attribute.keyword = KEYWORD_U_8_ARRAY_NULL;
     else if (dynamicStringCompare(string, "void"))
         token->attribute.keyword = KEYWORD_VOID;
     else if (dynamicStringCompare(string, "null"))
