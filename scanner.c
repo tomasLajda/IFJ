@@ -407,14 +407,14 @@ int getNextToken(Token *token) {
 
         // STRING
         case STATE_READ_STRING:
-            if (current > 31) {
-                dynamicStringAddChar(&buffer, current);
+            if (current <= 31) {
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
             } else if (current == '\\') {
                 state = STATE_BACKSLASH;
             } else if (current == '"') {
                 state = STATE_STRING;
             } else {
-                return freeAndReturn(&buffer, LEXICAL_ERROR);
+                dynamicStringAddChar(&buffer, current);
             }
             break;
 
