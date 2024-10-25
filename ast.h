@@ -10,86 +10,54 @@
 #define _AST_H
 
 #include "scanner.h"
-#include "dynamic_string.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-/*
-* TODO: FIX EXPR, ADD MORE STRUCTURES
-*/
+#include "enums.h"
 
 // Type of AST nodes
-typedef enum {
-    NODE_FUNC_DEF,
-    NODE_PARAMS,
-    NODE_STATEMENT,
-    NODE_EXPR,
-    NODE_TYPE,
-    NODE_IF,
-    NODE_WHILE,
-    NODE_VAR_DEF,
-    NODE_VAR_ASS,
-    NODE_RETURN,
-    NODE_FUNC_CALL,
-    NODE_DISCARD,
-    NODE_ARGS,
-    NODE_VAL,
-    OP_ADD,
-    OP_SUB,
-    OP_MUL,
-    OP_DIV,
-    OP_EQ,
-    OP_NEQ,
-    OP_LT,
-    OP_LET,
-    OP_GT,
-    OP_GET
+typedef union {
+    Keyword keyword;
+    enum {
+        OP_ADD,
+        OP_SUB,
+        OP_MUL,
+        OP_DIV,
+        OP_EQ,
+        OP_NEQ,
+        OP_LT,
+        OP_LET,
+        OP_GT,
+        OP_GET
+    } binaryOperation;
 } NodeType;
 
-// Enum for variable types
-typedef enum {
-    TYPE_I32,
-    TYPE_F64,
-    TYPE_STRING,
-    TYPE_OPTIONAL_I32,
-    TYPE_OPTIONAL_F64,
-    TYPE_OPTIONAL_STRING,
-    TYPE_VOID
-} DataType;
-
-// Enum for variable definition type
-typedef enum {
-    VAR_TYPE_VAR,
-    VAR_TYPE_CONST
-} VarType;
-
-typedef union {
-    DataType type;
-    // TODO: FIX
-} ExpressionData;
-
-// Expression node
-struct Expression {
+// Structure of Expression node
+typedef struct Expression {
     NodeType type;
-    ExpressionData data;
-};
+    struct ASTNode* left;
+    struct ASTNode* right;
+} Expression;
 
 // Structure of AST node
-struct ASTNode {
-    NodeType type;
-    ASTNode* left;
-    ASTNode* right;
-    ASTNode* parent;
-    ASTNode* absParent;
-    AST* exprTree;
+typedef struct ASTNode {
+    bool isExpression;
+    union {
+        NodeType nodeType;
+        struct Expression expr;
+    } data;
+    
+    struct ASTNode* parent;
+    struct ASTNode* absParent;
+    struct AST* exprTree;
     Token* token;
-};
+} ASTNode;
 
-struct AST {
-    ASTNode* root;
-};
+// Structure of AST
+typedef struct AST {
+    struct ASTNode* root;
+} AST;
 
 /**
  * @brief Creates AST
