@@ -1,6 +1,6 @@
 /*
  * IFJ Project
- * @brief Header file for linked list
+ * @brief Implementation file for linked list
  *
  * @author Tomáš Lajda - xlajdat00
  *
@@ -59,10 +59,11 @@ void listDeleteFirst(List *list) {
     if (list->firstElement == NULL)
         return;
 
-    ListElementPtr temp = NULL;
-    if (list->firstElement->nextElement != NULL) {
-        temp = list->firstElement->nextElement;
+    if (list->activeElement == list->firstElement) {
+        list->activeElement = NULL;
     }
+
+    ListElementPtr temp = list->firstElement->nextElement;
 
     free(list->firstElement);
 
@@ -74,10 +75,7 @@ void listDeleteAfter(List *list) {
     if (list->activeElement == NULL || list->activeElement->nextElement == NULL)
         return;
 
-    ListElementPtr temp = NULL;
-    if (list->activeElement->nextElement != NULL) {
-        temp = list->activeElement->nextElement->nextElement;
-    }
+    ListElementPtr temp = list->activeElement->nextElement->nextElement;
 
     free(list->activeElement->nextElement);
 
@@ -89,10 +87,7 @@ void listInsertAfter(List *list, ListData data) {
     if (list->activeElement == NULL)
         return;
 
-    ListElementPtr temp = NULL;
-    if (list->activeElement->nextElement != NULL) {
-        temp = list->activeElement->nextElement;
-    }
+    ListElementPtr temp = list->activeElement->nextElement;
 
     list->activeElement->nextElement = malloc(sizeof(ListElement));
     if (list->activeElement->nextElement == NULL) {

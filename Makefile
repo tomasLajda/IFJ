@@ -12,8 +12,8 @@ EXECS = $(SRCS:.c=)
 all: $(EXECS)
 
 # Compile source files into executables
-%: %.c
-	$(CC) $(CFLAGS) -o $@ $<
+%: $(SRCS)
+	$(CC) $(CFLAGS) -o $@ $< main.c
 
 # Clean up build files
 clean:
@@ -21,12 +21,12 @@ clean:
 
 # Build specific file for production
 build: $(FILE)
-	$(CC) $(CFLAGS) -o $(FILE:.c=) $(FILE)
+	$(CC) $(CFLAGS) -o $(FILE:.c=) $(FILE) main.c
 
 # Build specific file for testing
 build_test: CFLAGS += -DTEST_MODE
 build_test: $(FILE)
-	$(CC) $(CFLAGS) -o $(FILE:.c=) $(FILE)
+	$(CC) $(CFLAGS) -o $(FILE:.c=) $(FILE) main.c
 
 .PHONY: all clean build build_test
 
