@@ -16,7 +16,7 @@
 AST* createAST() {
     AST* tree = (AST*) malloc(sizeof(AST));
     if (tree == NULL) {
-        HANDLE_ERROR("Memory allocation failed", 99, NULL);
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
     }
     tree->root = NULL;
     return tree;
@@ -25,7 +25,7 @@ AST* createAST() {
 ASTNode* createASTNode() {
     ASTNode* node = (ASTNode*) malloc(sizeof(ASTNode));
     if (node == NULL) {
-        HANDLE_ERROR("Memory allocation failed", 99, NULL);
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
     }
     node->isExpression = false;
     node->data.nodeType.keyword = NULL;
