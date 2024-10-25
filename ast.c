@@ -22,6 +22,20 @@ AST* createAST() {
     return tree;
 }
 
+ASTNode* createASTNode() {
+    ASTNode* node = (ASTNode*) malloc(sizeof(ASTNode));
+    if (node == NULL) {
+        HANDLE_ERROR("Memory allocation failed", 99, NULL);
+    }
+    node->isExpression = false;
+    node->data.nodeType.keyword = NULL;
+    node->parent = NULL;
+    node->absParent = NULL;
+    node->exprTree = NULL;
+    node->token = NULL;
+    return node;
+}
+
 int main(int argc, char const *argv[]) {
     return 0;
 }
