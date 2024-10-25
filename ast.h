@@ -66,17 +66,32 @@ AST* createAST();
 
 /**
  * @brief Frees AST from memory
+ * 
+ * @param ast AST to be freed
  */
 void freeAST(ASTNode* ast);
 
 /**
  * @brief Adds node to AST
+ * 
+ * @param ast AST to add node to
+ * @param node Node to be added
  */
 void addNode(AST* ast, ASTNode* node);
 
 /**
  * @brief Frees AST node from memory
+ * 
+ * @param node Node to be freed
  */
 void freeNode(ASTNode* node);
+
+
+/** 
+ * @brief Creates expression tree from AST node
+ *
+ * @param node AST node
+*/
+void createExpressionTree(ASTNode* node);
 
 #endif //_AST_H
