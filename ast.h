@@ -72,12 +72,18 @@ AST* createAST();
 void freeAST(ASTNode* ast);
 
 /**
+ * @brief Creates AST node
+ */
+ASTNode* createASTNode();
+
+/**
  * @brief Adds node to AST
  * 
  * @param ast AST to add node to
+ * @param parent Parent node
  * @param node Node to be added
  */
-void addNode(AST* ast, ASTNode* node);
+void addNode(AST* ast, ASTNode* parent, ASTNode* node);
 
 /**
  * @brief Frees AST node from memory
@@ -85,7 +91,6 @@ void addNode(AST* ast, ASTNode* node);
  * @param node Node to be freed
  */
 void freeNode(ASTNode* node);
-
 
 /** 
  * @brief Creates expression tree from AST node
