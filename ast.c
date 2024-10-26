@@ -6,9 +6,6 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdbool.h>
 #include "ast.h"
 #include "error_codes.h"
@@ -33,6 +30,8 @@ ASTNode* createASTNode() {
     node->absParent = NULL;
     node->exprTree = NULL;
     node->token = NULL;
+    node->children = NULL;
+    node->childCount = 0;
     return node;
 }
 

@@ -52,6 +52,8 @@ typedef struct ASTNode {
     struct ASTNode* absParent;
     struct AST* exprTree;
     Token* token;
+    struct ASTNode** children;
+    int childCount;
 } ASTNode;
 
 // Structure of AST
