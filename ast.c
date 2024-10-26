@@ -28,7 +28,7 @@ ASTNode* createASTNode() {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
     }
     node->isExpression = false;
-    node->data.nodeType.keyword = NULL;
+    node->data.nodeType.keyword = KEYWORD_NULL; // ?
     node->parent = NULL;
     node->absParent = NULL;
     node->exprTree = NULL;
@@ -36,6 +36,31 @@ ASTNode* createASTNode() {
     return node;
 }
 
-int main(int argc, char const *argv[]) {
-    return 0;
+void freeNode(ASTNode* node) {
+    if (node == NULL) {
+        return;
+    }
+    if (node->isExpression) {
+        freeNode(node->data.expr.left);
+        freeNode(node->data.expr.right);
+    }
+    if (node->exprTree != NULL) {
+        freeAST(node->exprTree);
+    }
+    if (node->token != NULL) {
+        free(node->token);
+    }
+
+    free(node);
+}
+
+void freeAST(AST* ast) {
+    if (ast == NULL) {
+        return;
+    }
+    if (ast->root != NULL) {
+        freeNode(ast->root);
+    }
+
+    free(ast);
 }

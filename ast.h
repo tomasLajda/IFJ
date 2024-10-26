@@ -69,7 +69,7 @@ AST* createAST();
  * 
  * @param ast AST to be freed
  */
-void freeAST(ASTNode* ast);
+void freeAST(AST* ast);
 
 /**
  * @brief Creates AST node
