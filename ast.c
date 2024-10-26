@@ -88,3 +88,97 @@ void createExpressionTree(ASTNode* node) {
     exprTree->root = opNode;
     node->exprTree = exprTree;
 }
+
+void addNode(AST* ast, ASTNode* parent, ASTNode* node) {
+    if (ast == NULL || node == NULL) {
+        HANDLE_ERROR("NULL pointer passed to addNode", INTERNAL_ERROR, NULL);
+    }
+
+    if (parent == NULL) {
+        if (ast->root != NULL) {
+            HANDLE_ERROR("Attempting to add root node when root already exists", INTERNAL_ERROR, NULL);
+        }
+        ast->root = node;
+        node->parent = NULL;
+        node->absParent = NULL;
+        return;
+    }
+
+    node->parent = parent;
+
+    if (parent->data.nodeType.binaryOperation >= OP_ADD && parent->data.nodeType.binaryOperation <= OP_GET) {
+        if (parent->childCount == 0) {
+            createExpressionTree(parent);
+        } 
+        else if (parent->childCount == 1) {
+            if (parent->exprTree == NULL || parent->exprTree->root == NULL) {
+                HANDLE_ERROR("Expression tree not properly initialized", INTERNAL_ERROR, NULL);
+            }
+            ASTNode* exprRoot = parent->exprTree->root;
+            exprRoot->data.expr.left = parent->children[0];
+            exprRoot->data.expr.right = node;
+        } 
+        else {
+            ASTNode* newOpNode = createASTNode();
+            newOpNode->isExpression = true;
+            newOpNode->data.nodeType = parent->data.nodeType;
+            
+            newOpNode->data.expr.left = parent;
+            newOpNode->data.expr.right = node;
+
+            if (parent->parent != NULL) {
+                ASTNode** siblings = parent->parent->children;
+                for (int i = 0; i < parent->parent->childCount; i++) {
+                    if (siblings[i] == parent) {
+                        siblings[i] = newOpNode;
+                        break;
+                    }
+                }
+            } 
+            else {
+                ast->root = newOpNode;
+            }
+
+            node->parent = newOpNode;
+            newOpNode->parent = parent->parent;
+            parent->parent = newOpNode;
+            parent->absParent = newOpNode->absParent;
+            newOpNode->childCount = 2;
+            parent = newOpNode;
+        }
+
+        ASTNode** newChildren = (ASTNode**)realloc(parent->children, (parent->childCount + 1) * sizeof(ASTNode*));
+        if (newChildren == NULL) {
+            HANDLE_ERROR("Memory reallocation failed", INTERNAL_ERROR, NULL);
+        }
+        parent->children = newChildren;
+        parent->children[parent->childCount] = node;
+        parent->childCount++;
+    } 
+    else if (parent->isExpression == false) {
+        ASTNode** newChildren = (ASTNode**)realloc(parent->children, (parent->childCount + 1) * sizeof(ASTNode*));
+        if (newChildren == NULL) {
+            HANDLE_ERROR("Memory reallocation failed", INTERNAL_ERROR, NULL);
+        }
+        parent->children = newChildren;
+        parent->children[parent->childCount] = node;
+        parent->childCount++;
+    } 
+    else {
+        if (parent->data.expr.left == NULL) {
+            parent->data.expr.left = node;
+        } 
+        else if (parent->data.expr.right == NULL) {
+            parent->data.expr.right = node;
+        } 
+        else {
+            HANDLE_ERROR("Expression node already has both children", INTERNAL_ERROR, NULL);
+        }
+    }
+
+    ASTNode* currentParent = parent;
+    while (currentParent != NULL && currentParent->isExpression) {
+        currentParent = currentParent->parent;
+    }
+    node->absParent = currentParent;
+}
