@@ -63,3 +63,28 @@ void freeAST(AST* ast) {
 
     free(ast);
 }
+
+void createExpressionTree(ASTNode* node) {
+    if (node == NULL) {
+        HANDLE_ERROR("NULL pointer passed to createExpressionTree", INTERNAL_ERROR, NULL);
+    }
+
+    AST* exprTree = createAST();
+    if (exprTree == NULL) {
+        HANDLE_ERROR("Failed to create expression tree", INTERNAL_ERROR, NULL);
+    }
+
+    ASTNode* opNode = createASTNode();
+    if (opNode == NULL) {
+        freeAST(exprTree);
+        HANDLE_ERROR("Failed to create operation node", INTERNAL_ERROR, NULL);
+    }
+
+    opNode->isExpression = true;
+    opNode->data.nodeType = node->data.nodeType;
+    opNode->parent = NULL;
+    opNode->absParent = node;
+
+    exprTree->root = opNode;
+    node->exprTree = exprTree;
+}
