@@ -23,7 +23,7 @@ typedef struct ListData {
 
 typedef struct ListElement {
     ListData data;
-    struct list_element_t *nextElement;
+    struct ListElement *nextElement;
 } ListElement;
 
 typedef ListElement *ListElementPtr;
