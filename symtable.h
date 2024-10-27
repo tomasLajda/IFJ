@@ -124,4 +124,13 @@ void symbolTablePop(Stack *stack);
  */
 SymbolTable *symbolTableGetPrevious(SymbolTable *table);
 
+/**
+ * @brief Gets a symbol from the symbol table by its key.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key The key of the symbol to get.
+ * @return Pointer to the symbol if found, NULL otherwise.
+ */
+Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key);
+
 #endif

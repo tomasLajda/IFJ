@@ -271,6 +271,21 @@ void treeReassign(BinaryTreeNodePtr node, const char *key, Symbol data) {
     }
 }
 
+Symbol *treeGet(BinaryTreeNodePtr node, const char *key) {
+    while (node != NULL) {
+        int compare = strcmp(key, node->data.key);
+        if (compare == 0) {
+            return &node->data;
+        } else if (compare < 0) {
+            node = node->left;
+        } else {
+            node = node->right;
+        }
+    }
+
+    return NULL;
+}
+
 bool symbolTableSearch(SymbolTable *table, const char *key) { return treeSearch(table->root, key); }
 
 void symbolTableInsert(SymbolTable *table, Symbol data) {
@@ -296,6 +311,10 @@ void symbolTableDelete(SymbolTable *table, const char *key) {
 
 void symbolTableReassign(SymbolTable *table, const char *key, Symbol data) {
     treeReassign(table->root, key, data);
+}
+
+Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key) {
+    return treeGet(table->root, key);
 }
 
 void symbolTablePush(Stack *stack, SymbolTable *table) {
