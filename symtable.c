@@ -27,8 +27,8 @@ int treeBalanceFactor(BinaryTreeNodePtr node) {
 }
 
 void treeUpdateHeight(BinaryTreeNodePtr node) {
-    unsigned leftHeight = height(node->left);
-    unsigned rightHeight = height(node->right);
+    unsigned leftHeight = treeHeight(node->left);
+    unsigned rightHeight = treeHeight(node->right);
     node->height = leftHeight > rightHeight ? leftHeight + 1 : rightHeight + 1;
 }
 
@@ -37,6 +37,9 @@ void treeRotateLeft(BinaryTreeNodePtr *node) {
     (*node)->right = right->left;
     right->left = *node;
     *node = right;
+
+    treeUpdateHeight((*node)->left);
+    treeUpdateHeight(*node);
 }
 
 void treeRotateRight(BinaryTreeNodePtr *node) {
@@ -44,6 +47,9 @@ void treeRotateRight(BinaryTreeNodePtr *node) {
     (*node)->left = left->right;
     left->right = *node;
     *node = left;
+
+    treeUpdateHeight((*node)->right);
+    treeUpdateHeight(*node);
 }
 
 void treeRebalance(BinaryTreeNodePtr *node) {
@@ -66,17 +72,6 @@ void treeRebalance(BinaryTreeNodePtr *node) {
     }
 }
 
-void symbolTableInit(SymbolTable *table, SymbolTable *previousTable) {
-    table->root = NULL;
-    table->previousTable = previousTable;
-}
-
-void symbolTableDispose(SymbolTable *table) {
-    if (table->root != NULL) {
-        treeDispose(table->root);
-    }
-}
-
 void treeDispose(BinaryTreeNodePtr node) {
     if (node->left != NULL) {
         treeDispose(node->left);
@@ -94,62 +89,177 @@ void treeDispose(BinaryTreeNodePtr node) {
     free(node);
 }
 
-bool symbolTableSearch(SymbolTable *table, const char *key) {
-    BinaryTreeNodePtr current = table->root;
+BinaryTreeNodePtr treeMinValueNode(BinaryTreeNodePtr node) {
+    BinaryTreeNodePtr current = node;
 
-    while (current != NULL) {
-        int compare = strcmp(key, current->data.key);
+    while (current->left != NULL) {
+        current = current->left;
+    }
+
+    return current;
+}
+
+bool treeSearch(BinaryTreeNodePtr node, const char *key) {
+    if (node == NULL) {
+        return false;
+    }
+
+    while (node != NULL) {
+        int compare = strcmp(key, node->data.key);
         if (compare == 0) {
             return true;
         } else if (compare < 0) {
-            current = current->left;
+            node = node->left;
         } else {
-            current = current->right;
+            node = node->right;
         }
     }
 
     return false;
 }
 
-void symbolTableInsert(SymbolTable *table, Symbol data) {
-    if (table->root == NULL) {
-        treeCreate(&table->root, data);
+BinaryTreeNodePtr treeInsert(BinaryTreeNodePtr node, Symbol data) {
+    if (node == NULL) {
+        treeCreate(&node, data);
+        return node;
+    }
+
+    if (strcmp(data.key, node->data.key) < 0) {
+        node->left = treeInsert(node->left, data);
+    } else {
+        node->right = treeInsert(node->right, data);
+    }
+
+    treeUpdateHeight(node);
+    treeRebalance(&node);
+
+    return node;
+}
+
+BinaryTreeNodePtr treeDelete(BinaryTreeNodePtr node, const char *key) {
+    if (node == NULL) {
+        return node;
+    }
+
+    if (strcmp(key, node->data.key) < 0) {
+        node->left = treeDelete(node->left, key);
+    } else if (strcmp(key, node->data.key) > 0) {
+        node->right = treeDelete(node->right, key);
+    } else {
+        if (node->left == NULL || node->right == NULL) {
+            BinaryTreeNodePtr temp = node->left ? node->left : node->right;
+
+            if (temp == NULL) {
+                temp = node;
+                node = NULL;
+            } else {
+                *node = *temp;
+            }
+
+            free(temp->data.key);
+            free(temp);
+        } else {
+            BinaryTreeNodePtr temp = treeMinValueNode(node->right);
+
+            node->data = temp->data;
+            node->right = treeDelete(node->right, temp->data.key);
+        }
+    }
+
+    if (node == NULL) {
+        return node;
+    }
+
+    treeUpdateHeight(node);
+    treeRebalance(&node);
+
+    return node;
+}
+
+void treeReassign(BinaryTreeNodePtr node, const char *key, Symbol data) {
+    if (node == NULL) {
         return;
     }
 
-    BinaryTreeNodePtr previous = NULL;
-    BinaryTreeNodePtr current = table->root;
-
-    bool found = false;
-    do {
-        int compare = strcmp(data.key, current->data.key);
+    while (node != NULL) {
+        int compare = strcmp(key, node->data.key);
         if (compare == 0) {
-            HANDLE_ERROR("Redefinition of variable or function", REDEFINITION_ERROR);
-        }
-
-        if (compare < 0) {
-            if (current->left == NULL) {
-                found = true;
-            } else {
-                previous = current;
-                current = current->left;
-            }
+            node->data = data;
+            return;
+        } else if (compare < 0) {
+            node = node->left;
         } else {
-            if (current->right == NULL) {
-                found = true;
-            } else {
-                previous = current;
-                current = current->right;
-            }
+            node = node->right;
         }
-    } while (found);
-
-    if (strcmp(data.key, current->data.key) < 0) {
-        treeCreate(&current->left, data);
-    } else {
-        treeCreate(&current->right, data);
     }
-    treeUpdateHeight(current);
+}
 
-    treeRebalance(&previous);
+bool symbolTableSearch(SymbolTable *table, const char *key) { return treeSearch(table->root, key); }
+
+void symbolTableInsert(SymbolTable *table, Symbol data) {
+    table->root = treeInsert(table->root, data);
+}
+
+void symbolTableDispose(SymbolTable *table) {
+    if (table->root != NULL) {
+        treeDispose(table->root);
+    }
+}
+
+SymbolTable *symbolTableGetPrevious(SymbolTable *table) { return table->previousTable; }
+
+void symbolTableInit(SymbolTable *table, SymbolTable *previousTable) {
+    table->root = NULL;
+    table->previousTable = previousTable;
+}
+
+void symbolTableDelete(SymbolTable *table, const char *key) {
+    table->root = treeDelete(table->root, key);
+}
+
+void symbolTableReassign(SymbolTable *table, const char *key, Symbol data) {
+    treeReassign(table->root, key, data);
+}
+
+void symbolTablePush(Stack *stack, SymbolTable *table) {
+    if (stack == NULL || table == NULL) {
+        HANDLE_ERROR("Stack or SymbolTable pointer is NULL", INTERNAL_ERROR);
+    }
+
+    StackElement *element = malloc(sizeof(StackElement));
+    if (element == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+
+    element->tokenPtr = (Token *)table;
+    element->next = stack->top;
+    stack->top = element;
+}
+
+SymbolTable *symbolTableTop(Stack *stack) {
+    if (stack == NULL) {
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, NULL);
+    }
+
+    if (stack->top == NULL) {
+        return NULL;
+    }
+
+    return (SymbolTable *)stack->top->tokenPtr;
+}
+
+void symbolTablePop(Stack *stack) {
+    if (stack == NULL) {
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
+    }
+
+    if (stack->top == NULL) {
+        return;
+    }
+
+    StackElement *tmp = stack->top;
+    symbolTableDispose((SymbolTable *)tmp->tokenPtr);
+
+    stack->top = stack->top->next;
+    free(tmp);
 }

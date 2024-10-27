@@ -14,32 +14,29 @@
 #include "error_codes.h"
 #include "linked_list.h"
 #include "scanner.h"
+#include "stack.h"
 
-struct symbol_t {
+typedef struct Symbol {
     char *key;
     DataType type;
     bool function;
     bool defined;
     List *params;
-};
+} Symbol;
 
-typedef struct symbol_t Symbol;
-
-struct binary_tree_node_t {
+typedef struct BinaryTreeNode {
     Symbol data;
-    struct binary_tree_node_t *left;
-    struct binary_tree_node_t *right;
+    struct BinaryTreeNode *left;
+    struct BinaryTreeNode *right;
     unsigned height;
-};
-
-typedef struct binary_tree_node_t BinaryTreeNode;
+} BinaryTreeNode;
 
 typedef BinaryTreeNode *BinaryTreeNodePtr;
 
-struct symbol_table_t {
+typedef struct SymbolTable {
     BinaryTreeNodePtr root;
-    struct symbol_table_t *previousTable;
-} typedef SymbolTable;
+    struct SymbolTable *previousTable;
+} SymbolTable;
 
 /**
  * @brief Initializes the symbol table.
@@ -131,5 +128,19 @@ void treeUpdateHeight(BinaryTreeNodePtr node);
  * @param node Pointer to the node to be rebalanced.
  */
 void treeRebalance(BinaryTreeNodePtr *node);
+
+/**
+ * @brief Inserts a new symbol into the binary tree.
+ *
+ * This function takes a binary tree node and a symbol, and inserts the symbol
+ * into the binary tree. If the tree is empty, a new node is created. If the
+ * tree is not empty, the function recursively finds the correct position for
+ * the new symbol and inserts it.
+ *
+ * @param node A pointer to the root node of the binary tree.
+ * @param data The symbol to be inserted into the binary tree.
+ * @return A pointer to the root node of the binary tree after insertion.
+ */
+BinaryTreeNodePtr treeInsert(BinaryTreeNodePtr node, Symbol data);
 
 #endif
