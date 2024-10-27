@@ -8,6 +8,12 @@
 
 #include "symtable.h"
 
+/**
+ * @brief Creates a new tree node with the given data.
+ *
+ * @param node Pointer to the node to be created.
+ * @param data Data to be stored in the new node.
+ */
 void treeCreate(BinaryTreeNodePtr *node, Symbol data) {
     *node = malloc(sizeof(BinaryTreeNode));
     if (*node == NULL) {
@@ -20,18 +26,40 @@ void treeCreate(BinaryTreeNodePtr *node, Symbol data) {
     (*node)->height = 1;
 }
 
+/**
+ * @brief Returns the height of the tree.
+ *
+ * @param node The root node of the tree.
+ * @return The height of the tree.
+ */
 unsigned treeHeight(BinaryTreeNodePtr node) { return node == NULL ? 0 : node->height; }
 
+/**
+ * @brief Calculates the balance factor of the node.
+ *
+ * @param node The node to calculate the balance factor for.
+ * @return The balance factor of the node.
+ */
 int treeBalanceFactor(BinaryTreeNodePtr node) {
     return node == NULL ? 0 : treeHeight(node->left) - treeHeight(node->right);
 }
 
+/**
+ * @brief Updates the height of the node.
+ *
+ * @param node The node to update the height for.
+ */
 void treeUpdateHeight(BinaryTreeNodePtr node) {
     unsigned leftHeight = treeHeight(node->left);
     unsigned rightHeight = treeHeight(node->right);
     node->height = leftHeight > rightHeight ? leftHeight + 1 : rightHeight + 1;
 }
 
+/**
+ * @brief Performs a left rotation on the node.
+ *
+ * @param node The node to perform the left rotation on.
+ */
 void treeRotateLeft(BinaryTreeNodePtr *node) {
     BinaryTreeNodePtr right = (*node)->right;
     (*node)->right = right->left;
@@ -42,6 +70,11 @@ void treeRotateLeft(BinaryTreeNodePtr *node) {
     treeUpdateHeight(*node);
 }
 
+/**
+ * @brief Performs a right rotation on the node.
+ *
+ * @param node The node to perform the right rotation on.
+ */
 void treeRotateRight(BinaryTreeNodePtr *node) {
     BinaryTreeNodePtr left = (*node)->left;
     (*node)->left = left->right;
@@ -52,6 +85,11 @@ void treeRotateRight(BinaryTreeNodePtr *node) {
     treeUpdateHeight(*node);
 }
 
+/**
+ * @brief Rebalances the tree.
+ *
+ * @param node The root node of the tree to rebalance.
+ */
 void treeRebalance(BinaryTreeNodePtr *node) {
     if (*node == NULL) {
         return;
@@ -72,6 +110,11 @@ void treeRebalance(BinaryTreeNodePtr *node) {
     }
 }
 
+/**
+ * @brief Disposes of the tree.
+ *
+ * @param node The root node of the tree to dispose of.
+ */
 void treeDispose(BinaryTreeNodePtr node) {
     if (node->left != NULL) {
         treeDispose(node->left);
@@ -89,6 +132,12 @@ void treeDispose(BinaryTreeNodePtr node) {
     free(node);
 }
 
+/**
+ * @brief Finds the node with the minimum value in the tree.
+ *
+ * @param node The root node of the tree.
+ * @return The node with the minimum value.
+ */
 BinaryTreeNodePtr treeMinValueNode(BinaryTreeNodePtr node) {
     BinaryTreeNodePtr current = node;
 
@@ -99,6 +148,13 @@ BinaryTreeNodePtr treeMinValueNode(BinaryTreeNodePtr node) {
     return current;
 }
 
+/**
+ * @brief Searches for a key in the tree.
+ *
+ * @param node The root node of the tree.
+ * @param key The key to search for.
+ * @return True if the key is found, false otherwise.
+ */
 bool treeSearch(BinaryTreeNodePtr node, const char *key) {
     if (node == NULL) {
         return false;
@@ -118,6 +174,13 @@ bool treeSearch(BinaryTreeNodePtr node, const char *key) {
     return false;
 }
 
+/**
+ * @brief Inserts a new node with the given data into the tree.
+ *
+ * @param node The root node of the tree.
+ * @param data The data to insert.
+ * @return The new root node of the tree.
+ */
 BinaryTreeNodePtr treeInsert(BinaryTreeNodePtr node, Symbol data) {
     if (node == NULL) {
         treeCreate(&node, data);
@@ -136,6 +199,13 @@ BinaryTreeNodePtr treeInsert(BinaryTreeNodePtr node, Symbol data) {
     return node;
 }
 
+/**
+ * @brief Deletes a node with the given key from the tree.
+ *
+ * @param node The root node of the tree.
+ * @param key The key of the node to delete.
+ * @return The new root node of the tree.
+ */
 BinaryTreeNodePtr treeDelete(BinaryTreeNodePtr node, const char *key) {
     if (node == NULL) {
         return node;
@@ -176,6 +246,13 @@ BinaryTreeNodePtr treeDelete(BinaryTreeNodePtr node, const char *key) {
     return node;
 }
 
+/**
+ * @brief Reassigns the data of a node with the given key.
+ *
+ * @param node The root node of the tree.
+ * @param key The key of the node to reassign.
+ * @param data The new data to assign.
+ */
 void treeReassign(BinaryTreeNodePtr node, const char *key, Symbol data) {
     if (node == NULL) {
         return;
@@ -238,7 +315,7 @@ void symbolTablePush(Stack *stack, SymbolTable *table) {
 
 SymbolTable *symbolTableTop(Stack *stack) {
     if (stack == NULL) {
-        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, NULL);
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
 
     if (stack->top == NULL) {

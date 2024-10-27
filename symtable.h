@@ -44,6 +44,12 @@ typedef struct SymbolTable {
  * @param table Pointer to the symbol table to be initialized.
  * @param previousTable Pointer to the previous symbol table.
  */
+/**
+ * @brief Initializes the symbol table.
+ *
+ * @param table Pointer to the symbol table to be initialized.
+ * @param previousTable Pointer to the previous symbol table.
+ */
 void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
 
 /**
@@ -52,13 +58,6 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
  * @param table Pointer to the symbol table to be freed.
  */
 void symbolTableDispose(SymbolTable *table);
-
-/**
- * @brief Frees a node of the symbol table.
- *
- * @param node Pointer to the node to be freed.
- */
-void treeDispose(BinaryTreeNodePtr node);
 
 /**
  * @brief Inserts a new symbol into the symbol table.
@@ -78,69 +77,51 @@ void symbolTableInsert(SymbolTable *table, Symbol data);
 bool symbolTableSearch(SymbolTable *table, const char *key);
 
 /**
- * @brief Creates a new node with the given data.
+ * @brief Deletes a symbol from the symbol table by its key.
  *
- * @param node Pointer to the node to be created.
- * @param data Data to be stored in the node.
+ * @param table Pointer to the symbol table.
+ * @param key The key of the symbol to delete.
  */
-void treeCreate(BinaryTreeNodePtr *node, Symbol data);
+void symbolTableDelete(SymbolTable *table, const char *key);
 
 /**
- * @brief Performs a left rotation on the given node.
+ * @brief Reassigns a symbol in the symbol table by its key.
  *
- * @param node Pointer to the node to be rotated.
+ * @param table Pointer to the symbol table.
+ * @param key The key of the symbol to reassign.
+ * @param data The new symbol data.
  */
-void treeRotateLeft(BinaryTreeNodePtr *node);
+void symbolTableReassign(SymbolTable *table, const char *key, Symbol data);
 
 /**
- * @brief Performs a right rotation on the given node.
+ * @brief Pushes the symbol table onto the stack.
  *
- * @param node Pointer to the node to be rotated.
+ * @param stack Pointer to the stack.
+ * @param table Pointer to the symbol table.
  */
-void treeRotateRight(BinaryTreeNodePtr *node);
+void symbolTablePush(Stack *stack, SymbolTable *table);
 
 /**
- * @brief Calculates the height of a node.
+ * @brief Gets the top symbol table from the stack.
  *
- * @param node Pointer to the node.
- * @return The height of the node.
+ * @param stack Pointer to the stack.
+ * @return Pointer to the top symbol table.
  */
-unsigned treeHeight(BinaryTreeNodePtr node);
+SymbolTable *symbolTableTop(Stack *stack);
 
 /**
- * @brief Calculates the balance factor of a node.
+ * @brief Pops the top symbol table from the stack.
  *
- * @param node Pointer to the node.
- * @return The balance factor of the node.
+ * @param stack Pointer to the stack.
  */
-int treeBalanceFactor(BinaryTreeNodePtr node);
+void symbolTablePop(Stack *stack);
 
 /**
- * @brief Updates the height of a node.
+ * @brief Gets the previous symbol table.
  *
- * @param node Pointer to the node.
+ * @param table Pointer to the current symbol table.
+ * @return Pointer to the previous symbol table.
  */
-void treeUpdateHeight(BinaryTreeNodePtr node);
-
-/**
- * @brief Rebalances the tree at the given node.
- *
- * @param node Pointer to the node to be rebalanced.
- */
-void treeRebalance(BinaryTreeNodePtr *node);
-
-/**
- * @brief Inserts a new symbol into the binary tree.
- *
- * This function takes a binary tree node and a symbol, and inserts the symbol
- * into the binary tree. If the tree is empty, a new node is created. If the
- * tree is not empty, the function recursively finds the correct position for
- * the new symbol and inserts it.
- *
- * @param node A pointer to the root node of the binary tree.
- * @param data The symbol to be inserted into the binary tree.
- * @return A pointer to the root node of the binary tree after insertion.
- */
-BinaryTreeNodePtr treeInsert(BinaryTreeNodePtr node, Symbol data);
+SymbolTable *symbolTableGetPrevious(SymbolTable *table);
 
 #endif
