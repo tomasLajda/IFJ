@@ -32,8 +32,7 @@ void listInsertFirst(List *list, ListData data) {
 
     list->firstElement = malloc(sizeof(ListElement));
     if (list->firstElement == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
     }
 
     list->firstElement->data = data;
@@ -45,8 +44,7 @@ void listFirst(List *list) { list->activeElement = list->firstElement; }
 
 void listGetFirst(List *list, ListData *dataPtr) {
     if (list->firstElement == NULL) {
-        fprintf(stderr, "List is empty\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("First element is NULL", INTERNAL_ERROR);
     }
 
     *dataPtr = list->firstElement->data;
@@ -88,8 +86,7 @@ void listInsertAfter(List *list, ListData data) {
 
     list->activeElement->nextElement = malloc(sizeof(ListElement));
     if (list->activeElement->nextElement == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
     }
 
     list->activeElement->nextElement->data = data;
@@ -99,8 +96,7 @@ void listInsertAfter(List *list, ListData data) {
 
 void listGetValue(List *list, ListData *data) {
     if (list->activeElement == NULL) {
-        fprintf(stderr, "Active element is NULL\n");
-        exit(INTERNAL_ERROR);
+        HANDLE_ERROR("Active element is NULL", INTERNAL_ERROR);
     }
 
     *data = list->activeElement->data;
