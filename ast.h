@@ -18,36 +18,15 @@
 
 // Type of AST nodes
 typedef union {
-    Keyword keyword;
-    enum {
-        OP_ADD,
-        OP_SUB,
-        OP_MUL,
-        OP_DIV,
-        OP_EQ,
-        OP_NEQ,
-        OP_LT,
-        OP_LET,
-        OP_GT,
-        OP_GET
-    } binaryOperation;
+    TokenType tokenType;
 } NodeType;
-
-// Structure of Expression node
-typedef struct Expression {
-    NodeType type;
-    struct ASTNode* left;
-    struct ASTNode* right;
-} Expression;
 
 // Structure of AST node
 typedef struct ASTNode {
     bool isExpression;
-    union {
-        NodeType nodeType;
-        struct Expression expr;
-    } data;
-    
+    NodeType nodeType;
+    struct ASTNode* left;
+    struct ASTNode* right;
     struct ASTNode* parent;
     struct ASTNode* absParent;
     struct AST* exprTree;
