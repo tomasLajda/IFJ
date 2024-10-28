@@ -10,7 +10,7 @@
 #include "ast.h"
 #include "error_codes.h"
 
-AST* createAST() {
+AST* initAST() {
     AST* tree = (AST*) malloc(sizeof(AST));
     if (tree == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
@@ -19,7 +19,7 @@ AST* createAST() {
     return tree;
 }
 
-ASTNode* createASTNode() {
+ASTNode* initASTNode() {
     ASTNode* node = (ASTNode*) malloc(sizeof(ASTNode));
     if (node == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
@@ -30,23 +30,21 @@ ASTNode* createASTNode() {
     node->absParent = NULL;
     node->exprTree = NULL;
     node->token = NULL;
-    node->children = NULL;
     node->childCount = 0;
     return node;
 }
 
-void freeNode(ASTNode* node) {
+void disposeSubtree(ASTNode* node) {
     if (node == NULL) {
         return;
     }
     if (node->nodeType.tokenType >= TOKEN_TYPE_IDENTIFIER && node->nodeType.tokenType <= TOKEN_TYPE_DIV) {
-        freeNode(node->left);
-        freeNode(node->right);
+        disposeSubtree(node->left);
+        disposeSubtree(node->right);
     }
     if (node->token != NULL) {
         free(node->token);
     }
-
     free(node);
 }
 
@@ -55,28 +53,29 @@ void freeAST(AST* ast) {
         return;
     }
     if (ast->root != NULL) {
-        freeNode(ast->root);
+        disposeSubtree(ast->root);
     }
 
     free(ast);
 }
 
-void createExpressionTree(ASTNode* node) {
+AST* initExpressionTree(ASTNode* node) {
     if (node == NULL) {
         HANDLE_ERROR("NULL pointer passed to createExpressionTree", INTERNAL_ERROR, NULL);
     }
 
     node->isExpression = true;
 
-    AST* exprTree = createAST();
+    AST* exprTree = initAST();
     if (exprTree == NULL) {
         HANDLE_ERROR("Failed to create expression tree", INTERNAL_ERROR, NULL);
     }
     exprTree->root = node;
     node->exprTree = exprTree;
-
-    node->left = NULL;
-    node->right = NULL;
+    exprTree->root->left = NULL;
+    exprTree->root->right = NULL;
+    
+    return exprTree;
 }
 
 void addNode(AST* ast, ASTNode* parent, ASTNode* node) {

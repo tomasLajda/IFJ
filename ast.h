@@ -31,7 +31,6 @@ typedef struct ASTNode {
     struct ASTNode* absParent;
     struct AST* exprTree;
     Token* token;
-    struct ASTNode** children;
     int childCount;
 } ASTNode;
 
@@ -41,9 +40,11 @@ typedef struct AST {
 } AST;
 
 /**
- * @brief Creates AST
+ * @brief Initializes new AST
+ * 
+ * @return Returns initialized AST
  */
-AST* createAST();
+AST* initAST();
 
 /**
  * @brief Frees AST from memory
@@ -53,9 +54,11 @@ AST* createAST();
 void freeAST(AST* ast);
 
 /**
- * @brief Creates AST node
+ * @brief Initializes new AST node
+ * 
+ * @return Returns initialized AST node
  */
-ASTNode* createASTNode();
+ASTNode* initASTNode();
 
 /**
  * @brief Adds node to AST
@@ -67,17 +70,18 @@ ASTNode* createASTNode();
 void addNode(AST* ast, ASTNode* parent, ASTNode* node);
 
 /**
- * @brief Frees AST node from memory
+ * @brief Frees node and its children from memory
  * 
  * @param node Node to be freed
  */
-void freeNode(ASTNode* node);
+void disposeSubtree(ASTNode* node);
 
 /** 
- * @brief Creates expression tree from AST node
+ * @brief Initializes expression tree from AST node
  *
- * @param node AST node
+ * @param node Node to initialize expression tree from
+ * @return Returns initialized expression tree
 */
-void createExpressionTree(ASTNode* node);
+AST* initExpressionTree(ASTNode* node);
 
 #endif //_AST_H
