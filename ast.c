@@ -38,10 +38,10 @@ void disposeSubtree(ASTNode* node) {
     if (node == NULL) {
         return;
     }
-    if (node->nodeType.tokenType >= TOKEN_TYPE_IDENTIFIER && node->nodeType.tokenType <= TOKEN_TYPE_DIV) {
-        disposeSubtree(node->left);
-        disposeSubtree(node->right);
-    }
+    
+    disposeSubtree(node->left);
+    disposeSubtree(node->right);
+    
     if (node->token != NULL) {
         free(node->token);
     }
@@ -74,13 +74,13 @@ AST* initExpressionTree(ASTNode* node) {
     node->exprTree = exprTree;
     exprTree->root->left = NULL;
     exprTree->root->right = NULL;
-    
+
     return exprTree;
 }
 
-void addNode(AST* ast, ASTNode* parent, ASTNode* node) {
-    if (ast == NULL || node == NULL) {
-        HANDLE_ERROR("NULL pointer passed to addNode", INTERNAL_ERROR, NULL);
+void addLeftNode(AST* ast, ASTNode* parent, ASTNode* node) {
+    if (ast == NULL || parent == NULL || node == NULL) {
+        HANDLE_ERROR("NULL pointer passed to addLeftNode", INTERNAL_ERROR, NULL);
     }
 
     if (ast->root == NULL) {
@@ -93,11 +93,27 @@ void addNode(AST* ast, ASTNode* parent, ASTNode* node) {
         parent->left = node;
         node->parent = parent;
     } 
-    else if (parent->right == NULL) {
+    else {
+        HANDLE_ERROR("Left child node is already occupied", INTERNAL_ERROR, NULL);
+    }
+}
+
+void addRightNode(AST* ast, ASTNode* parent, ASTNode* node) {
+    if (ast == NULL || parent == NULL || node == NULL) {
+        HANDLE_ERROR("NULL pointer passed to addRightNode", INTERNAL_ERROR, NULL);
+    }
+
+    if (ast->root == NULL) {
+        ast->root = node;
+        node->parent = NULL;
+        return;
+    }
+
+    if (parent->right == NULL) {
         parent->right = node;
         node->parent = parent;
     } 
     else {
-        HANDLE_ERROR("Both child nodes are occupied", INTERNAL_ERROR, NULL);
+        HANDLE_ERROR("Right child node is already occupied", INTERNAL_ERROR, NULL);
     }
 }

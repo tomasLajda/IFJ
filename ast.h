@@ -61,15 +61,6 @@ void freeAST(AST* ast);
 ASTNode* initASTNode();
 
 /**
- * @brief Adds node to AST
- * 
- * @param ast AST to add node to
- * @param parent Parent node
- * @param node Node to be added
- */
-void addNode(AST* ast, ASTNode* parent, ASTNode* node);
-
-/**
  * @brief Frees node and its children from memory
  * 
  * @param node Node to be freed
@@ -83,5 +74,23 @@ void disposeSubtree(ASTNode* node);
  * @return Returns initialized expression tree
 */
 AST* initExpressionTree(ASTNode* node);
+
+/**
+ * @brief Adds left node to AST
+ * 
+ * @param ast AST to add node to
+ * @param parent Parent node
+ * @param node Node to be added
+ */
+void addLeftNode(AST* ast, ASTNode* parent, ASTNode* node);
+
+/**
+ * @brief Adds right child node to AST
+ * 
+ * @param ast AST to add node to
+ * @param parent Parent node
+ * @param node Node to be added
+ */
+void addRightNode(AST* ast, ASTNode* parent, ASTNode* node);
 
 #endif //_AST_H
