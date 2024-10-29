@@ -8,6 +8,7 @@ IFJ Project
 */
 
 #include "expr-parser.h"
+#include "enums.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -25,14 +26,33 @@ typedef enum {
     EXPR_ID,  // id   -> Expr
 } ExpressionRule;
 
-int parseExpression(AST *exprAST, Token *token);
-int is_operator(Token *token);
-int is_operand(Token *token);
-int is_delimiter(Token *token); // is it a token that marks the end of an expression?
+#define EXPR TOKEN_TYPE_AT // Need an expression token type (replaces '@')
+
+int isOperator(Token *token);
+int isOperand(Token *token);
+int isDelimiter(Token *token); // is it a token that marks the end of an expression?
 int precedence(Token *token);
 int isLeftAssociative(Token *token);
 
-int is_operator(Token *token) {
+/**
+ * @brief Fills the input stack with tokens up to a delimiter token.
+ *
+ * @param stack A pointer to the stack to be filled.
+ * @param delimiterToken A pointer that stores the token that acts as a delimiter.
+ * @return A pointer to the filled stack.
+ */
+Stack *fillInputStack(Stack *stack, Token *delimiterToken);
+
+/**
+ * @brief Checks if the given stack is reducible.
+ *
+ * @param stack A pointer to the stack to be checked.
+ * @return An integer indicating whether the stack is reducible (1 or 10 if reducible, 10 means its
+ * the EXPR_ID rule, 0 otherwise).
+ */
+int isReducible(Stack *stack);
+
+int isOperator(Token *token) {
     return token->type == TOKEN_TYPE_PLUS ||  // +
            token->type == TOKEN_TYPE_MINUS || // -
            token->type == TOKEN_TYPE_MUL ||   // /
@@ -45,13 +65,13 @@ int is_operator(Token *token) {
            token->type == TOKEN_TYPE_GEQ;     // >=
 }
 
-int is_operand(Token *token) {
+int isOperand(Token *token) {
     return token->type == TOKEN_TYPE_IDENTIFIER       // id
            || token->type == TOKEN_TYPE_INTEGER_VALUE // i32
            || token->type == TOKEN_TYPE_DOUBLE_VALUE; // f64
 }
 
-int is_delimiter(Token *token) {
+int isDelimiter(Token *token) {
     return token->type == TOKEN_TYPE_EOL ||       // EOL
            token->type == TOKEN_TYPE_EOF ||       // EOF
            token->type == TOKEN_TYPE_SEMICOLON || // ;
@@ -113,9 +133,17 @@ int isReducible(Stack *stack) {
         return EXPR_ID; // id -> Expr
     }
 
-    if ()
-
+    if (getStackLength(stack) < 3) {
         return 0;
+    }
+
+    Token *topToken = top(stack);
+    Token *secondToken = stack->top->next->tokenPtr;
+    Token *thirdToken = stack->top->next->next->tokenPtr;
+
+    if (topToken->type == EXPR && is_operator(secondToken) == EXPR && thirdToken->type == EXPR) {
+        return 1;
+    }
 }
 
 int parseExpression(AST *exprAST, Token *token) {
