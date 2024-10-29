@@ -26,13 +26,8 @@ typedef enum {
     EXPR_ID,  // id   -> Expr
 } ExpressionRule;
 
-#define EXPR TOKEN_TYPE_AT // Need an expression token type (replaces '@')
-
-int isOperator(Token *token);
-int isOperand(Token *token);
-int isDelimiter(Token *token); // is it a token that marks the end of an expression?
-int precedence(Token *token);
-int isLeftAssociative(Token *token);
+#define EXPR TOKEN_TYPE_AT    // Need an expression token type (replaces '@')
+#define DOLLAR TOKEN_TYPE_DOT // Need a dollar token type (replaces '.')
 
 /**
  * @brief Fills the input stack with tokens up to a delimiter token.
@@ -47,10 +42,24 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken);
  * @brief Checks if the given stack is reducible.
  *
  * @param stack A pointer to the stack to be checked.
- * @return An integer indicating whether the stack is reducible (1 or 10 if reducible, 10 means its
- * the EXPR_ID rule, 0 otherwise).
+ * @return An integer indicating whether the stack is reducible (0) or not (1).
  */
 int isReducible(Stack *stack);
+
+/**
+ * @brief Chooses the appropriate reduction rule based on the current state of the stack. Use only
+ * if isReducible() returns 0.
+ *
+ * @param stack A pointer to the stack used in the expression parser.
+ * @return An integer representing the chosen reduction rule or -1 if no rule is applicable.
+ */
+int chooseReduceRule(Stack *stack);
+
+int isOperator(Token *token);
+int isOperand(Token *token);
+int isDelimiter(Token *token); // is it a token that marks the end of an expression?
+int precedence(Token *token);
+int isLeftAssociative(Token *token);
 
 int isOperator(Token *token) {
     return token->type == TOKEN_TYPE_PLUS ||  // +
@@ -111,6 +120,9 @@ int isLeftAssociative(Token *token) {
 }
 
 Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
+    Stack tempStack;
+    initStack(&tempStack);
+
     Token *token = getNextToken(token);
     while (is_operand(token) || is_operator(token)) {
         push(stack, token);
@@ -120,49 +132,141 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     if (!is_delimiter(token)) {
         return NULL; // syntax error
     }
+
+    while (!isEmpty(&tempStack)) {
+        push(stack, topToken(&tempStack));
+        pop(&tempStack);
+    }
+
     return stack;
 }
 
 int isReducible(Stack *stack) {
     if (stack->top == NULL) {
-        return 0;
+        return 1;
     }
-    if (stack->top->tokenPtr->type == TOKEN_TYPE_IDENTIFIER ||
-        stack->top->tokenPtr->type == TOKEN_TYPE_INTEGER_VALUE ||
-        stack->top->tokenPtr->type == TOKEN_TYPE_DOUBLE_VALUE) {
-        return EXPR_ID; // id -> Expr
+    if (isOperand(topToken(stack))) {
+        return 0;
     }
 
     if (getStackLength(stack) < 3) {
-        return 0;
-    }
-
-    Token *topToken = top(stack);
-    Token *secondToken = stack->top->next->tokenPtr;
-    Token *thirdToken = stack->top->next->next->tokenPtr;
-
-    if (topToken->type == EXPR && is_operator(secondToken) == EXPR && thirdToken->type == EXPR) {
         return 1;
     }
+
+    Token *leftToken = stack->top->tokenPtr;
+    Token *middleToken = stack->top->next->tokenPtr;
+    Token *rightToken = stack->top->next->next->tokenPtr;
+
+    if (isOperator(leftToken->type) && middleToken->type == EXPR && rightToken->type == EXPR) {
+        return 0;
+    }
+}
+
+int chooseReduceRule(Stack *stack) {
+    if (isOperand(topToken(stack))) {
+        return EXPR_ID;
+    }
+    switch (topToken(stack)->type) {
+    case TOKEN_TYPE_PLUS:
+        return EXPR_ADD; // Expr -> Expr + Expr
+    case TOKEN_TYPE_MINUS:
+        return EXPR_SUB; // Expr -> Expr - Expr
+    case TOKEN_TYPE_EQ:
+        return EXPR_EQ; // Expr -> Expr == Expr
+    case TOKEN_TYPE_NEQ:
+        return EXPR_NEQ; // Expr -> Expr != Expr
+    case TOKEN_TYPE_LTH:
+        return EXPR_LTH; // Expr -> Expr < Expr
+    case TOKEN_TYPE_GTH:
+        return EXPR_GTH; // Expr -> Expr > Expr
+    case TOKEN_TYPE_LEQ:
+        return EXPR_LEQ; // Expr -> Expr <= Expr
+    case TOKEN_TYPE_GEQ:
+        return EXPR_GEQ; // Expr -> Expr >= Expr
+    case TOKEN_TYPE_MUL:
+        return EXPR_MUL; // Expr -> Expr * Expr
+    case TOKEN_TYPE_DIV:
+        return EXPR_DIV; // Expr -> Expr / Expr
+    default:
+        return -1; // No rule to apply
+    }
+}
+
+Token *createToken(TokenType type) {
+    Token *token = (Token *)malloc(sizeof(Token));
+    token->type = type;
 }
 
 int parseExpression(AST *exprAST, Token *token) {
 
+    // Initialize the stack
     Stack *stack = (Stack *)malloc(sizeof(Stack));
     if (stack == NULL) {
         return 2;
     }
     initStack(stack);
+    push(stack, createToken(DOLLAR)); // Push the dollar token onto the stack
 
+    // Initialize the input stack
     Stack *input = (Stack *)malloc(sizeof(Stack));
     if (input == NULL) {
         return 2;
     }
     initStack(input);
-
-    Token *delimiterToken = NULL;
-    if (fillInputStack(input, delimiterToken) == NULL) {
+    if (fillInputStack(input, token) == NULL) {
         return 1; // Token doesn't belong in the expression
+    }
+
+    // Initialize the AST
+    exprAST = initAST();
+
+    // Main loop
+    Token *currentToken;
+    while (!isEmpty(input)) {
+        currentToken = topToken(input);
+        pop(input);
+
+        // Shift
+        push(stack, currentToken);
+        if (isReducible(stack)) {
+            switch (chooseReduceRule(stack)) {
+            case EXPR_ADD: // Expr -> Expr + Expr
+                // Reduce
+                break;
+            case EXPR_SUB: // Expr -> Expr - Expr
+                // Reduce
+                break;
+            case EXPR_EQ: // Expr -> Expr == Expr
+                // Reduce
+                break;
+            case EXPR_NEQ: // Expr -> Expr != Expr
+                // Reduce
+                break;
+            case EXPR_LTH: // Expr -> Expr < Expr
+                // Reduce
+                break;
+            case EXPR_GTH: // Expr -> Expr > Expr
+                // Reduce
+                break;
+            case EXPR_LEQ: // Expr -> Expr <= Expr
+                // Reduce
+                break;
+            case EXPR_GEQ: // Expr -> Expr >= Expr
+                // Reduce
+                break;
+            case EXPR_MUL: // Expr -> Expr * Expr
+                // Reduce
+                break;
+            case EXPR_DIV: // Expr -> Expr / Expr
+                // Reduce
+                break;
+            case EXPR_ID: // id -> Expr
+                // Reduce
+                break;
+            default:
+                return 1; // Syntax error
+            }
+        }
     }
 
     return 0;
