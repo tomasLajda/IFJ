@@ -19,13 +19,6 @@ extern SymbolTable* symbolTable;
 extern AST* ast;
 
 /**
- * @brief Gets the next token from scanner
- * 
- * @return Returns the next token
- */
-Token* nextToken();
-
-/**
  * @brief Peeks the next token from scanner before consuming it
  */
 void peek();
