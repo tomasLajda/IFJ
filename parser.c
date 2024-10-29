@@ -11,3 +11,40 @@
 Token* currentToken = NULL;
 SymbolTable* symbolTable = NULL;
 AST* ast = NULL;
+
+void parseProlog() {
+    if (currentToken->type == KEYWORD_CONST) {
+        getNextToken(currentToken);
+
+        if (currentToken->type == KEYWORD_IFJ) {
+            getNextToken(currentToken);
+
+            if (currentToken->type == TOKEN_TYPE_ASSIGN) {
+                getNextToken(currentToken);
+
+                if (currentToken->type == KEYWORD_IMPORT) {
+                    getNextToken(currentToken);
+
+                    if (currentToken->type == TOKEN_TYPE_SEMICOLON) {
+                        getNextToken(currentToken);
+                    }
+                    else {
+                        HANDLE_ERROR("Expected ';' in prolog", SYNTAX_ERROR, currentToken);
+                    } 
+                }
+                else {
+                    HANDLE_ERROR("Expected '@import' in prolog", SYNTAX_ERROR, currentToken);
+                }
+            }
+            else {
+                HANDLE_ERROR("Expected '=' in prolog", SYNTAX_ERROR, currentToken);
+            }
+        }
+        else {
+            HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR, currentToken);
+        }
+    }
+    else {
+        HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR, currentToken);
+    }                        
+}
