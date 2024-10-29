@@ -8,7 +8,6 @@ IFJ Project
 */
 
 #include "expr-parser.h"
-#include "enums.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -28,38 +27,6 @@ typedef enum {
 
 #define EXPR TOKEN_TYPE_AT    // Need an expression token type (replaces '@')
 #define DOLLAR TOKEN_TYPE_DOT // Need a dollar token type (replaces '.')
-
-/**
- * @brief Fills the input stack with tokens up to a delimiter token.
- *
- * @param stack A pointer to the stack to be filled.
- * @param delimiterToken A pointer that stores the token that acts as a delimiter.
- * @return A pointer to the filled stack.
- */
-Stack *fillInputStack(Stack *stack, Token *delimiterToken);
-
-/**
- * @brief Checks if the given stack is reducible.
- *
- * @param stack A pointer to the stack to be checked.
- * @return An integer indicating whether the stack is reducible (0) or not (1).
- */
-int isReducible(Stack *stack);
-
-/**
- * @brief Chooses the appropriate reduction rule based on the current state of the stack. Use only
- * if isReducible() returns 0.
- *
- * @param stack A pointer to the stack used in the expression parser.
- * @return An integer representing the chosen reduction rule or -1 if no rule is applicable.
- */
-int chooseReduceRule(Stack *stack);
-
-int isOperator(Token *token);
-int isOperand(Token *token);
-int isDelimiter(Token *token); // is it a token that marks the end of an expression?
-int precedence(Token *token);
-int isLeftAssociative(Token *token);
 
 int isOperator(Token *token) {
     return token->type == TOKEN_TYPE_PLUS ||  // +
@@ -119,28 +86,57 @@ int isLeftAssociative(Token *token) {
     }
 }
 
+/**
+ * @brief Fills the input stack with tokens up to a delimiter token.
+ *
+ * @param stack A pointer to the stack to be filled.
+ * @param delimiterToken A pointer that stores the token that acts as a delimiter.
+ * @return A pointer to the filled stack.
+ */
 Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     Stack tempStack;
     initStack(&tempStack);
 
-    Token *token = getNextToken(token);
-    while (is_operand(token) || is_operator(token)) {
-        push(stack, token);
-        token = getNextToken(token);
+    Token *token = (Token *)malloc(sizeof(Token));
+    if (token == NULL) {
+        fprintf(stderr, "Memory allocation error\n");
+        return NULL; // memory allocation error
+    }
+    getNextToken(token);
+    while (isOperand(token) || isOperator(token)) {
+        StackElement *newElement = (StackElement *)malloc(sizeof(StackElement));
+        if (newElement == NULL) {
+
+            return NULL;
+        }
+        initStackElement(newElement, token);
+        push(stack, newElement);
+        getNextToken(token);
     }
     delimiterToken = token;
-    if (!is_delimiter(token)) {
+    if (!isDelimiter(token)) {
         return NULL; // syntax error
     }
 
     while (!isEmpty(&tempStack)) {
-        push(stack, topToken(&tempStack));
+        StackElement *newElement = (StackElement *)malloc(sizeof(StackElement));
+        if (newElement == NULL) {
+            return NULL;
+        }
+        initStackElement(newElement, topToken(&tempStack));
+        push(stack, newElement);
         pop(&tempStack);
     }
 
     return stack;
 }
 
+/**
+ * @brief Checks if the given stack is reducible.
+ *
+ * @param stack A pointer to the stack to be checked.
+ * @return An integer indicating whether the stack is reducible (0) or not (1).
+ */
 int isReducible(Stack *stack) {
     if (stack->top == NULL) {
         return 1;
@@ -157,11 +153,19 @@ int isReducible(Stack *stack) {
     Token *middleToken = stack->top->next->tokenPtr;
     Token *rightToken = stack->top->next->next->tokenPtr;
 
-    if (isOperator(leftToken->type) && middleToken->type == EXPR && rightToken->type == EXPR) {
+    if (isOperator(leftToken) && middleToken->type == EXPR && rightToken->type == EXPR) {
         return 0;
     }
+    return 1;
 }
 
+/**
+ * @brief Chooses the appropriate reduction rule based on the current state of the stack. Use only
+ * if isReducible() returns 0.
+ *
+ * @param stack A pointer to the stack used in the expression parser.
+ * @return An integer representing the chosen reduction rule or -1 if no rule is applicable.
+ */
 int chooseReduceRule(Stack *stack) {
     if (isOperand(topToken(stack))) {
         return EXPR_ID;
@@ -195,6 +199,7 @@ int chooseReduceRule(Stack *stack) {
 Token *createToken(TokenType type) {
     Token *token = (Token *)malloc(sizeof(Token));
     token->type = type;
+    return token;
 }
 
 int parseExpression(AST *exprAST, Token *token) {
@@ -205,7 +210,13 @@ int parseExpression(AST *exprAST, Token *token) {
         return 2;
     }
     initStack(stack);
-    push(stack, createToken(DOLLAR)); // Push the dollar token onto the stack
+    StackElement *dollarElement = (StackElement *)malloc(sizeof(StackElement));
+    if (dollarElement == NULL) {
+        return 2;
+    }
+    initStackElement(dollarElement,
+                     createToken(DOLLAR)); // Push the expression token onto the stack
+    push(stack, dollarElement);            // Push the dollar token onto the stack
 
     // Initialize the input stack
     Stack *input = (Stack *)malloc(sizeof(Stack));
@@ -227,7 +238,12 @@ int parseExpression(AST *exprAST, Token *token) {
         pop(input);
 
         // Shift
-        push(stack, currentToken);
+        StackElement *newElement = (StackElement *)malloc(sizeof(StackElement));
+        if (newElement == NULL) {
+            return 2;
+        }
+        initStackElement(newElement, currentToken);
+        push(stack, newElement);
         if (isReducible(stack)) {
             switch (chooseReduceRule(stack)) {
             case EXPR_ADD: // Expr -> Expr + Expr
