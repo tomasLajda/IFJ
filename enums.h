@@ -96,6 +96,10 @@ typedef enum {
     TOKEN_TYPE_SEMICOLON,      // Semicolon ;
     TOKEN_TYPE_DOT,            // Dot .
     TOKEN_TYPE_AT,             // At @
+
+    // EXPRESSION PARSING
+    TOKEN_TYPE_EXPR,
+    TOKEN_TYPE_DOLLA
 } TokenType;
 
 #endif
