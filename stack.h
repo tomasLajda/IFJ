@@ -96,4 +96,12 @@ void display(Stack *stack);
  */
 void cleanupStack(Stack *stack);
 
+/**
+ * @brief Returns the size of the stack.
+ *
+ * @param stack Pointer to the stack.
+ * @return The size of the stack or -1 if the stack is NULL.
+ */
+int getStackLength(Stack *stack);
+
 #endif // STACK_H
