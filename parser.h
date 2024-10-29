@@ -12,6 +12,30 @@
 #include "ast.h"
 #include "error_codes.h"
 #include "expr-parser.h"
+#include "symtable.h"
+
+extern Token* currentToken;
+extern SymbolTable* symbolTable;
+extern AST* ast;
+
+/**
+ * @brief Gets the next token from scanner
+ * 
+ * @return Returns the next token
+ */
+Token* nextToken();
+
+/**
+ * @brief Peeks the next token from scanner before consuming it
+ */
+void peek();
+
+/**
+ * @brief Parses the whole program
+ * 
+ * @return Returns 0 if the program was parsed successfully, non-zero if an error was encountered
+ */
+int parse();
 
 /**
  * @brief PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig"); 
