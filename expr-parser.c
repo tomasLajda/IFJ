@@ -28,7 +28,9 @@ typedef enum {
 #define EXPR TOKEN_TYPE_AT    // Need an expression token type (replaces '@')
 #define DOLLAR TOKEN_TYPE_DOT // Need a dollar token type (replaces '.')
 
+// Returns 1 if the token is an operator, 0 otherwise
 int isOperator(Token *token) {
+    // printf("is token type: %d an operator?\n", token->type);
     return token->type == TOKEN_TYPE_PLUS ||  // +
            token->type == TOKEN_TYPE_MINUS || // -
            token->type == TOKEN_TYPE_MUL ||   // /
@@ -41,13 +43,17 @@ int isOperator(Token *token) {
            token->type == TOKEN_TYPE_GEQ;     // >=
 }
 
-int isOperand(Token *token) {
+// Returns 1 if the token is an operand, 0 otherwise
+int isOperand(Token *token) { // Returns 1 if the token is an operand, 0 otherwise
+    // printf("is token type: %d an operand?\n", token->type);
     return token->type == TOKEN_TYPE_IDENTIFIER       // id
            || token->type == TOKEN_TYPE_INTEGER_VALUE // i32
            || token->type == TOKEN_TYPE_DOUBLE_VALUE; // f64
 }
 
-int isDelimiter(Token *token) {
+// Returns 1 if the token is a delimiter, 0 otherwise
+int isDelimiter(Token *token) { // Returns 1 if the token is a delimiter, 0 otherwise
+    // printf("is token type: %d a delimiter?\n", token->type);
     return token->type == TOKEN_TYPE_EOL ||       // EOL
            token->type == TOKEN_TYPE_EOF ||       // EOF
            token->type == TOKEN_TYPE_SEMICOLON || // ;
@@ -99,19 +105,20 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
 
     Token *token = (Token *)malloc(sizeof(Token));
     if (token == NULL) {
-        fprintf(stderr, "Memory allocation error\n");
-        return NULL; // memory allocation error
+        return NULL;
     }
     getNextToken(token);
+
+    // printf("1. Token type: %d\n", token->type);
     while (isOperand(token) || isOperator(token)) {
         StackElement *newElement = (StackElement *)malloc(sizeof(StackElement));
         if (newElement == NULL) {
-
             return NULL;
         }
         initStackElement(newElement, token);
         push(stack, newElement);
         getNextToken(token);
+        // printf("2. Token type: %d\n", token->type);
     }
     delimiterToken = token;
     if (!isDelimiter(token)) {
@@ -127,7 +134,6 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         push(stack, newElement);
         pop(&tempStack);
     }
-
     return stack;
 }
 
