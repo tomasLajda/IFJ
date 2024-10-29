@@ -112,3 +112,16 @@ void cleanupStack(Stack *stack) {
         pop(stack);
     }
 }
+
+int getStackLength(Stack *stack) {
+    if (stack == NULL) {
+        HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, -1);
+    }
+    int length = 0;
+    StackElement *current = stack->top;
+    while (current != NULL) {
+        length++;
+        current = current->next;
+    }
+    return length;
+}
