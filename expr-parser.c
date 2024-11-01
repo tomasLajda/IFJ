@@ -111,29 +111,49 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
 
     // printf("1. Token type: %d\n", token->type);
     while (isOperand(token) || isOperator(token)) {
-        StackElement *newElement = (StackElement *)malloc(sizeof(StackElement));
+        StackElement *newElement = malloc(sizeof(StackElement));
         if (newElement == NULL) {
-            return NULL;
+            // HANDLE_ERROR("Malloc failed", 1);
         }
-        initStackElement(newElement, token);
-        push(stack, newElement);
+        Token *tempToken = malloc(sizeof(Token));
+        if (tempToken == NULL) {
+            free(newElement);
+            // HANDLE_ERROR("Malloc failed", 1);
+        }
+        *tempToken = *token; // Copy the token
+        initStackElement(newElement, tempToken);
+        push(&tempStack, newElement);
+        // display(&tempStack);
         getNextToken(token);
-        // printf("2. Token type: %d\n", token->type);
     }
     delimiterToken = token;
     if (!isDelimiter(token)) {
+        printf("returning cuz token is %d\n ", token->type);
         return NULL; // syntax error
     }
+    printf("tempstack: ");
+    display(&tempStack);
 
+    printf("reversing\n");
     while (!isEmpty(&tempStack)) {
-        StackElement *newElement = (StackElement *)malloc(sizeof(StackElement));
+        StackElement *topElement = top(&tempStack);
+        StackElement *newElement = malloc(sizeof(StackElement));
         if (newElement == NULL) {
+            // HANDLE_ERROR("Malloc failed", 1);
             return NULL;
         }
-        initStackElement(newElement, topToken(&tempStack));
+        Token *tempToken = malloc(sizeof(Token));
+        if (tempToken == NULL) {
+            free(newElement);
+            // HANDLE_ERROR("Malloc failed", 1);
+            return NULL;
+        }
+        *tempToken = *(topElement->tokenPtr); // Copy the token
+        initStackElement(newElement, tempToken);
         push(stack, newElement);
         pop(&tempStack);
     }
+    cleanupStack(&tempStack);
     return stack;
 }
 
