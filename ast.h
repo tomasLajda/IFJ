@@ -23,20 +23,18 @@ typedef union {
 
 // Structure of AST node
 typedef struct ASTNode {
-    bool isExpression;
     NodeType nodeType;
     struct ASTNode* left;
     struct ASTNode* right;
     struct ASTNode* parent;
-    struct ASTNode* absParent;
     struct AST* exprTree;
     Token* token;
-    int childCount;
 } ASTNode;
 
 // Structure of AST
 typedef struct AST {
     struct ASTNode* root;
+    bool isExpression;
 } AST;
 
 /**
@@ -66,14 +64,6 @@ ASTNode* initASTNode();
  * @param node Node to be freed
  */
 void disposeSubtree(ASTNode* node);
-
-/** 
- * @brief Initializes expression tree from AST node
- *
- * @param node Node to initialize expression tree from
- * @return Returns initialized expression tree
-*/
-AST* initExpressionTree(ASTNode* node);
 
 /**
  * @brief Adds left node to AST

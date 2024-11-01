@@ -12,25 +12,27 @@
 
 AST* initAST() {
     AST* tree = (AST*) malloc(sizeof(AST));
+
     if (tree == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
     }
+
     tree->root = NULL;
+    tree->isExpression = false;
     return tree;
 }
 
 ASTNode* initASTNode() {
     ASTNode* node = (ASTNode*) malloc(sizeof(ASTNode));
+
     if (node == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
     }
-    node->isExpression = false;
+
     node->nodeType.tokenType = TOKEN_TYPE_EMPTY;
     node->parent = NULL;
-    node->absParent = NULL;
     node->exprTree = NULL;
     node->token = NULL;
-    node->childCount = 0;
     return node;
 }
 
@@ -45,6 +47,7 @@ void disposeSubtree(ASTNode* node) {
     if (node->token != NULL) {
         free(node->token);
     }
+
     free(node);
 }
 
@@ -52,30 +55,12 @@ void freeAST(AST* ast) {
     if (ast == NULL) {
         return;
     }
+
     if (ast->root != NULL) {
         disposeSubtree(ast->root);
     }
 
     free(ast);
-}
-
-AST* initExpressionTree(ASTNode* node) {
-    if (node == NULL) {
-        HANDLE_ERROR("NULL pointer passed to createExpressionTree", INTERNAL_ERROR, NULL);
-    }
-
-    node->isExpression = true;
-
-    AST* exprTree = initAST();
-    if (exprTree == NULL) {
-        HANDLE_ERROR("Failed to create expression tree", INTERNAL_ERROR, NULL);
-    }
-    exprTree->root = node;
-    node->exprTree = exprTree;
-    exprTree->root->left = NULL;
-    exprTree->root->right = NULL;
-
-    return exprTree;
 }
 
 void addLeftNode(AST* ast, ASTNode* parent, ASTNode* node) {
