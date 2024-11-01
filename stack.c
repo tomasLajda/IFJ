@@ -37,12 +37,13 @@ void push(Stack *stack, StackElement *elementPtr) {
     if (stack == NULL || elementPtr == NULL) {
         HANDLE_ERROR("Stack or StackElement pointer is NULL", INTERNAL_ERROR);
     }
-    if (isEmpty(stack)) {
-        stack->top = elementPtr;
-    } else {
-        elementPtr->next = stack->top;
-        stack->top = elementPtr;
+    StackElement *temp = malloc(sizeof(StackElement));
+    if (temp == NULL) {
+        HANDLE_ERROR("Malloc failed", INTERNAL_ERROR);
     }
+    temp->tokenPtr = elementPtr->tokenPtr;
+    temp->next = stack->top;
+    stack->top = temp;
 }
 
 void pop(Stack *stack) {
