@@ -105,20 +105,22 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
 
     Token *token = (Token *)malloc(sizeof(Token));
     if (token == NULL) {
-        return NULL;
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
     }
     getNextToken(token);
 
-    // printf("1. Token type: %d\n", token->type);
     while (isOperand(token) || isOperator(token)) {
         StackElement *newElement = malloc(sizeof(StackElement));
         if (newElement == NULL) {
-            // HANDLE_ERROR("Malloc failed", 1);
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
         }
         Token *tempToken = malloc(sizeof(Token));
         if (tempToken == NULL) {
             free(newElement);
-            // HANDLE_ERROR("Malloc failed", 1);
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
         }
         *tempToken = *token; // Copy the token
         initStackElement(newElement, tempToken);
@@ -128,24 +130,22 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     }
     delimiterToken = token;
     if (!isDelimiter(token)) {
-        printf("returning cuz token is %d\n ", token->type);
         return NULL; // syntax error
     }
-    printf("tempstack: ");
-    display(&tempStack);
 
-    printf("reversing\n");
     while (!isEmpty(&tempStack)) {
         StackElement *topElement = top(&tempStack);
         StackElement *newElement = malloc(sizeof(StackElement));
         if (newElement == NULL) {
-            // HANDLE_ERROR("Malloc failed", 1);
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
             return NULL;
         }
         Token *tempToken = malloc(sizeof(Token));
         if (tempToken == NULL) {
             free(newElement);
-            // HANDLE_ERROR("Malloc failed", 1);
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
             return NULL;
         }
         *tempToken = *(topElement->tokenPtr); // Copy the token
@@ -224,6 +224,10 @@ int chooseReduceRule(Stack *stack) {
 
 Token *createToken(TokenType type) {
     Token *token = (Token *)malloc(sizeof(Token));
+    if (token == NULL) {
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
+    }
     token->type = type;
     return token;
 }
@@ -233,12 +237,14 @@ int parseExpression(AST *exprAST, Token *token) {
     // Initialize the stack
     Stack *stack = (Stack *)malloc(sizeof(Stack));
     if (stack == NULL) {
-        return 2;
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
     }
     initStack(stack);
     StackElement *dollarElement = (StackElement *)malloc(sizeof(StackElement));
     if (dollarElement == NULL) {
-        return 2;
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
     }
     initStackElement(dollarElement,
                      createToken(DOLLAR)); // Push the expression token onto the stack
@@ -247,7 +253,8 @@ int parseExpression(AST *exprAST, Token *token) {
     // Initialize the input stack
     Stack *input = (Stack *)malloc(sizeof(Stack));
     if (input == NULL) {
-        return 2;
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
     }
     initStack(input);
     if (fillInputStack(input, token) == NULL) {
@@ -266,7 +273,8 @@ int parseExpression(AST *exprAST, Token *token) {
         // Shift
         StackElement *newElement = (StackElement *)malloc(sizeof(StackElement));
         if (newElement == NULL) {
-            return 2;
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
         }
         initStackElement(newElement, currentToken);
         push(stack, newElement);
