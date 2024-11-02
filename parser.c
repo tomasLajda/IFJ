@@ -130,3 +130,34 @@ void parseType() {
         }
     }
 }
+
+void parseReturn() {
+    if (voidFuncType) {
+         if (currentToken->type == KEYWORD_RETURN) {
+            getNextToken(currentToken);
+
+            if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+                HANDLE_ERROR("Expected ';' after return in void function", SYNTAX_ERROR, currentToken);
+                return;
+            }
+            
+            getNextToken(currentToken);
+        }
+        return;
+    } 
+    else {
+        if (currentToken->type != KEYWORD_RETURN) {
+            HANDLE_ERROR("Expected 'return' keyword in return statement", SYNTAX_ERROR, currentToken);
+            return;
+        }
+        getNextToken(currentToken);
+        
+        // TODO: parseExpr();
+        
+        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
+            return;
+        }
+        getNextToken(currentToken);
+    }
+}

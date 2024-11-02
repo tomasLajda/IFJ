@@ -51,6 +51,7 @@ void parseFuncDef();
 
 /**
  * @brief FUNC ::= TYPE token_Ocb STATEMENTS RETURN token_Ccb
+ * V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
  */
 void parseFunc();
 
