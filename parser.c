@@ -11,6 +11,7 @@
 Token* currentToken = NULL;
 SymbolTable* symbolTable = NULL;
 AST* ast = NULL;
+bool voidFuncType = false; 
 
 void parseProlog() {
     if (currentToken->type != KEYWORD_CONST) {
@@ -96,7 +97,7 @@ void parseFuncDef() {
 void parseFunc() {
     parseType();
 
-    if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+    if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
         return;
     }
@@ -105,9 +106,27 @@ void parseFunc() {
     parseStatements();
     parseReturn();
 
-    if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
+    if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
         return;
     }
     getNextToken(currentToken);
+}
+
+void parseType() {
+    if (currentToken->type == KEYWORD_VOID) {
+        voidFuncType = true;
+        getNextToken(currentToken);
+    } 
+    else {
+        if (currentToken->type == KEYWORD_I_32 || currentToken->type == KEYWORD_F_64 || currentToken->type == KEYWORD_U_8_ARRAY ||
+            currentToken->type == KEYWORD_I_32_NULL || currentToken->type == KEYWORD_F_64_NULL || currentToken->type == KEYWORD_U_8_ARRAY_NULL) {
+            voidFuncType = false;
+            getNextToken(currentToken);
+        } 
+        else {
+            HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
+            return;
+        }
+    }
 }

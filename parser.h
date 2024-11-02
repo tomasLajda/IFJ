@@ -55,11 +55,6 @@ void parseFuncDef();
 void parseFunc();
 
 /**
- * @brief V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
- */
-void parseVoidFunc();
-
-/**
  * @brief RETURN ::= token_return EXPR token_semicolon
  *        V_RETURN ::= token_return token_semicolon | ε       
  */
