@@ -102,4 +102,12 @@ typedef enum {
     TOKEN_TYPE_DOLLA
 } TokenType;
 
+typedef enum {
+    SCOPE_GLOBAL = 0,
+    SCOPE_FUNCTION = KEYWORD_FN,
+    SCOPE_WHILE = KEYWORD_WHILE,
+    SCOPE_IF = KEYWORD_IF,
+    SCOPE_ELSE = KEYWORD_ELSE
+} ScopeType;
+
 #endif
