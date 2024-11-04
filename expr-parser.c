@@ -193,35 +193,42 @@ int isReducible(Stack *stack) {
  * @return An integer representing the chosen reduction rule or -1 if no rule is applicable.
  */
 int chooseReduceRule(Stack *stack) {
-    if (isOperand(topToken(stack))) {
+
+    StackElement *e1 = stack->top;
+    StackElement *e2 = e1->next;
+    StackElement *e3 = e2->next;
+
+    if (e1 && e2 && e3 && e1->tokenPtr->type == EXPR && isOperator(e2->tokenPtr) &&
+        e3->tokenPtr->type == EXPR) {
+        switch (e2->tokenPtr->type) {
+        case TOKEN_TYPE_PLUS:
+            return EXPR_ADD; // Expr -> Expr + Expr
+        case TOKEN_TYPE_MINUS:
+            return EXPR_SUB; // Expr -> Expr - Expr
+        case TOKEN_TYPE_EQ:
+            return EXPR_EQ; // Expr -> Expr == Expr
+        case TOKEN_TYPE_NEQ:
+            return EXPR_NEQ; // Expr -> Expr != Expr
+        case TOKEN_TYPE_LTH:
+            return EXPR_LTH; // Expr -> Expr < Expr
+        case TOKEN_TYPE_GTH:
+            return EXPR_GTH; // Expr -> Expr > Expr
+        case TOKEN_TYPE_LEQ:
+            return EXPR_LEQ; // Expr -> Expr <= Expr
+        case TOKEN_TYPE_GEQ:
+            return EXPR_GEQ; // Expr -> Expr >= Expr
+        case TOKEN_TYPE_MUL:
+            return EXPR_MUL; // Expr -> Expr * Expr
+        case TOKEN_TYPE_DIV:
+            return EXPR_DIV; // Expr -> Expr / Expr
+        default:
+            return -1; // No rule to apply
+        }
+    } else if (e1 && isOperand(e1->tokenPtr)) {
         return EXPR_ID;
     }
-    switch (topToken(stack)->type) {
-    case TOKEN_TYPE_PLUS:
-        return EXPR_ADD; // Expr -> Expr + Expr
-    case TOKEN_TYPE_MINUS:
-        return EXPR_SUB; // Expr -> Expr - Expr
-    case TOKEN_TYPE_EQ:
-        return EXPR_EQ; // Expr -> Expr == Expr
-    case TOKEN_TYPE_NEQ:
-        return EXPR_NEQ; // Expr -> Expr != Expr
-    case TOKEN_TYPE_LTH:
-        return EXPR_LTH; // Expr -> Expr < Expr
-    case TOKEN_TYPE_GTH:
-        return EXPR_GTH; // Expr -> Expr > Expr
-    case TOKEN_TYPE_LEQ:
-        return EXPR_LEQ; // Expr -> Expr <= Expr
-    case TOKEN_TYPE_GEQ:
-        return EXPR_GEQ; // Expr -> Expr >= Expr
-    case TOKEN_TYPE_MUL:
-        return EXPR_MUL; // Expr -> Expr * Expr
-    case TOKEN_TYPE_DIV:
-        return EXPR_DIV; // Expr -> Expr / Expr
-    default:
-        return -1; // No rule to apply
-    }
+    return -1; // No rule to apply
 }
-
 Token *createToken(TokenType type) {
     Token *token = (Token *)malloc(sizeof(Token));
     if (token == NULL) {
@@ -249,7 +256,8 @@ int parseExpression(AST *exprAST, Token *token) {
     initStackElement(dollarElement,
                      createToken(DOLLAR)); // Push the expression token onto the stack
     push(stack, dollarElement);            // Push the dollar token onto the stack
-
+    // printf("stack: ");
+    // display(stack);
     // Initialize the input stack
     Stack *input = (Stack *)malloc(sizeof(Stack));
     if (input == NULL) {
@@ -260,25 +268,44 @@ int parseExpression(AST *exprAST, Token *token) {
     if (fillInputStack(input, token) == NULL) {
         return 1; // Token doesn't belong in the expression
     }
+    // printf("input stack: ");
+    // display(input);
 
     // Initialize the AST
     exprAST = initAST();
 
     // Main loop
-    Token *currentToken;
+    Token *currentToken = (Token *)malloc(sizeof(Token));
+    if (currentToken == NULL) {
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
+    }
     while (!isEmpty(input)) {
-        currentToken = topToken(input);
+        *currentToken = *topToken(input);
         pop(input);
-
+        // printf("current token type: %d\n", currentToken->type);
         // Shift
         StackElement *newElement = (StackElement *)malloc(sizeof(StackElement));
         if (newElement == NULL) {
             fprintf(stderr, "Memory allocation failure.\n");
             exit(1);
         }
-        initStackElement(newElement, currentToken);
+        Token *tempToken = malloc(sizeof(Token));
+        if (tempToken == NULL) {
+            free(newElement);
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
+        }
+        *tempToken = *currentToken; // Copy the token
+        initStackElement(newElement, tempToken);
         push(stack, newElement);
-        if (isReducible(stack)) {
+
+        // printf("\nstack: ");
+        // display(stack);
+
+        // printf("input: ");
+        // display(input);
+        if (isReducible(stack)) { // Reduce
             switch (chooseReduceRule(stack)) {
             case EXPR_ADD: // Expr -> Expr + Expr
                 // Reduce
@@ -316,6 +343,8 @@ int parseExpression(AST *exprAST, Token *token) {
             default:
                 return 1; // Syntax error
             }
+        } else {
+            // shift
         }
     }
 
