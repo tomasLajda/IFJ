@@ -300,7 +300,21 @@ Symbol *treeGet(BinaryTreeNodePtr node, const char *key) {
     return NULL;
 }
 
-bool symbolTableSearch(SymbolTable *table, const char *key) { return treeSearch(table->root, key); }
+bool symbolTableSearch(SymbolTable *table, const char *key) {
+    bool found = false;
+
+    while (!found) {
+        found = treeSearch(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    return found;
+}
 
 void symbolTableInsert(SymbolTable *table, Symbol data) {
     table->root = treeInsert(table->root, data);
@@ -319,7 +333,9 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable) {
     table->previousTable = previousTable;
 }
 
-void symbolTableSetScope(SymbolTable *table, ScopeType scopeType) { table->scopeType = scopeType; }
+void symbolTableSetScope(SymbolTable *table, const char *functionKey) {
+    table->functionKey = functionKey;
+}
 
 void symbolTableDelete(SymbolTable *table, const char *key) {
     table->root = treeDelete(table->root, key);
@@ -329,8 +345,40 @@ void symbolTableReassign(SymbolTable *table, const char *key, Symbol data) {
     treeReassign(table->root, key, data);
 }
 
+void symbolTableSetDefined(SymbolTable *table, const char *key) {
+    Symbol *symbol;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    if (symbol == NULL) {
+        HANDLE_ERROR("Symbol not found", INTERNAL_ERROR);
+    }
+
+    symbol->defined = true;
+}
+
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key) {
-    return treeGet(table->root, key);
+    Symbol *symbol;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    return symbol;
 }
 
 void symbolTablePush(Stack *stack, SymbolTable *table) {
