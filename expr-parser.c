@@ -222,8 +222,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
  */
 int isReducible(Stack *stack, Token *nextInputToken) {
     printf("is reducible?\n");
-    display(stack);
-    printf("%d %d\n", stack->top->tokenPtr->type, nextInputToken->type);
+    printf("%d ? %d ", stack->top->tokenPtr->type, nextInputToken->type);
 
     if (stack == NULL || stack->top == NULL) {
         return 0; // Stack is empty, cannot reduce
@@ -245,7 +244,8 @@ int isReducible(Stack *stack, Token *nextInputToken) {
             third->tokenPtr->type == EXPR) {
 
             // Get precedence and associativity of operators from the precedence table
-            char precedence = precedenceTable[second->tokenPtr->type][nextInputToken->type];
+            char precedence = precedenceTable[getTableIndex(second->tokenPtr->type)]
+                                             [getTableIndex(nextInputToken->type)];
 
             if (precedence == '>') {
                 return 1; // Reduce
@@ -333,6 +333,19 @@ int chooseReduceRule(Stack *stack) {
     printf("no rule\n");
     return -1; // No rule to apply
 }
+
+StackElement *createStackElement(Token *token, AST *ast) {
+    StackElement *element = (StackElement *)malloc(sizeof(StackElement));
+    if (element == NULL) {
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
+    }
+    element->ASTPtr = ast;
+    element->tokenPtr = token;
+    element->next = NULL;
+    return element;
+}
+
 Token *createToken(TokenType type) {
     Token *token = (Token *)malloc(sizeof(Token));
     if (token == NULL) {
@@ -345,7 +358,7 @@ Token *createToken(TokenType type) {
 
 int parseExpression(AST *exprAST, Token *token) {
 
-    // Initialize the stack
+    // Initialize the stack on which the expression will be shifted and reduced
     Stack *stack = (Stack *)malloc(sizeof(Stack));
     if (stack == NULL) {
         fprintf(stderr, "Memory allocation failure.\n");
@@ -355,22 +368,16 @@ int parseExpression(AST *exprAST, Token *token) {
     StackElement *dollarElement = (StackElement *)malloc(sizeof(StackElement));
     if (dollarElement == NULL) {
         fprintf(stderr, "Memory allocation failure.\n");
-        // cleanupStack(stack);
+        cleanupStack(stack);
         free(stack);
         exit(1);
     }
-    Token *dollarToken = createToken(DOLLAR);
-    if (dollarToken == NULL) {
-        fprintf(stderr, "Memory allocation failure.\n");
-        free(dollarElement);
-        free(stack);
-        return 1;
-    }
-    initStackElement(dollarElement, dollarToken);
-    push(stack, dollarElement); // Push the dollar token onto the stack
-
-    // printf("stack: ");
-    // display(stack);
+    StackElement *dollar = createStackElement(createToken(DOLLAR), NULL);
+    printf("dollar: %d\n", dollar->tokenPtr->type);
+    display(stack);
+    push(stack, dollar); // Push the dollar element onto the stack
+    printf("stack: ");
+    display(stack);
 
     // Initialize the input stack
     Stack *input = (Stack *)malloc(sizeof(Stack));
@@ -390,160 +397,139 @@ int parseExpression(AST *exprAST, Token *token) {
         free(stack);
         return 1;
     }
-    // printf("input stack: ");
-    // display(input);
 
     // Initialize the AST
-    exprAST = initAST();
+    exprAST = initAST(); // TODO
+    if (exprAST == NULL) {
+        fprintf(stderr, "Memory allocation failure.\n");
+        return 1;
+    }
 
-    // Main loop
-    Token *currentToken = (Token *)malloc(sizeof(Token));
-    if (currentToken == NULL) {
+    // Initialize the current and next input element
+    StackElement *currentInputElement = (StackElement *)malloc(sizeof(StackElement));
+    if (currentInputElement == NULL) {
         fprintf(stderr, "Memory allocation failure.\n");
         exit(1);
     }
-    Token *nextInputToken = (Token *)malloc(sizeof(Token));
-    if (nextInputToken == NULL) {
+    initStackElement(currentInputElement, NULL);
+    currentInputElement = top(input);
+    StackElement *nextInputElement = (StackElement *)malloc(sizeof(StackElement));
+    if (nextInputElement == NULL) {
         fprintf(stderr, "Memory allocation failure.\n");
-        free(currentToken);
+        free(currentInputElement);
         exit(1);
     }
+    initStackElement(nextInputElement, NULL);
     if (!isEmpty(input)) {
-        nextInputToken = top(input)->tokenPtr;
+        nextInputElement = top(input)->next;
     } else {
-        nextInputToken = createToken(DOLLAR); // Use the dollar token as the end-of-input marker
+        nextInputElement = createStackElement(createToken(DOLLAR), NULL);
     }
+
+    printf("current token ptr type: %d\n", currentInputElement->tokenPtr->type);
+    printf("next token ptr type: %d\n", nextInputElement->tokenPtr->type);
     printf("\nbefore_stack: ");
     display(stack);
-
     printf("before_input: ");
     display(input);
-
-    while (!isEmpty(input) || isReducible(stack, nextInputToken)) {
-        if (isReducible(stack, nextInputToken)) { // Reduce
+    printf("\nSTART\n");
+    // Shift-reduce loop
+    while (!isEmpty(input) || isReducible(stack, nextInputElement->tokenPtr)) {
+        if (isReducible(stack, nextInputElement->tokenPtr)) { // Reduce
             printf("yes\n");
             int rule = chooseReduceRule(stack);
             printf("rule: %d\n", rule);
             switch (rule) {
             case EXPR_ADD: // Expr -> Expr + Expr
-                printf("REDUCING BY ADD RULE: ");
+            case EXPR_SUB: // Expr -> Expr - Expr
+            case EXPR_EQ:  // Expr -> Expr == Expr
+            case EXPR_NEQ: // Expr -> Expr != Expr
+            case EXPR_LTH: // Expr -> Expr < Expr
+            case EXPR_GTH: // Expr -> Expr > Expr
+            case EXPR_LEQ: // Expr -> Expr <= Expr
+            case EXPR_GEQ: // Expr -> Expr >= Expr
+            case EXPR_MUL: // Expr -> Expr * Expr
+            case EXPR_DIV: // Expr -> Expr / Expr
+                // Reduce
                 // Pop right operand
-                display(stack);
-                StackElement *rightElement = top(stack);
-                ASTNode *rightNode = initASTNode();
-                rightNode->token = rightElement->tokenPtr;
+                StackElement *rightElement =
+                    createStackElement(topToken(stack), top(stack)->ASTPtr);
                 pop(stack);
+                // ASTNode *rightNode = (ASTNode *)rightElement->ASTPtr->root;
 
                 // Pop operator
-                StackElement *operatorElement = top(stack);
-                Token *operatorToken = operatorElement->tokenPtr;
+                StackElement *operatorElement = createStackElement(topToken(stack), NULL);
                 pop(stack);
 
                 // Pop left operand
-                StackElement *leftElement = top(stack);
-                ASTNode *leftNode = initASTNode();
-                leftNode->token = leftElement->tokenPtr;
+                StackElement *leftElement = createStackElement(topToken(stack), top(stack)->ASTPtr);
                 pop(stack);
+                // ASTNode *leftNode = (ASTNode *)leftElement->ASTPtr->root;
 
-                // Create new AST node
-                ASTNode *parent = initASTNode();
-                parent->nodeType.tokenType = operatorToken->type;
-                parent->token = operatorToken;
-                parent->left = leftNode;
-                parent->right = rightNode;
-                parent->isExpression = true;
+                // // Create new AST node for the operator
+                // ASTNode *parent = initASTNode();
+                // if (parent == NULL) {
+                //     fprintf(stderr, "Memory allocation failure.\n");
+                //     // Clean up and exit
+                //     disposeSubtree(leftNode);
+                //     disposeSubtree(rightNode);
+                //     exit(1);
+                // }
+                // parent->token = operatorToken;
+                // parent->nodeType.tokenType = operatorToken->type;
+                // parent->isExpression = true;
+                // parent->left = leftNode;
+                // parent->right = rightNode;
+                // parent->parent = NULL;
+                // parent->absParent = NULL;
 
+                // // Update parent pointers of children
+                // leftNode->parent = parent;
+                // rightNode->parent = parent;
+
+                // Create a new stack element for Expr
+                StackElement *exprElement =
+                    createStackElement(createToken(EXPR), NULL); // TODO: AST
                 // Push Expr back onto stack
-                Token *eToken = createToken(EXPR);
-                StackElement *eElement = malloc(sizeof(StackElement));
-                if (eElement == NULL) {
-                    fprintf(stderr, "Memory allocation failure.\n");
-                    disposeSubtree(parent);
-                    exit(1);
-                }
-                initStackElement(eElement, eToken);
-                push(stack, eElement);
-                display(stack);
-                break;
-            case EXPR_SUB: // Expr -> Expr - Expr
-                // Reduce
-                break;
-            case EXPR_EQ: // Expr -> Expr == Expr
-                // Reduce
-                break;
-            case EXPR_NEQ: // Expr -> Expr != Expr
-                // Reduce
-                break;
-            case EXPR_LTH: // Expr -> Expr < Expr
-                // Reduce
-                break;
-            case EXPR_GTH: // Expr -> Expr > Expr
-                // Reduce
-                break;
-            case EXPR_LEQ: // Expr -> Expr <= Expr
-                // Reduce
-                break;
-            case EXPR_GEQ: // Expr -> Expr >= Expr
-                // Reduce
-                break;
-            case EXPR_MUL: // Expr -> Expr * Expr
-                // Reduce
-                break;
-            case EXPR_DIV: // Expr -> Expr / Expr
-                // Reduce
-                break;
-            case EXPR_ID: // id -> Expr
-                printf("REDUCING: ");
-                display(stack);
-                printf("BY ID RULE\n");
-                // Pop the operand from the stack
-                StackElement *operandElement = top(stack);
-                ASTNode *operandNode = initASTNode();
-                operandNode->token = operandElement->tokenPtr;
-                pop(stack);
-
-                // Push the operand back onto the stack
-                Token *exprToken = createToken(EXPR);
-                StackElement *exprElement = malloc(sizeof(StackElement));
-                if (exprElement == NULL) {
-                    fprintf(stderr, "Memory allocation failure.\n");
-                    // Cleanup and exit
-                    disposeSubtree(operandNode);
-                    exit(1);
-                }
-                initStackElement(exprElement, exprToken);
                 push(stack, exprElement);
                 printf("AFTER REDUCING: ");
                 display(stack);
                 break;
-            case EXPR_PAR: // ( Expr ) -> Expr
-                printf("REDUCING: ");
+            case EXPR_ID: // id -> Expr
+                printf("REDUCING BY ID RULE: ");
                 display(stack);
-                printf("BY PARENTHESES RULE\n");
+                // Pop the operand from the stack
+                AST *eAST = initAST();
+                ASTNode *root = initASTNode();
+                if (eAST == NULL || root == NULL) {
+                    fprintf(stderr, "Memory allocation failure.\n");
+                    exit(1);
+                }
+                eAST->root = root;
+                eAST->root->token = createToken(stack->top->tokenPtr->type);
+                StackElement *newIdExpressionElement = createStackElement(createToken(EXPR), eAST);
+                pop(stack);
+                push(stack, newIdExpressionElement);
+                printf("AFTER REDUCING: ");
+                display(stack);
+                break;
+            case EXPR_PAR: // ( Expr ) -> Expr
+                printf("REDUCING BY PARENTHESES RULE: ");
+                display(stack);
                 // Pop the right parenthesis
                 pop(stack);
 
                 // Pop the expression
-                StackElement *element = top(stack);
-                ASTNode *exprNode = initASTNode();
-                exprNode->token = element->tokenPtr;
+                StackElement *Expression = createStackElement(topToken(stack), top(stack)->ASTPtr);
                 pop(stack);
 
                 // Pop the left parenthesis
                 pop(stack);
 
                 // Push the expression
-                Token *exToken = createToken(EXPR);
-                StackElement *exElement = malloc(sizeof(StackElement));
-                if (exElement == NULL) {
-                    fprintf(stderr, "Memory allocation failure.\n");
-                    // Cleanup and exit
-                    // disposeSubtree(eNode);
-                    exit(1);
-                }
-                initStackElement(exElement, exToken);
-                push(stack, exElement);
-
+                StackElement *newParExpressionElement =
+                    createStackElement(createToken(EXPR), Expression->ASTPtr);
+                push(stack, newParExpressionElement);
                 printf("AFTER REDUCING: ");
                 display(stack);
 
@@ -553,55 +539,49 @@ int parseExpression(AST *exprAST, Token *token) {
                 return 1; // Syntax error
             }
         } else if (!isEmpty(input)) { // Shift
-            printf("no,Shifting\n");
-
-            // Pop the next token from the input stack
-            *currentToken = *(input->top->tokenPtr);
-            pop(input);
-
-            // Update nextInputToken
-            if (!isEmpty(input)) {
-                nextInputToken = top(input)->tokenPtr;
-            } else {
-                nextInputToken =
-                    createToken(DOLLAR); // Use the dollar token as the end-of-input marker
-            }
-
-            // Push the token onto the stack
-            StackElement *newElement = malloc(sizeof(StackElement));
-            if (newElement == NULL) {
-                fprintf(stderr, "Memory allocation failure.\n");
-                exit(1);
-            }
-            Token *tempToken = malloc(sizeof(Token));
-            if (tempToken == NULL) {
-                free(newElement);
-                fprintf(stderr, "Memory allocation failure.\n");
-                exit(1);
-            }
-            *tempToken = *currentToken; // Copy the token
-            initStackElement(newElement, tempToken);
-            push(stack, newElement);
+            printf("Shifting...\n");
+            printf("STACK before SHIFTING: ");
             display(stack);
+            printf("INPUT before SHIFTING: ");
+            display(input);
+
+            Token *currentToken = createToken(currentInputElement->tokenPtr->type);
+            printf("current token ptr type: %d\n", currentToken->type);
+            pop(input);
+            printf("current token ptr type: %d\n", currentToken->type);
+            StackElement *newElement = createStackElement(currentToken, NULL);
+            push(stack, newElement);
+
+            printf("STACK AFTER SHIFTING: ");
+            display(stack);
+            printf("INPUT AFTER SHIFTING: ");
+            display(input);
+
+            currentInputElement = top(input);
+            if (isEmpty(input)) {
+                nextInputElement = createStackElement(createToken(DOLLAR), NULL);
+            }
         } else {
             fprintf(stderr, "Syntax error: Cannot reduce further.\n");
             return 1; // Indicate syntax error
         }
     }
 
-    if (stack->top->tokenPtr->type != DOLLAR) {
+    if (getStackLength(stack) == 2 && stack->top->tokenPtr->type == EXPR &&
+        stack->top->next->tokenPtr->type == DOLLAR) {
+        printf("Parsing successful.\n");
+        exprAST->root = stack->top->ASTPtr; // Assign the AST root
+        cleanupStack(input);
+        free(input);
+        cleanupStack(stack);
+        free(stack);
+        return 0; // Success
+    } else {
         printf("fail\n");
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
         free(stack);
-        return 1;
-    } else {
-        printf("success\n");
-        cleanupStack(input);
-        free(input);
-        cleanupStack(stack);
-        free(stack);
-        return 0;
+        return 1; // Syntax error
     }
 }
