@@ -75,6 +75,7 @@ int getTableIndex(TokenType type) {
     case TOKEN_TYPE_RIGHT_BR:
         return 11;
     case TOKEN_TYPE_IDENTIFIER:
+    case EXPR:
         return 12;
     case TOKEN_TYPE_DOLLA:
         return 13;
@@ -222,9 +223,10 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
  */
 int isReducible(Stack *stack, Token *nextInputToken) {
     printf("is reducible?\n");
-    printf("%d ? %d ", stack->top->tokenPtr->type, nextInputToken->type);
+    // printf("%d ? %d ", stack->top->tokenPtr->type, nextInputToken->type);
 
     if (stack == NULL || stack->top == NULL) {
+        // printf("stack is empty\n");
         return 0; // Stack is empty, cannot reduce
     }
 
@@ -232,6 +234,7 @@ int isReducible(Stack *stack, Token *nextInputToken) {
 
     // Check for operand reduction (e.g., EXPR → id)
     if (isOperand(first->tokenPtr)) {
+        // printf("is operand\n");
         return 1; // Stack is reducible by operand rule
     }
 
@@ -284,7 +287,7 @@ int isReducible(Stack *stack, Token *nextInputToken) {
  */
 int chooseReduceRule(Stack *stack) {
 
-    printf("choose reduce rule\n");
+    // printf("choose reduce rule\n");
     StackElement *first = stack->top;
 
     if (isOperand(first->tokenPtr)) {
@@ -492,7 +495,8 @@ int parseExpression(AST *exprAST, Token *token) {
                     createStackElement(createToken(EXPR), NULL); // TODO: AST
                 // Push Expr back onto stack
                 push(stack, exprElement);
-                printf("AFTER REDUCING: ");
+                printf("\n[Reduce] Applied rule: %d\n", (rule));
+                printf("Parser Stack after reduction:\n");
                 display(stack);
                 break;
             case EXPR_ID: // id -> Expr
@@ -510,7 +514,8 @@ int parseExpression(AST *exprAST, Token *token) {
                 StackElement *newIdExpressionElement = createStackElement(createToken(EXPR), eAST);
                 pop(stack);
                 push(stack, newIdExpressionElement);
-                printf("AFTER REDUCING: ");
+                printf("\n[Reduce] Applied rule: %d\n", (rule));
+                printf("Parser Stack after reduction:\n");
                 display(stack);
                 break;
             case EXPR_PAR: // ( Expr ) -> Expr
@@ -530,25 +535,19 @@ int parseExpression(AST *exprAST, Token *token) {
                 StackElement *newParExpressionElement =
                     createStackElement(createToken(EXPR), Expression->ASTPtr);
                 push(stack, newParExpressionElement);
-                printf("AFTER REDUCING: ");
+                printf("\n[Reduce] Applied rule: %d\n", (rule));
+                printf("Parser Stack after reduction:\n");
                 display(stack);
-
                 break;
             default:
                 fprintf(stderr, "Syntax error.\n");
                 return 1; // Syntax error
             }
         } else if (!isEmpty(input)) { // Shift
-            printf("Shifting...\n");
-            printf("STACK before SHIFTING: ");
-            display(stack);
-            printf("INPUT before SHIFTING: ");
-            display(input);
+            printf("No, so shifting...\n");
 
             Token *currentToken = createToken(currentInputElement->tokenPtr->type);
-            printf("current token ptr type: %d\n", currentToken->type);
             pop(input);
-            printf("current token ptr type: %d\n", currentToken->type);
             StackElement *newElement = createStackElement(currentToken, NULL);
             push(stack, newElement);
 
@@ -560,6 +559,8 @@ int parseExpression(AST *exprAST, Token *token) {
             currentInputElement = top(input);
             if (isEmpty(input)) {
                 nextInputElement = createStackElement(createToken(DOLLAR), NULL);
+            } else {
+                nextInputElement = currentInputElement;
             }
         } else {
             fprintf(stderr, "Syntax error: Cannot reduce further.\n");
