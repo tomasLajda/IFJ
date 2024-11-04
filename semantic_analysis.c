@@ -1,6 +1,6 @@
 /*
  * IFJ Project
- * @brief Header file for semantic analysis
+ * @brief Implementation file for semantic analysis
  *
  * @author Tomáš Lajda - xlajdat00
  *
