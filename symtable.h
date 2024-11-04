@@ -62,7 +62,7 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
  * @param table Pointer to the symbol table whose function key is to be set.
  * @param functionKey The key of the function to set in the symbol table.
  */
-void symbolTableSetScope(SymbolTable *table, const char *functionKey);
+void symbolTableSetFunctionKey(SymbolTable *table, char *functionKey);
 
 /**
  * @brief Frees the symbol table and all its nodes.
