@@ -35,7 +35,7 @@ typedef BinaryTreeNode *BinaryTreeNodePtr;
 
 typedef struct SymbolTable {
     BinaryTreeNodePtr root;
-    ScopeType scopeType;
+    char *functionKey;
     struct SymbolTable *previousTable;
 } SymbolTable;
 
@@ -54,14 +54,15 @@ typedef struct SymbolTable {
 void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
 
 /**
- * @brief Sets the scope type for the given symbol table.
+ * @brief Sets the function key for the given symbol table.
  *
- * This function updates the scope type of the provided symbol table to the specified scope type.
+ * This function updates the function key of the provided symbol table to the specified key,
+ * allowing the function to be found in the symbol table when needed.
  *
- * @param table Pointer to the symbol table whose scope type is to be set.
- * @param scopeType The new scope type to be assigned to the symbol table.
+ * @param table Pointer to the symbol table whose function key is to be set.
+ * @param functionKey The key of the function to set in the symbol table.
  */
-void symbolTableSetScope(SymbolTable *table, ScopeType scopeType);
+void symbolTableSetScope(SymbolTable *table, const char *functionKey);
 
 /**
  * @brief Frees the symbol table and all its nodes.
@@ -103,6 +104,14 @@ void symbolTableDelete(SymbolTable *table, const char *key);
  * @param data The new symbol data.
  */
 void symbolTableReassign(SymbolTable *table, const char *key, Symbol data);
+
+/**
+ * @brief Sets the defined flag of a symbol in the symbol table by its key.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key The key of the symbol to set the defined flag for.
+ */
+void symbolTableSetDefined(SymbolTable *table, const char *key);
 
 /**
  * @brief Pushes the symbol table onto the stack.
