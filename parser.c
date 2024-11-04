@@ -140,7 +140,7 @@ void parseReturn() {
                 HANDLE_ERROR("Expected ';' after return in void function", SYNTAX_ERROR, currentToken);
                 return;
             }
-            
+
             getNextToken(currentToken);
         }
         return;
@@ -157,6 +157,35 @@ void parseReturn() {
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
             return;
+        }
+        getNextToken(currentToken);
+    }
+}
+
+// TODO: Reimplement with peek function
+void parseParams() {
+    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+        return;
+    }
+
+    while (true) {
+        if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+            HANDLE_ERROR("Expected parameter identifier", SYNTAX_ERROR, currentToken);
+            return;
+        }
+        getNextToken(currentToken);
+
+        if (currentToken->type != TOKEN_TYPE_COLON) {
+            HANDLE_ERROR("Expected ':' after parameter identifier", SYNTAX_ERROR, currentToken);
+            return;
+        }
+        getNextToken(currentToken);
+
+        parseType();
+
+        // peek();
+        if (currentToken->type != TOKEN_TYPE_COMMA) {
+            break;
         }
         getNextToken(currentToken);
     }
