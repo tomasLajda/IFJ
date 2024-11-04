@@ -21,14 +21,23 @@
 bool checkDeclaration(SymbolTable *table, const char *key);
 
 /**
- * @brief Check if an assignment is valid in the symbol table.
+ * @brief Check if the value being assigned to a variable is of the correct type.
  *
  * @param table Pointer to the symbol table.
- * @param key Key of the symbol to check.
- * @param type Expected data type of the symbol.
+ * @param key Key of the variable to check.
+ * @param valueType Data type of the value being assigned.
  * @return true if the assignment is valid, false otherwise.
  */
-bool checkDefinition(SymbolTable *table, const char *key, DataType type);
+bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType);
+
+/**
+ * @brief Check if a variable has already been assigned a value.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key Key of the variable to check.
+ * @return true if the variable has already been assigned, false otherwise.
+ */
+bool checkVariableAssigned(SymbolTable *table, const char *key);
 
 /**
  * @brief Check if a function call parameter is valid in the symbol table.
