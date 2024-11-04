@@ -333,7 +333,7 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable) {
     table->previousTable = previousTable;
 }
 
-void symbolTableSetScope(SymbolTable *table, const char *functionKey) {
+void symbolTableSetFunctionKey(SymbolTable *table, char *functionKey) {
     table->functionKey = functionKey;
 }
 
@@ -346,7 +346,7 @@ void symbolTableReassign(SymbolTable *table, const char *key, Symbol data) {
 }
 
 void symbolTableSetDefined(SymbolTable *table, const char *key) {
-    Symbol *symbol;
+    Symbol *symbol = NULL;
 
     while (symbol == NULL) {
         symbol = treeGet(table->root, key);
@@ -366,7 +366,7 @@ void symbolTableSetDefined(SymbolTable *table, const char *key) {
 }
 
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key) {
-    Symbol *symbol;
+    Symbol *symbol = NULL;
 
     while (symbol == NULL) {
         symbol = treeGet(table->root, key);
