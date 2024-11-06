@@ -13,6 +13,7 @@ SymbolTable* symbolTable = NULL;
 AST* ast = NULL;
 bool voidFuncType = false; 
 
+// PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
 void parseProlog() {
     if (currentToken->type != KEYWORD_CONST) {
         HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR, currentToken);
@@ -40,6 +41,7 @@ void parseProlog() {
     getNextToken(currentToken);
 }
 
+// FUNC_DEFS ::= FUNC_DEF FUNC_DEFS | ε
 void parseFuncDefs() {
     while (true) {
         if (currentToken->type == KEYWORD_PUB) {
@@ -55,6 +57,7 @@ void parseFuncDefs() {
     }
 }
 
+// FUNC_DEF ::= token_pub token_fn token_func_id token_Orb PARAMS token_Crb FUNC_TYPE
 void parseFuncDef() {
     if (currentToken->type != KEYWORD_PUB) {
         HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
@@ -84,6 +87,7 @@ void parseFuncDef() {
     parseFunc();
 }
 
+// FUNC ::= TYPE token_Ocb STATEMENTS RETURN token_Ccb
 void parseFunc() {
     parseType();
 
@@ -101,6 +105,7 @@ void parseFunc() {
     getNextToken(currentToken);
 }
 
+// TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 | token_void
 void parseType() {
     if (currentToken->type == KEYWORD_VOID) {
         voidFuncType = true;
@@ -118,6 +123,8 @@ void parseType() {
     }
 }
 
+// RETURN ::= token_return EXPR token_semicolon
+// V_RETURN ::= token_return token_semicolon | ε 
 void parseReturn() {
     if (voidFuncType) {
          if (currentToken->type == KEYWORD_RETURN) {
@@ -147,6 +154,7 @@ void parseReturn() {
 }
 
 // TODO: Reimplement the part with next comma with peek function
+// PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
 void parseParams() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         return;
@@ -173,6 +181,7 @@ void parseParams() {
     }
 }
 
+// STATEMENTS ::= STATEMENT STATEMENTS | ε
 void parseStatements() {
     while (true) {
         parseStatement();
@@ -183,6 +192,7 @@ void parseStatements() {
     }
 }
 
+// STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL
 void parseStatement() {
     switch (currentToken->type) {
         case KEYWORD_VAR:
@@ -204,12 +214,7 @@ void parseStatement() {
                 parseVarAss();
             }
             else {
-                if (getNextToken(currentToken) != TOKEN_TYPE_LEFT_BR) {
-                    HANDLE_ERROR("Expected '(' after identifier for function call", SYNTAX_ERROR, currentToken);
-                }
-                if (getNextToken(currentToken) != TOKEN_TYPE_ASSIGN) {
-                    HANDLE_ERROR("Expected '=' after identifier for variable assignment", SYNTAX_ERROR, currentToken);
-                }
+                HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
             }
             break;
         case KEYWORD_UNDERSCORE:
