@@ -225,3 +225,32 @@ void parseStatement() {
             break;
     }
 }
+
+// VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
+void parseVarDef() {
+    if (currentToken->type == KEYWORD_VAR || currentToken->type == KEYWORD_CONST) {
+        getNextToken(currentToken);
+    } 
+    else {
+        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR, currentToken);
+    }
+
+    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+        HANDLE_ERROR("Expected variable identifier", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    parseTypeSpec();
+
+    if (currentToken->type != TOKEN_TYPE_ASSIGN) {
+        HANDLE_ERROR("Expected '=' in variable definition", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    // Expression();
+
+    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+        HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+}

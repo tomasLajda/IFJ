@@ -83,7 +83,7 @@ void parseParams();
 void parseType();
 
 /**
- * @brief VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
+ * @brief VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
  * Also handles VAR_TYPE decision (var vs const)
  */
 void parseVarDef();
