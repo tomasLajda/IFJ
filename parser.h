@@ -62,6 +62,16 @@ void parseFunc();
 void parseReturn();
 
 /**
+ * @brief STATEMENTS ::= STATEMENT STATEMENTS | ε
+ */
+void parseStatements();
+
+/**
+ * @brief STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL
+ */
+void parseStatement();
+
+/**
  * @brief PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
  * Also handles NEXT_PARAM decision (token_comma vs ε)
  */
