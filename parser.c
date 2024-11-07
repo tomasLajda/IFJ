@@ -13,6 +13,12 @@ SymbolTable* symbolTable = NULL;
 AST* ast = NULL;
 bool voidFuncType = false; 
 
+// PROG ::= PROLOG FUNC_DEFS
+void parseProg() {
+    parseProlog();
+    parseFuncDefs();
+}
+
 // PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
 void parseProlog() {
     if (currentToken->type != KEYWORD_CONST) {
@@ -144,7 +150,7 @@ void parseReturn() {
         }
         getNextToken(currentToken);
         
-        // TODO: Expression();
+        parseExpression(ast, currentToken);
         
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
@@ -247,7 +253,7 @@ void parseVarDef() {
     }
     getNextToken(currentToken);
 
-    // Expression();
+    parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
@@ -277,7 +283,7 @@ void parseVarAss() {
     }
     getNextToken(currentToken);
 
-    // Expression();
+    parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR, currentToken);
@@ -297,7 +303,7 @@ void parseWhile() {
     }
     getNextToken(currentToken);
 
-    // Expression();
+    parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
@@ -349,7 +355,7 @@ void parseIf() {
     }
     getNextToken(currentToken);
 
-    // Expression();
+    parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
@@ -430,7 +436,7 @@ void parseDiscardCall() {
     }
     getNextToken(currentToken);
 
-    // Expression();
+    parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
@@ -440,7 +446,7 @@ void parseDiscardCall() {
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε      
 void parseArgs() {
-    // Expression();
+    parseExpression(ast, currentToken);
 
     // peek();
     if (currentToken->type != TOKEN_TYPE_COMMA) {

@@ -31,6 +31,11 @@ void peek();
 int parse();
 
 /**
+ * @brief PROG ::= PROLOG FUNC_DEFS
+ */
+void parseProg();
+
+/**
  * @brief PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig"); 
  */
 void parseProlog();
