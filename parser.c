@@ -417,3 +417,15 @@ void parseFuncCall() {
     }
     getNextToken(currentToken);
 }
+
+// ARGS ::= (EXPR | token_id) NEXT_ARG | ε      
+void parseArgs() {
+    // Expression();
+
+    // peek();
+    if (currentToken->type != TOKEN_TYPE_COMMA) {
+        return;
+    }
+    getNextToken(currentToken);
+    parseArgs();
+}
