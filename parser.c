@@ -392,3 +392,28 @@ void parseElse() {
     }
     getNextToken(currentToken);
 }
+
+// FUNC_CALL ::= token_id token_Orb ARGS token_Crb token_semicolon
+void parseFuncCall() {
+    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+        HANDLE_ERROR("Expected identifier at the beginning of function call", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+        HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    parseArgs();
+
+    if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
+        HANDLE_ERROR("Expected ')' after arguments in function call", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+        HANDLE_ERROR("Expected ';' at the end of function call", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+}
