@@ -94,7 +94,7 @@ void parseVarDef();
 void parseTypeSpec();
 
 /**
- * @brief TYPE_SPEC ::= token_Osb token_Csb | ε
+ * @brief VAR_ASS ::= token_id token_equals EXPR token_semicolon
  */
 void parseVarAss();
 

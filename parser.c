@@ -254,3 +254,33 @@ void parseVarDef() {
     }
     getNextToken(currentToken);
 }
+
+// TYPE_SPEC ::= token_colon TYPE | ε
+void parseTypeSpec() {
+    if (currentToken->type != TOKEN_TYPE_COLON) {
+        return;
+    }
+    getNextToken(currentToken);
+
+    parseType();
+}
+
+// VAR_ASS ::= token_id token_equals EXPR token_semicolon
+void parseVarAss() {
+    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+        HANDLE_ERROR("Expected identifier at the beginning of variable assignment", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_ASSIGN) {
+        HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    // Expression();
+
+    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+        HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+}
