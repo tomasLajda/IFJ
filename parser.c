@@ -284,3 +284,55 @@ void parseVarAss() {
     }
     getNextToken(currentToken);
 }
+
+// While ::= token_while token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb
+void parseWhile() {
+    if (currentToken->type != KEYWORD_WHILE) {
+        HANDLE_ERROR("Expected 'while' at the beginning of while loop", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+        HANDLE_ERROR("Expected '(' after 'while'", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    // Expression();
+
+    if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
+        HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    parseNullCond();
+
+    if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
+        HANDLE_ERROR("Expected '{' to start the body of while loop", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    parseStatements();
+
+    if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
+        HANDLE_ERROR("Expected '}' to end the body of while loop", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+}
+
+// NULL_CONDITION ::= token_vb token_id token_vb | ε
+void parseNullCond() {
+    if (currentToken->type != TOKEN_TYPE_OR) {
+        return;
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+        HANDLE_ERROR("Expected identifier in null condition", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_OR) {
+        HANDLE_ERROR("Expected '|' after identifier in null condition", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+}
