@@ -418,6 +418,26 @@ void parseFuncCall() {
     getNextToken(currentToken);
 }
 
+// DISCARD_CALL ::= token_underscore token_equals EXPR token_semicolon
+void parseDiscardCall() {
+    if (currentToken->type != KEYWORD_UNDERSCORE) {
+        HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_ASSIGN) {
+        HANDLE_ERROR("Expected '=' after '_' in discard call", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    // Expression();
+
+    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+        HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+}
+
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε      
 void parseArgs() {
     // Expression();

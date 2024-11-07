@@ -124,7 +124,7 @@ void parseNullCond();
 void parseFuncCall();
 
 /**
- * @brief token_underscore token_equals EXPR token_semicolon
+ * @brief DISCARD_CALL ::= token_underscore token_equals EXPR token_semicolon
  */
 void parseDiscardCall();
 
