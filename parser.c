@@ -336,3 +336,59 @@ void parseNullCond() {
     }
     getNextToken(currentToken);
 }
+
+// IF ::= token_if token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb ELSE
+void parseIf() {
+    if (currentToken->type != KEYWORD_IF) {
+        HANDLE_ERROR("Expected 'if' at the beginning of if statement", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+        HANDLE_ERROR("Expected '(' after 'if'", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    // Expression();
+
+    if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
+        HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    parseNullCond();
+
+    if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
+        HANDLE_ERROR("Expected '{' to start the body of if statement", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    parseStatements();
+
+    if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
+        HANDLE_ERROR("Expected '}' to end the body of if statement", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    parseElse();
+}
+
+// ELSE ::= token_else token_Ocb STATEMENTS token_Ccb | ε
+void parseElse() {
+    if (currentToken->type != KEYWORD_ELSE) {
+        return;
+    }
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
+        HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+
+    parseStatements();
+
+    if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
+        HANDLE_ERROR("Expected '}' to end the body of else statement", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
+}
