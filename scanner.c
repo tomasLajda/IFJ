@@ -172,7 +172,7 @@ int getNextToken(Token *token) {
 
     while (true) {
 
-        char current = (char)getc(sourceFile);
+        int current = getc(sourceFile);
 
         switch (state) {
 
