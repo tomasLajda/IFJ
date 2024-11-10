@@ -385,11 +385,11 @@ int parseExpression(AST *exprAST, Token *token) {
     }
 
     // Initialize the AST
-    exprAST = initAST(); // TODO
-    if (exprAST == NULL) {
-        fprintf(stderr, "Memory allocation failure.\n");
-        return 1;
-    }
+    // exprAST = initAST(); // TODO: implement AST filling
+    // if (exprAST == NULL) {
+    //     fprintf(stderr, "Memory allocation failure.\n");
+    //     return 1;
+    // }
 
     // Initialize the current and next input element
     StackElement *currentInputElement = top(input);
