@@ -218,7 +218,7 @@ int isReducible(Stack *stack, Token *nextInputToken) {
         return 1; // Stack is reducible by operand rule
     }
 
-    // Ensure there are at least three elements on the stack for operator reduction
+    // Check for operator reduction (e.g., EXPR → Expr + Expr)
     if (getStackLength(stack) >= 3) {
         StackElement *second = first->next;
         StackElement *third = second->next;
@@ -226,7 +226,7 @@ int isReducible(Stack *stack, Token *nextInputToken) {
         if (first->tokenPtr->type == EXPR && isOperator(second->tokenPtr) &&
             third->tokenPtr->type == EXPR) {
 
-            // Get precedence and associativity of operators from the precedence table
+            // Get precedence from the precedence table
             char precedence = precedenceTable[getTableIndex(second->tokenPtr->type)]
                                              [getTableIndex(nextInputToken->type)];
 
