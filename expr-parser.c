@@ -87,7 +87,6 @@ int getTableIndex(TokenType type) {
 
 // Returns 1 if the token is an operator, 0 otherwise
 int isOperator(Token *token) {
-    // printf("is token type: %d an operator?\n", token->type);
     return token->type == TOKEN_TYPE_PLUS ||  // +
            token->type == TOKEN_TYPE_MINUS || // -
            token->type == TOKEN_TYPE_MUL ||   // /
@@ -101,8 +100,7 @@ int isOperator(Token *token) {
 }
 
 // Returns 1 if the token is an operand, 0 otherwise
-int isOperand(Token *token) { // Returns 1 if the token is an operand, 0 otherwise
-    // printf("is token type: %d an operand?\n", token->type);
+int isOperand(Token *token) {
     return token->type == TOKEN_TYPE_IDENTIFIER       // id
            || token->type == TOKEN_TYPE_INTEGER_VALUE // i32
            || token->type == TOKEN_TYPE_DOUBLE_VALUE; // f64
@@ -113,8 +111,7 @@ int isParentheses(Token *token) {
 }
 
 // Returns 1 if the token is a delimiter, 0 otherwise
-int isDelimiter(Token *token) { // Returns 1 if the token is a delimiter, 0 otherwise
-    // printf("is token type: %d a delimiter?\n", token->type);
+int isDelimiter(Token *token) {
     return token->type == TOKEN_TYPE_EOL ||       // EOL
            token->type == TOKEN_TYPE_EOF ||       // EOF
            token->type == TOKEN_TYPE_SEMICOLON || // ;
@@ -141,11 +138,7 @@ int isLeftAssociative(Token *token) {
  * @return An integer indicating whether the stack is reducible (0) or not (1).
  */
 int isReducible(Stack *stack, Token *nextInputToken) {
-    printf("is reducible?\n");
-    // printf("%d ? %d ", stack->top->tokenPtr->type, nextInputToken->type);
-
     if (stack == NULL || stack->top == NULL) {
-        // printf("stack is empty\n");
         return 0; // Stack is empty, cannot reduce
     }
 
@@ -205,13 +198,9 @@ int isReducible(Stack *stack, Token *nextInputToken) {
  * @return An integer representing the chosen reduction rule or -1 if no rule is applicable.
  */
 int chooseReduceRule(Stack *stack) {
-
-    // printf("choose reduce rule\n");
     StackElement *first = stack->top;
-
     if (isOperand(first->tokenPtr)) {
-        // printf("first: %d\n", first->tokenPtr->type);
-        return EXPR_ID;
+        return EXPR_ID; // Expr -> id
     }
 
     StackElement *second = first->next;
@@ -219,14 +208,11 @@ int chooseReduceRule(Stack *stack) {
 
     if (first->tokenPtr->type == TOKEN_TYPE_RIGHT_BR && second->tokenPtr->type == EXPR &&
         third->tokenPtr->type == TOKEN_TYPE_LEFT_BR) {
-        return EXPR_PAR;
+        return EXPR_PAR; // Expr -> ( Expr )
     }
 
     if (first->tokenPtr->type == EXPR && isOperator(second->tokenPtr) &&
         third->tokenPtr->type == EXPR) {
-        // printf("first: %d, second: %d, third: %d\n", first->tokenPtr->type,
-        // second->tokenPtr->type,
-        //    third->tokenPtr->type);
         switch (second->tokenPtr->type) {
         case TOKEN_TYPE_PLUS:
             return EXPR_ADD; // Expr -> Expr + Expr
@@ -252,7 +238,6 @@ int chooseReduceRule(Stack *stack) {
             return -1; // No rule to apply
         }
     }
-    printf("no rule\n");
     return -1; // No rule to apply
 }
 
@@ -322,7 +307,6 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
         push(&tempStack, newElement);
-        // display(&tempStack);
         getNextToken(token);
     }
 
