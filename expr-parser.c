@@ -8,6 +8,7 @@ IFJ Project
 */
 
 #include "expr-parser.h"
+#include "error_codes.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -105,6 +106,10 @@ int isOperand(Token *token) { // Returns 1 if the token is an operand, 0 otherwi
     return token->type == TOKEN_TYPE_IDENTIFIER       // id
            || token->type == TOKEN_TYPE_INTEGER_VALUE // i32
            || token->type == TOKEN_TYPE_DOUBLE_VALUE; // f64
+}
+
+int isParentheses(Token *token) {
+    return token->type == TOKEN_TYPE_LEFT_BR || token->type == TOKEN_TYPE_RIGHT_BR;
 }
 
 // Returns 1 if the token is a delimiter, 0 otherwise
@@ -290,61 +295,63 @@ Token *copyToken(Token *token) {
  *
  * @param stack A pointer to the stack to be filled.
  * @param delimiterToken A pointer that stores the token that acts as a delimiter.
- * @return A pointer to the filled stack.
+ * @return A pointer to the filled stack if successful, NULL otherwise.
  */
 Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
+    // Initialize a temporary stack and a token pointer
     Stack tempStack;
     initStack(&tempStack);
-
     Token *token = (Token *)malloc(sizeof(Token));
     if (token == NULL) {
-        fprintf(stderr, "Memory allocation failure.\n");
-        exit(1);
+        HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
     }
-    getNextToken(token);
 
-    while (isOperand(token) || isOperator(token) || token->type == TOKEN_TYPE_LEFT_BR ||
-           token->type == TOKEN_TYPE_RIGHT_BR) {
-        StackElement *newElement = malloc(sizeof(StackElement));
-        if (newElement == NULL) {
-            fprintf(stderr, "Memory allocation failure.\n");
-            exit(1);
-        }
-        Token *tempToken = malloc(sizeof(Token));
+    // Begin filling
+    getNextToken(token);
+    while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+        // Copy the token for the stack element
+        Token *tempToken = copyToken(token);
         if (tempToken == NULL) {
-            free(newElement);
-            fprintf(stderr, "Memory allocation failure.\n");
-            exit(1);
+            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
-        *tempToken = *token; // Copy the token
-        initStackElement(newElement, tempToken);
+
+        // Create a stack element and push it onto the temporary stack
+        StackElement *newElement = createStackElement(tempToken, NULL);
+        if (newElement == NULL) {
+            free(tempToken);
+            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+        }
         push(&tempStack, newElement);
         // display(&tempStack);
         getNextToken(token);
     }
-    delimiterToken = token;
+
+    // Check if the last token is a delimiter
+    *delimiterToken = *token;
     if (!isDelimiter(token)) {
-        return NULL; // syntax error
+        return NULL; // Token doesn't belong in the expression - a syntax error occured
     }
 
+    // Reverse the temporary stack and push it onto the input stack
     while (!isEmpty(&tempStack)) {
         StackElement *topElement = top(&tempStack);
-        StackElement *newElement = malloc(sizeof(StackElement));
-        if (newElement == NULL) {
-            fprintf(stderr, "Memory allocation failure.\n");
-            exit(1);
-            return NULL;
-        }
-        Token *tempToken = malloc(sizeof(Token));
+
+        // Duplicate the token from the top element
+        Token *tempToken = copyToken(topElement->tokenPtr);
         if (tempToken == NULL) {
-            free(newElement);
-            fprintf(stderr, "Memory allocation failure.\n");
-            exit(1);
-            return NULL;
+            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
-        *tempToken = *(topElement->tokenPtr); // Copy the token
-        initStackElement(newElement, tempToken);
+
+        // Create a new stack element with the duplicated token
+        StackElement *newElement = createStackElement(tempToken, NULL);
+        if (newElement == NULL) {
+            free(tempToken);
+            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+        }
+
+        // Push the new element onto the input stack
         push(stack, newElement);
+        // Pop the top element from the temporary stack
         pop(&tempStack);
     }
     cleanupStack(&tempStack);
