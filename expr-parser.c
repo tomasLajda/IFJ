@@ -339,6 +339,18 @@ Token *createToken(TokenType type) {
     return token;
 }
 
+Token *copyToken(Token *token) {
+    Token *newToken = (Token *)malloc(sizeof(Token));
+    if (newToken == NULL) {
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
+    }
+    newToken->type = token->type;
+    newToken->attribute = token->attribute;
+    newToken->line = token->line;
+    return newToken;
+}
+
 int parseExpression(AST *exprAST, Token *token) {
 
     // Initialize the stack on which the expression will be shifted and reduced
