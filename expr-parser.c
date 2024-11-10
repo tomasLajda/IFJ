@@ -116,26 +116,6 @@ int isDelimiter(Token *token) { // Returns 1 if the token is a delimiter, 0 othe
            token->type == TOKEN_TYPE_RIGHT_BR;    // )
 }
 
-int precedence(Token *token) {
-    switch (token->type) {
-    case TOKEN_TYPE_EQ:  // ==
-    case TOKEN_TYPE_NEQ: // !=
-    case TOKEN_TYPE_LTH: // >
-    case TOKEN_TYPE_LEQ: // >=
-    case TOKEN_TYPE_GTH: // <
-    case TOKEN_TYPE_GEQ: // <=
-        return 1;
-    case TOKEN_TYPE_PLUS:  // +
-    case TOKEN_TYPE_MINUS: // -
-        return 2;
-    case TOKEN_TYPE_MUL: // *
-    case TOKEN_TYPE_DIV: // /
-        return 3;
-    default:
-        return 0;
-    }
-}
-
 int isLeftAssociative(Token *token) {
     switch (token->type) {
     case TOKEN_TYPE_PLUS:  // +
