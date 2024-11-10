@@ -9,10 +9,9 @@ IFJ project
 #ifndef _SCANNER_H
 #define _SCANNER_H
 
-#include <stdio.h>
-
 #include "dynamic_string.h"
 #include "enums.h"
+#include <stdio.h>
 
 typedef union {
     int integer;
@@ -28,5 +27,7 @@ typedef struct {
 } Token;
 
 int getNextToken(Token *token);
+
+extern FILE *sourceFile;
 
 #endif
