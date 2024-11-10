@@ -352,7 +352,7 @@ int parseExpression(AST *exprAST, Token *token) {
     initStack(stack);
     // Add a dollar element which serves as a bottom of the stack
     StackElement *dollar = createStackElement(createToken(DOLLAR), NULL);
-    if (dollar == NULL || dollar->tokenPtr->type == NULL) {
+    if (dollar == NULL || dollar->tokenPtr == NULL) {
         cleanupStack(stack);
         free(stack);
         HANDLE_ERROR("Memory allocation failure.\n", INTERNAL_ERROR, 2);
@@ -432,13 +432,13 @@ int parseExpression(AST *exprAST, Token *token) {
             case EXPR_DIV: // Expr -> Expr / Expr
 
                 // Pop right operand
-                StackElement *rightElement = createStackElement(topToken(stack), NULL);
+                // StackElement *rightElement = createStackElement(topToken(stack), NULL);
                 pop(stack);
                 // Pop operator
-                StackElement *operatorElement = createStackElement(topToken(stack), NULL);
+                // StackElement *operatorElement = createStackElement(topToken(stack), NULL);
                 pop(stack);
                 // Pop left operand
-                StackElement *leftElement = createStackElement(topToken(stack), NULL);
+                // StackElement *leftElement = createStackElement(topToken(stack), NULL);
                 pop(stack);
 
                 // Push Expr token to replace the reduced expression
