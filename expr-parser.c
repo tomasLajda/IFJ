@@ -129,72 +129,6 @@ int isLeftAssociative(Token *token) {
 }
 
 /**
- * @brief Fills the input stack with tokens up to a delimiter token.
- *
- * @param stack A pointer to the stack to be filled.
- * @param delimiterToken A pointer that stores the token that acts as a delimiter.
- * @return A pointer to the filled stack.
- */
-Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
-    Stack tempStack;
-    initStack(&tempStack);
-
-    Token *token = (Token *)malloc(sizeof(Token));
-    if (token == NULL) {
-        fprintf(stderr, "Memory allocation failure.\n");
-        exit(1);
-    }
-    getNextToken(token);
-
-    while (isOperand(token) || isOperator(token) || token->type == TOKEN_TYPE_LEFT_BR ||
-           token->type == TOKEN_TYPE_RIGHT_BR) {
-        StackElement *newElement = malloc(sizeof(StackElement));
-        if (newElement == NULL) {
-            fprintf(stderr, "Memory allocation failure.\n");
-            exit(1);
-        }
-        Token *tempToken = malloc(sizeof(Token));
-        if (tempToken == NULL) {
-            free(newElement);
-            fprintf(stderr, "Memory allocation failure.\n");
-            exit(1);
-        }
-        *tempToken = *token; // Copy the token
-        initStackElement(newElement, tempToken);
-        push(&tempStack, newElement);
-        // display(&tempStack);
-        getNextToken(token);
-    }
-    delimiterToken = token;
-    if (!isDelimiter(token)) {
-        return NULL; // syntax error
-    }
-
-    while (!isEmpty(&tempStack)) {
-        StackElement *topElement = top(&tempStack);
-        StackElement *newElement = malloc(sizeof(StackElement));
-        if (newElement == NULL) {
-            fprintf(stderr, "Memory allocation failure.\n");
-            exit(1);
-            return NULL;
-        }
-        Token *tempToken = malloc(sizeof(Token));
-        if (tempToken == NULL) {
-            free(newElement);
-            fprintf(stderr, "Memory allocation failure.\n");
-            exit(1);
-            return NULL;
-        }
-        *tempToken = *(topElement->tokenPtr); // Copy the token
-        initStackElement(newElement, tempToken);
-        push(stack, newElement);
-        pop(&tempStack);
-    }
-    cleanupStack(&tempStack);
-    return stack;
-}
-
-/**
  * @brief Checks if the given stack is reducible.
  *
  * @param stack A pointer to the stack to be checked.
@@ -349,6 +283,72 @@ Token *copyToken(Token *token) {
     newToken->attribute = token->attribute;
     newToken->line = token->line;
     return newToken;
+}
+
+/**
+ * @brief Fills the input stack with tokens up to a delimiter token.
+ *
+ * @param stack A pointer to the stack to be filled.
+ * @param delimiterToken A pointer that stores the token that acts as a delimiter.
+ * @return A pointer to the filled stack.
+ */
+Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
+    Stack tempStack;
+    initStack(&tempStack);
+
+    Token *token = (Token *)malloc(sizeof(Token));
+    if (token == NULL) {
+        fprintf(stderr, "Memory allocation failure.\n");
+        exit(1);
+    }
+    getNextToken(token);
+
+    while (isOperand(token) || isOperator(token) || token->type == TOKEN_TYPE_LEFT_BR ||
+           token->type == TOKEN_TYPE_RIGHT_BR) {
+        StackElement *newElement = malloc(sizeof(StackElement));
+        if (newElement == NULL) {
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
+        }
+        Token *tempToken = malloc(sizeof(Token));
+        if (tempToken == NULL) {
+            free(newElement);
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
+        }
+        *tempToken = *token; // Copy the token
+        initStackElement(newElement, tempToken);
+        push(&tempStack, newElement);
+        // display(&tempStack);
+        getNextToken(token);
+    }
+    delimiterToken = token;
+    if (!isDelimiter(token)) {
+        return NULL; // syntax error
+    }
+
+    while (!isEmpty(&tempStack)) {
+        StackElement *topElement = top(&tempStack);
+        StackElement *newElement = malloc(sizeof(StackElement));
+        if (newElement == NULL) {
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
+            return NULL;
+        }
+        Token *tempToken = malloc(sizeof(Token));
+        if (tempToken == NULL) {
+            free(newElement);
+            fprintf(stderr, "Memory allocation failure.\n");
+            exit(1);
+            return NULL;
+        }
+        *tempToken = *(topElement->tokenPtr); // Copy the token
+        initStackElement(newElement, tempToken);
+        push(stack, newElement);
+        pop(&tempStack);
+    }
+    cleanupStack(&tempStack);
+    return stack;
 }
 
 int parseExpression(AST *exprAST, Token *token) {
