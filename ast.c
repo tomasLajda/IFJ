@@ -44,6 +44,10 @@ void disposeSubtree(ASTNode *node) {
     disposeSubtree(node->left);
     disposeSubtree(node->right);
 
+    if (node->exprTree != NULL) {
+        freeAST(node->exprTree);
+    }
+
     if (node->token != NULL) {
         free(node->token);
     }
