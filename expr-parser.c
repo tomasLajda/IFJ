@@ -113,10 +113,9 @@ int isParentheses(Token *token) {
 
 // Returns 1 if the token is a delimiter, 0 otherwise
 int isDelimiter(Token *token) {
-    return token->type == TOKEN_TYPE_EOL ||       // EOL
-           token->type == TOKEN_TYPE_EOF ||       // EOF
-           token->type == TOKEN_TYPE_SEMICOLON || // ;
-           token->type == TOKEN_TYPE_RIGHT_BR;    // )
+    return token->type == TOKEN_TYPE_SEMICOLON || // ;    a = 2 + 3;
+           token->type == TOKEN_TYPE_COMMA ||     // ,    f(2+3, 4){}
+           token->type == TOKEN_TYPE_RIGHT_BR;    // )    f(2+3){}
 }
 
 int isLeftAssociative(Token *token) {
@@ -294,6 +293,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
 
     // Begin filling
     getNextToken(token);
+    printf("token type: %s\n", TokenTypeToString(token->type));
     while (isOperand(token) || isOperator(token) || isParentheses(token)) {
         // Copy the token for the stack element
         Token *tempToken = copyToken(token);
@@ -312,9 +312,10 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         push(&tempStack, newElement);
         getNextToken(token);
     }
-
+    printf("token type: %s\n", TokenTypeToString(token->type));
     // Check if the last token is a delimiter
     *delimiterToken = *token;
+    printf("delimiter token type: %s\n", TokenTypeToString(delimiterToken->type));
     if (!isDelimiter(token)) {
         free(token);
         cleanupStack(&tempStack);
@@ -513,7 +514,7 @@ int parseExpression(AST *exprAST, Token *token) {
             //        "------------------------------------\n");
 
             currentInputElement = top(input);
-            if (isEmpty(input)) { // TODO: figure out why this works
+            if (isEmpty(input)) {
                 currentInputElement = createStackElement(createToken(DOLLAR), NULL);
             }
         } else {
