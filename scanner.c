@@ -678,13 +678,15 @@ int main() {
     printf("Parsing expression...\n");
     parseExpression(exprAST, token);
     printf("Parsing finished...\n");
+    displayAST(exprAST);
+    printf("Delimiter token: %s\n", tokenTypeToString(token->type));
     // printAST(exprAST->root, 0);
 
     // // Cleanup
 
-    // free(token);
-    // freeAST(exprAST);
+    free(token);
+    freeAST(exprAST);
 
-    // fclose(sourceFile);
+    fclose(sourceFile);
     return 0;
 }
