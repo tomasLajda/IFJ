@@ -9,6 +9,7 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include "ast.h"
 #include "scanner.h"
 #include <stdbool.h>
 
@@ -16,6 +17,7 @@
  * @brief Structure representing an element in the stack.
  */
 typedef struct StackElement {
+    ASTNode *ASTNodePtr;
     Token *tokenPtr;
     struct StackElement *next;
 } StackElement;
