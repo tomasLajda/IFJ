@@ -10,6 +10,7 @@ IFJ Project
 #include "ast.h"
 #include "error_codes.h"
 #include "expr-parser.h"
+#include "helpers.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -565,99 +566,6 @@ int getNextToken(Token *token) {
     }
 }
 
-char *tokenTypeToString(TokenType type) {
-    switch (type) {
-    case TOKEN_TYPE_EMPTY:
-        return "TOKEN_TYPE_EMPTY";
-    case TOKEN_TYPE_EOF:
-        return "TOKEN_TYPE_EOF";
-    case TOKEN_TYPE_EOL:
-        return "TOKEN_TYPE_EOL";
-    case TOKEN_TYPE_COMMENT:
-        return "TOKEN_TYPE_COMMENT";
-    case TOKEN_TYPE_IDENTIFIER:
-        return "TOKEN_TYPE_IDENTIFIER";
-    case TOKEN_TYPE_KEYWORD:
-        return "TOKEN_TYPE_KEYWORD";
-    case TOKEN_TYPE_INTEGER_VALUE:
-        return "TOKEN_TYPE_INTEGER_VALUE";
-    case TOKEN_TYPE_DOUBLE_VALUE:
-        return "TOKEN_TYPE_DOUBLE_VALUE";
-    case TOKEN_TYPE_STRING_VALUE:
-        return "TOKEN_TYPE_STRING_VALUE";
-    case TOKEN_TYPE_EQ:
-        return "TOKEN_TYPE_EQ";
-    case TOKEN_TYPE_NEQ:
-        return "TOKEN_TYPE_NEQ";
-    case TOKEN_TYPE_LTH:
-        return "TOKEN_TYPE_LTH";
-    case TOKEN_TYPE_LEQ:
-        return "TOKEN_TYPE_LEQ";
-    case TOKEN_TYPE_GTH:
-        return "TOKEN_TYPE_GTH";
-    case TOKEN_TYPE_GEQ:
-        return "TOKEN_TYPE_GEQ";
-    case TOKEN_TYPE_ASSIGN:
-        return "TOKEN_TYPE_ASSIGN";
-    case TOKEN_TYPE_PLUS:
-        return "TOKEN_TYPE_PLUS";
-    case TOKEN_TYPE_MINUS:
-        return "TOKEN_TYPE_MINUS";
-    case TOKEN_TYPE_MUL:
-        return "TOKEN_TYPE_MUL";
-    case TOKEN_TYPE_DIV:
-        return "TOKEN_TYPE_DIV";
-    case TOKEN_TYPE_OR:
-        return "TOKEN_TYPE_OR";
-    case TOKEN_TYPE_LEFT_BR:
-        return "TOKEN_TYPE_LEFT_BR";
-    case TOKEN_TYPE_RIGHT_BR:
-        return "TOKEN_TYPE_RIGHT_BR";
-    case TOKEN_TYPE_LEFT_CURLY_BR:
-        return "TOKEN_TYPE_LEFT_CURLY_BR";
-    case TOKEN_TYPE_RIGHT_CURLY_BR:
-        return "TOKEN_TYPE_RIGHT_CURLY_BR";
-    case TOKEN_TYPE_COMMA:
-        return "TOKEN_TYPE_COMMA";
-    case TOKEN_TYPE_COLON:
-        return "TOKEN_TYPE_COLON";
-    case TOKEN_TYPE_SEMICOLON:
-        return "TOKEN_TYPE_SEMICOLON";
-    case TOKEN_TYPE_DOT:
-        return "TOKEN_TYPE_DOT";
-    case TOKEN_TYPE_AT:
-        return "TOKEN_TYPE_AT";
-    case TOKEN_TYPE_EXPR:
-        return "TOKEN_TYPE_EXPR";
-    case TOKEN_TYPE_DOLLA:
-        return "TOKEN_TYPE_DOLLA";
-    // Add all other TokenType cases here
-    default:
-        return "UNKNOWN_TOKEN_TYPE";
-    }
-}
-
-// Helper function to print indentation
-void printIndent(int depth) {
-    for (int i = 0; i < depth; i++) {
-        printf("  "); // Two spaces per level
-    }
-}
-
-void printAST(ASTNode *node, int depth) {
-    if (node == NULL) {
-        printf("NULL\n");
-        return;
-    }
-
-    // Print current node
-    printIndent(depth);
-    printf("%s\n", tokenTypeToString(node->token->type));
-
-    // Recursively print left and right children
-    printAST(node->left, depth + 1);
-    printAST(node->right, depth + 1);
-}
 int main() {
     sourceFile = fopen("test.txt", "r");
     if (sourceFile == NULL) {
@@ -679,8 +587,7 @@ int main() {
     parseExpression(exprAST, token);
     printf("Parsing finished...\n");
     displayAST(exprAST);
-    printf("Delimiter token: %s\n", tokenTypeToString(token->type));
-    // printAST(exprAST->root, 0);
+    printf("Delimiter token: %s\n", TokenTypeToString(token->type));
 
     // // Cleanup
 
