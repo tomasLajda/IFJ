@@ -17,7 +17,7 @@
  * @brief Structure representing an element in the stack.
  */
 typedef struct StackElement {
-    AST *ASTPtr;
+    ASTNode *ASTNodePtr;
     Token *tokenPtr;
     struct StackElement *next;
 } StackElement;
