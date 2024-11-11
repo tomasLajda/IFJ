@@ -8,6 +8,7 @@
 
 #include "stack.h"
 #include "error_codes.h"
+#include "helpers.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -37,13 +38,12 @@ void push(Stack *stack, StackElement *elementPtr) {
     if (stack == NULL || elementPtr == NULL) {
         HANDLE_ERROR("Stack or StackElement pointer is NULL", INTERNAL_ERROR);
     }
-    StackElement *temp = malloc(sizeof(StackElement));
-    if (temp == NULL) {
-        HANDLE_ERROR("Malloc failed", INTERNAL_ERROR);
+    if (isEmpty(stack)) {
+        stack->top = elementPtr;
+    } else {
+        elementPtr->next = stack->top;
+        stack->top = elementPtr;
     }
-    temp->tokenPtr = elementPtr->tokenPtr;
-    temp->next = stack->top;
-    stack->top = temp;
 }
 
 void pop(Stack *stack) {
@@ -99,7 +99,7 @@ void display(Stack *stack) {
     printf("Top -> ");
     StackElement *current = stack->top;
     while (current != NULL) {
-        printf("| %d ", current->tokenPtr->type);
+        printf("| %d ", TokenTypeToString(current->tokenPtr->type));
         current = current->next;
     }
     printf("|\n");
