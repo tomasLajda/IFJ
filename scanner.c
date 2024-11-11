@@ -582,19 +582,23 @@ int main() {
     AST *exprAST = initAST();
     ASTNode *root = initASTNode();
     exprAST->root = root;
-    // displayAST(exprAST);
+
     printf("Parsing expression...\n");
-    parseExpression(exprAST, token);
+    int result = parseExpression(exprAST, token);
     printf("Parsing finished...\n");
     displayAST(exprAST);
     printf("Delimiter token: %s\n", TokenTypeToString(token->type));
-
-    // // Cleanup
+    if (result == 0) {
+        printf("Expression parsed successfully.\n");
+    } else if (result == 1) {
+        printf("Syntax error encountered.\n");
+    } else if (result == 2) {
+        printf("Internal parsing error encountered.\n");
+    }
+    // Cleanup
 
     free(token);
-    disposeSubtree(root);
     freeAST(exprAST);
-
     fclose(sourceFile);
     return 0;
 }
