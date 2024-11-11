@@ -60,9 +60,9 @@ void pop(Stack *stack) {
     if (tmp->tokenPtr != NULL) {
         free(tmp->tokenPtr);
     }
-    if (tmp->ASTNodePtr != NULL) {
-        disposeSubtree(tmp->ASTNodePtr);
-    }
+    // if (tmp->ASTNodePtr != NULL) {
+    //     disposeSubtree(tmp->ASTNodePtr);
+    // }
     free(tmp);
 }
 
