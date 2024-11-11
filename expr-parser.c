@@ -142,9 +142,9 @@ int isReducible(Stack *stack, Token *nextInputToken) {
         return 0; // Stack is empty, cannot reduce
     }
 
-    printf("Checking reducibility of the stack...\n");
-    display(stack);
-    printf("Next input token: %s\n", TokenTypeToString(nextInputToken->type));
+    // printf("Checking reducibility of the stack...\n");
+    // display(stack);
+    // printf("Next input token: %s\n", TokenTypeToString(nextInputToken->type));
 
     StackElement *first = stack->top;
 
@@ -308,7 +308,6 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
 
     // Begin filling
     getNextToken(token);
-    printf("token type: %s\n", TokenTypeToString(token->type));
     while (isOperand(token) || isOperator(token) || isParentheses(token)) {
         // Copy the token for the stack element
         Token *tempToken = copyToken(token);
@@ -329,10 +328,8 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         push(&tempStack, newElement);
         getNextToken(token);
     }
-    printf("token type: %s\n", TokenTypeToString(token->type));
     // Check if the last token is a delimiter
     *delimiterToken = *token;
-    printf("delimiter token type: %s\n", TokenTypeToString(delimiterToken->type));
     if (!isDelimiter(token)) {
         free(token);
         cleanupStack(&tempStack);
@@ -417,12 +414,12 @@ int parseExpression(AST *exprAST, Token *token) {
     }
 
     // // LOGGING PRINTS
-    printf("      starting stack: ");
-    display(stack);
-    printf("starting input stack: ");
-    display(input);
-    printf(
-        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
+    // printf("      starting stack: ");
+    // display(stack);
+    // printf("starting input stack: ");
+    // display(input);
+    // printf(
+    //     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
 
     // Initialize the current and next input element
     StackElement *currentInputElement = top(input);
@@ -440,8 +437,8 @@ int parseExpression(AST *exprAST, Token *token) {
     while (!isEmpty(input) || isReducible(stack, currentInputElement->tokenPtr)) {
         if (isReducible(stack, currentInputElement->tokenPtr)) { // Reduce
             int rule = chooseReduceRule(stack);
-            printf("reducing ");
-            display(stack);
+            // printf("reducing ");
+            // display(stack);
 
             switch (rule) {
             case EXPR_ADD: // Expr -> Expr + Expr
@@ -551,8 +548,6 @@ int parseExpression(AST *exprAST, Token *token) {
                 currentInputElement = createStackElement(createToken(DOLLAR), NULL);
             }
 
-            // displayAST(exprAST);
-
         } else {
             fprintf(stderr, "Error: Cannot reduce further.\n");
             cleanupStack(input);
@@ -565,16 +560,15 @@ int parseExpression(AST *exprAST, Token *token) {
 
     if (getStackLength(stack) == 2 && stack->top->tokenPtr->type == EXPR &&
         stack->top->next->tokenPtr->type == DOLLAR) {
+        // Successful parsing
         exprAST->root = stack->top->ASTNodePtr;
-        displayAST(exprAST);
-        printf("Parsing successful.\n");
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
         free(stack);
         return 0;
     } else {
-        printf("Incorrect syntax detected.\n");
+        // Syntax error
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
