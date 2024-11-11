@@ -8,6 +8,7 @@
 
 #include "stack.h"
 #include "error_codes.h"
+#include "helpers.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -98,7 +99,7 @@ void display(Stack *stack) {
     printf("Top -> ");
     StackElement *current = stack->top;
     while (current != NULL) {
-        printf("| %d ", current->tokenPtr->type);
+        printf("| %d ", TokenTypeToString(current->tokenPtr->type));
         current = current->next;
     }
     printf("|\n");
