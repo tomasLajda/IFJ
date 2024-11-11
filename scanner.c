@@ -672,14 +672,13 @@ int main() {
 
     // Initialize AST
     AST *exprAST = initAST();
-    if (exprAST == NULL) {
-        fprintf(stderr, "Memory allocation failure.\n");
-        return 1;
-    }
+    ASTNode *root = initASTNode();
+    exprAST->root = root;
+    // displayAST(exprAST);
     printf("Parsing expression...\n");
     parseExpression(exprAST, token);
     printf("Parsing finished...\n");
-    printAST(exprAST->root, 0);
+    // printAST(exprAST->root, 0);
 
     // // Cleanup
 
