@@ -7,6 +7,7 @@
  */
 
 #include "stack.h"
+#include "ast.h"
 #include "error_codes.h"
 #include "helpers.h"
 #include <stdio.h>
@@ -24,6 +25,7 @@ void initStackElement(StackElement *element, Token *tokenPtr) {
         HANDLE_ERROR("StackElement pointer is NULL", INTERNAL_ERROR);
     }
     element->tokenPtr = tokenPtr;
+    element->ASTNodePtr = NULL;
     element->next = NULL;
 }
 
@@ -51,13 +53,15 @@ void pop(Stack *stack) {
         HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR);
     }
     if (isEmpty(stack)) {
-        fprintf(stderr, "Stack is empty\n");
-        return;
+        HANDLE_ERROR("Stack is empty", INTERNAL_ERROR);
     }
     StackElement *tmp = stack->top;
     stack->top = stack->top->next;
     if (tmp->tokenPtr != NULL) {
         free(tmp->tokenPtr);
+    }
+    if (tmp->ASTNodePtr != NULL) {
+        disposeSubtree(tmp->ASTNodePtr);
     }
     free(tmp);
 }
@@ -67,7 +71,7 @@ StackElement *top(Stack *stack) {
         HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, NULL);
     }
     if (isEmpty(stack)) {
-        fprintf(stderr, "Stack is empty\n");
+        // fprintf(stderr, "Stack is empty\n");
         return NULL;
     }
     return stack->top;
@@ -78,7 +82,7 @@ Token *topToken(Stack *stack) {
         HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, NULL);
     }
     if (isEmpty(stack)) {
-        fprintf(stderr, "Stack is empty\n");
+        // fprintf(stderr, "Stack is empty\n");
         return NULL;
     }
     if (stack->top->tokenPtr == NULL) {

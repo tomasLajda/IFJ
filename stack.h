@@ -61,7 +61,7 @@ bool isEmpty(Stack *stack);
 void push(Stack *stack, StackElement *elementPtr);
 
 /**
- * @brief Pops (removes) an element from the stack.
+ * @brief Pops (removes) an element from the stack. Prints an error message if the stack is empty.
  *
  * @param stack Pointer to the stack.
  */
