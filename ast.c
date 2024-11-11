@@ -33,8 +33,6 @@ ASTNode *initASTNode() {
     node->parent = NULL;
     node->exprTree = NULL;
     node->token = NULL;
-    node->left = NULL;
-    node->right = NULL;
     return node;
 }
 
@@ -45,6 +43,10 @@ void disposeSubtree(ASTNode *node) {
 
     disposeSubtree(node->left);
     disposeSubtree(node->right);
+
+    if (node->exprTree != NULL) {
+        freeAST(node->exprTree);
+    }
 
     if (node->token != NULL) {
         free(node->token);
