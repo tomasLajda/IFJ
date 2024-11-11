@@ -7,6 +7,7 @@
  */
 
 #include "stack.h"
+#include "ast.h"
 #include "error_codes.h"
 #include "helpers.h"
 #include <stdio.h>
@@ -24,6 +25,7 @@ void initStackElement(StackElement *element, Token *tokenPtr) {
         HANDLE_ERROR("StackElement pointer is NULL", INTERNAL_ERROR);
     }
     element->tokenPtr = tokenPtr;
+    element->ASTNodePtr = NULL;
     element->next = NULL;
 }
 
@@ -58,6 +60,9 @@ void pop(Stack *stack) {
     stack->top = stack->top->next;
     if (tmp->tokenPtr != NULL) {
         free(tmp->tokenPtr);
+    }
+    if (tmp->ASTNodePtr != NULL) {
+        disposeSubtree(tmp->ASTNodePtr);
     }
     free(tmp);
 }
