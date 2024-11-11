@@ -536,7 +536,7 @@ int parseExpression(AST *exprAST, Token *token) {
         free(stack);
         return 0;
     } else {
-        printf("Parsing failed.\n");
+        printf("Incorrect syntax detected.\n");
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
