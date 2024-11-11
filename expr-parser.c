@@ -331,7 +331,6 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     // Check if the last token is a delimiter
     *delimiterToken = *token;
     if (!isDelimiter(token)) {
-        free(token);
         cleanupStack(&tempStack);
         return NULL; // Token doesn't belong in the expression - a syntax error occured
     }
@@ -550,6 +549,7 @@ int parseExpression(AST *exprAST, Token *token) {
 
         } else {
             fprintf(stderr, "Error: Cannot reduce further.\n");
+            free(currentInputElement);
             cleanupStack(input);
             free(input);
             cleanupStack(stack);
@@ -562,6 +562,7 @@ int parseExpression(AST *exprAST, Token *token) {
         stack->top->next->tokenPtr->type == DOLLAR) {
         // Successful parsing
         exprAST->root = stack->top->ASTNodePtr;
+        free(currentInputElement);
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
@@ -569,6 +570,7 @@ int parseExpression(AST *exprAST, Token *token) {
         return 0;
     } else {
         // Syntax error
+        free(currentInputElement);
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
