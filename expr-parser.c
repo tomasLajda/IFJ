@@ -244,12 +244,12 @@ int chooseReduceRule(Stack *stack) {
     return -1; // No rule to apply
 }
 
-StackElement *createStackElement(Token *token, AST *ast) {
+StackElement *createStackElement(Token *token, ASTNode *astNodePtr) {
     StackElement *element = (StackElement *)malloc(sizeof(StackElement));
     if (element == NULL) {
         HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
     }
-    element->ASTPtr = ast;
+    element->ASTNodePtr = astNodePtr;
     element->tokenPtr = token;
     element->next = NULL;
     return element;
@@ -265,6 +265,9 @@ Token *createToken(TokenType type) {
 }
 
 Token *copyToken(Token *token) {
+    if (token == NULL) {
+        return NULL;
+    }
     Token *newToken = (Token *)malloc(sizeof(Token));
     if (newToken == NULL) {
         HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
@@ -273,6 +276,18 @@ Token *copyToken(Token *token) {
     newToken->attribute = token->attribute;
     newToken->line = token->line;
     return newToken;
+}
+
+ASTNode *copyASTNode(ASTNode *node) {
+    if (node == NULL) {
+        return NULL;
+    }
+    ASTNode *newNode = initASTNode();
+    newNode->left = node->left;
+    newNode->right = node->right;
+    newNode->parent = node->parent;
+    newNode->token = copyToken(node->token);
+    return newNode;
 }
 
 /**
@@ -302,8 +317,10 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
 
+        ASTNode *astNode = initASTNode();
+        astNode->token = copyToken(token);
         // Create a stack element and push it onto the temporary stack
-        StackElement *newElement = createStackElement(tempToken, NULL);
+        StackElement *newElement = createStackElement(tempToken, astNode);
         if (newElement == NULL) {
             free(tempToken);
             free(token);
@@ -334,8 +351,17 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
 
+        // Duplicate the ASTNode from the top element
+        ASTNode *astNode = copyASTNode(topElement->ASTNodePtr);
+        if (astNode == NULL) {
+            cleanupStack(&tempStack);
+            free(token);
+            free(tempToken);
+            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+        }
+
         // Create a new stack element with the duplicated token
-        StackElement *newElement = createStackElement(tempToken, NULL);
+        StackElement *newElement = createStackElement(tempToken, astNode);
         if (newElement == NULL) {
             free(token);
             cleanupStack(&tempStack);
@@ -390,17 +416,10 @@ int parseExpression(AST *exprAST, Token *token) {
         return 1; // Indicate syntax error
     }
 
-    // Initialize the AST
-    // exprAST = initAST(); // TODO: implement AST filling
-    // if (exprAST == NULL) {
-    //     fprintf(stderr, "Memory allocation failure.\n");
-    //     return 1;
-    // }
-
     // // LOGGING PRINTS
     printf("      starting stack: ");
     display(stack);
-    printf("starting input stack:");
+    printf("starting input stack: ");
     display(input);
     printf(
         "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
@@ -437,17 +456,26 @@ int parseExpression(AST *exprAST, Token *token) {
             case EXPR_DIV: // Expr -> Expr / Expr
 
                 // Pop right operand
-                // StackElement *rightElement = createStackElement(topToken(stack), NULL);
-                pop(stack);
-                // Pop operator
-                // StackElement *operatorElement = createStackElement(topToken(stack), NULL);
-                pop(stack);
-                // Pop left operand
-                // StackElement *leftElement = createStackElement(topToken(stack), NULL);
+                ASTNode *rightNode = copyASTNode(top(stack)->ASTNodePtr);
+                // printf("right node: %s\n", TokenTypeToString(rightNode->token->type));
                 pop(stack);
 
+                // Pop operator
+                ASTNode *operatorNode = initASTNode();
+                operatorNode->token = copyToken(top(stack)->tokenPtr);
+                // printf("operator node: %s\n", TokenTypeToString(top(stack)->tokenPtr->type));
+                pop(stack);
+
+                // Pop left operand
+                ASTNode *leftNode = copyASTNode(top(stack)->ASTNodePtr);
+                // printf("left node: %s\n", TokenTypeToString(leftNode->token->type));
+                pop(stack);
+
+                addLeftNode(exprAST, operatorNode, leftNode);
+                addRightNode(exprAST, operatorNode, rightNode);
+
                 // Push Expr token to replace the reduced expression
-                push(stack, createStackElement(createToken(EXPR), NULL));
+                push(stack, createStackElement(createToken(EXPR), operatorNode));
                 // printf("\n[Reduce] Applied rule: %d\n", (rule));
                 // printf("Parser Stack after reduction:\n");
                 // display(stack);
@@ -460,10 +488,13 @@ int parseExpression(AST *exprAST, Token *token) {
                 // display(stack);
 
                 // Pop id
+                ASTNode *idNode = copyASTNode(top(stack)->ASTNodePtr);
+                // printf("id node: %s\n", TokenTypeToString(top(stack)->ASTNodePtr->token->type));
                 pop(stack);
+                // printf("id node: %s\n", TokenTypeToString(idNode->token->type));
                 // Push Expr token to replace the id
-                push(stack, createStackElement(createToken(EXPR), NULL));
-
+                push(stack, createStackElement(createToken(EXPR), idNode));
+                // printf("id node: %s\n", TokenTypeToString(idNode->token->type));
                 // printf("\n[Reduce] Applied rule: %d\n", (rule));
                 // printf("Parser Stack after reduction:\n");
                 // display(stack);
@@ -477,12 +508,13 @@ int parseExpression(AST *exprAST, Token *token) {
                 // Pop the right parenthesis
                 pop(stack);
                 // Pop the expression
+                ASTNode *parenthesesNode = copyASTNode(top(stack)->ASTNodePtr);
                 pop(stack);
                 // Pop the left parenthesis
                 pop(stack);
 
                 // Push Expr token to replace the reduced expression
-                push(stack, createStackElement(createToken(EXPR), NULL));
+                push(stack, createStackElement(createToken(EXPR), parenthesesNode));
                 // printf("\n[Reduce] Applied rule: %d\n", (rule));
                 // printf("Parser Stack after reduction:\n");
                 // display(stack);
@@ -502,8 +534,9 @@ int parseExpression(AST *exprAST, Token *token) {
             // printf("No, so shifting...\n");
 
             Token *currentToken = createToken(currentInputElement->tokenPtr->type);
+            ASTNode *currentASTNode = copyASTNode(currentInputElement->ASTNodePtr);
             pop(input);
-            StackElement *newElement = createStackElement(currentToken, NULL);
+            StackElement *newElement = createStackElement(currentToken, currentASTNode);
             push(stack, newElement);
 
             // printf("STACK AFTER SHIFTING: ");
@@ -517,6 +550,9 @@ int parseExpression(AST *exprAST, Token *token) {
             if (isEmpty(input)) {
                 currentInputElement = createStackElement(createToken(DOLLAR), NULL);
             }
+
+            // displayAST(exprAST);
+
         } else {
             fprintf(stderr, "Error: Cannot reduce further.\n");
             cleanupStack(input);
@@ -529,6 +565,8 @@ int parseExpression(AST *exprAST, Token *token) {
 
     if (getStackLength(stack) == 2 && stack->top->tokenPtr->type == EXPR &&
         stack->top->next->tokenPtr->type == DOLLAR) {
+        exprAST->root = stack->top->ASTNodePtr;
+        displayAST(exprAST);
         printf("Parsing successful.\n");
         cleanupStack(input);
         free(input);
