@@ -99,7 +99,7 @@ void display(Stack *stack) {
     printf("Top -> ");
     StackElement *current = stack->top;
     while (current != NULL) {
-        printf("| %d ", TokenTypeToString(current->tokenPtr->type));
+        printf("| %s ", TokenTypeToString(current->tokenPtr->type));
         current = current->next;
     }
     printf("|\n");
