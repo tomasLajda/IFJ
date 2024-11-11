@@ -33,6 +33,8 @@ ASTNode *initASTNode() {
     node->parent = NULL;
     node->exprTree = NULL;
     node->token = NULL;
+    node->left = NULL;
+    node->right = NULL;
     return node;
 }
 
