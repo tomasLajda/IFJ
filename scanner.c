@@ -592,6 +592,7 @@ int main() {
     // // Cleanup
 
     free(token);
+    disposeSubtree(root);
     freeAST(exprAST);
 
     fclose(sourceFile);
