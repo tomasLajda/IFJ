@@ -153,4 +153,11 @@ SymbolTable *symbolTableGetPrevious(SymbolTable *table);
  */
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key);
 
+/**
+ * @brief Prints the symbol table.
+ *
+ * @param table Pointer to the symbol table.
+ */
+void symbolTablePrint(SymbolTable *table);
+
 #endif
