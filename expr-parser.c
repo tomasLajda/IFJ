@@ -307,9 +307,19 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
     }
 
+    int openingParentheses = 0;
+    int closingParentheses = 0;
     // Begin filling
     getNextToken(token);
     while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+        if (token->type == TOKEN_TYPE_LEFT_BR) {
+            openingParentheses++;
+        } else if (token->type == TOKEN_TYPE_RIGHT_BR) {
+            closingParentheses++;
+        }
+        if (closingParentheses > openingParentheses) {
+            break;
+        }
         // Copy the token for the stack element
         Token *tempToken = copyToken(token);
         if (tempToken == NULL) {
