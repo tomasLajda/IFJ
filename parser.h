@@ -24,6 +24,14 @@ extern AST* ast;
 void peek();
 
 /**
+ * @brief Checks if the current token is a keyword
+ * 
+ * @param keyword The keyword to check
+ * @return True if the current token is the keyword, false otherwise
+ */
+bool isKeyword(Keyword keyword);
+
+/**
  * @brief Parses the whole program
  * 
  * @return Returns 0 if the program was parsed successfully, non-zero if an error was encountered
