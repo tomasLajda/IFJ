@@ -15,7 +15,7 @@ bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType
     return symbol != NULL && symbol->type == valueType;
 }
 
-bool checkVariableAssigned(SymbolTable *table, const char *key) {
+bool checkVariableDefined(SymbolTable *table, const char *key) {
     Symbol *symbol = symbolTableGetSymbol(table, key);
     return symbol != NULL && symbol->defined;
 }
@@ -38,6 +38,10 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
         parameterIndex--;
     }
 
+    if (!listIsActive(symbol->params)) {
+        return false;
+    }
+
     ListData data;
     listGetValue(symbol->params, &data);
 
@@ -57,7 +61,7 @@ bool checkReturnType(SymbolTable *table, DataType type) {
         return false;
     }
 
-    Symbol *symbol = symbolTableGetSymbol(table, table->functionKey);
+    Symbol *symbol = symbolTableGetSymbol(table, functionKey);
 
     return symbol != NULL && symbol->type == type;
 }
