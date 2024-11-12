@@ -35,9 +35,9 @@ bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType
  *
  * @param table Pointer to the symbol table.
  * @param key Key of the variable to check.
- * @return true if the variable has already been assigned, false otherwise.
+ * @return true if the variable has already been defined, false otherwise.
  */
-bool checkVariableAssigned(SymbolTable *table, const char *key);
+bool checkVariableDefined(SymbolTable *table, const char *key);
 
 /**
  * @brief Check if a function call parameter is valid in the symbol table.
