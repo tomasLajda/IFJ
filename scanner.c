@@ -86,7 +86,6 @@ int checkTypeValid(DynamicString *string, Token *token) {
 
 int handleIdentifierOrKeyword(DynamicString *string, Token *token) {
 
-    // TODO: check if all keywords are here or if there are some extra or missing
     if (dynamicStringCompare(string, "i32"))
         token->attribute.keyword = KEYWORD_I_32;
     else if (dynamicStringCompare(string, "f64"))
@@ -149,7 +148,6 @@ int handleIdentifierOrKeyword(DynamicString *string, Token *token) {
         token->type = TOKEN_TYPE_IDENTIFIER;
 
     if (token->type == TOKEN_TYPE_IDENTIFIER) {
-        // TODO: dynamicStringCopy(&string, &token->attribute.string) ?
         token->attribute.string = dynamicStringToCString(string);
     } else {
         token->type = TOKEN_TYPE_KEYWORD;
@@ -173,6 +171,11 @@ int getNextToken(Token *token) {
     while (true) {
 
         int current = getc(sourceFile);
+
+        // TODO: delete debug
+        // // DEBUG
+        // printf("CURRENT: %c\n", current);
+        // printf("STATE: %d\n", state);
 
         switch (state) {
 
@@ -274,7 +277,6 @@ int getNextToken(Token *token) {
             }
             // else
             else {
-                // TODO: LEXICAL ERROR / INTERNAL ERROR
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
 
@@ -510,7 +512,6 @@ int getNextToken(Token *token) {
                 token->type = TOKEN_TYPE_NEQ;
                 return TOKEN_OK;
             } else {
-                // TODO: ungetc ?
                 ungetc(current, sourceFile);
                 return LEXICAL_ERROR;
             }
