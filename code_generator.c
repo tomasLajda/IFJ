@@ -8,6 +8,8 @@ IFJ project
 #include "code_generator.h"
 #include "error_codes.h"
 
+#define ADD_TO_BUFFER(_code) dynamicStringAddString(&codeBuffer, (const char *)(_code))
+
 DynamicString codeBuffer;
 int labelCounter = 0;
 
@@ -30,6 +32,9 @@ int generateCode(FILE *outputFile, AST *ast) {
 }
 
 int generateCodeHeader() {
+    ADD_TO_BUFFER("# Header\n");
+    ADD_TO_BUFFER(".IFJcode24\n");
+    ADD_TO_BUFFER("JUMP $$main\n");
     dynamicStringAddString(&codeBuffer, "# Header\n");
     dynamicStringAddString(&codeBuffer, ".IFJcode24\n");
     dynamicStringAddString(&codeBuffer, "JUMP $$main\n");
