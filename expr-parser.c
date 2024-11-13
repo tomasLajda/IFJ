@@ -498,12 +498,12 @@ int parseExpression(AST *exprAST, Token *token) {
 
             currentInputElement = top(input);
             if (isEmpty(input)) {
-                dollarToken = createToken(DOLLAR);
                 currentInputElement = createStackElement(dollarToken, NULL);
             }
 
         } else {
             fprintf(stderr, "Error: Cannot reduce further.\n");
+            free(dollarToken);
             free(currentInputElement);
             cleanupStack(input);
             free(input);
