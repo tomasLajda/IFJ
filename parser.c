@@ -188,24 +188,34 @@ void parseStatements() {
     parseStatements();
 }
 
-// STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL
+// STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL | VAR_ASS
 void parseStatement() {
     switch (currentToken->type) {
-        case KEYWORD_VAR:
-        case KEYWORD_CONST:
-            parseVarDef();
+        case TOKEN_TYPE_KEYWORD:
+            if (isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST)) {
+                parseVarDef();
+            } 
+            else if (isTokenKeyword(currentToken, KEYWORD_IF)) {
+                parseIf();
+            } 
+            else if (isTokenKeyword(currentToken, KEYWORD_WHILE)) {
+                parseWhile();
+            } 
+            else if (isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
+                parseDiscardCall();
+            } 
+            else {
+                HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
+            }
             break;
-        case KEYWORD_IF:
-            parseIf();
-            break;
-        case KEYWORD_WHILE:
-            parseWhile();
-            break;
+        
         case TOKEN_TYPE_IDENTIFIER:
-            if (getNextToken(currentToken) == TOKEN_TYPE_LEFT_BR) {
+            // TODO: Token* nextToken = peek();
+            if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
+                getNextToken(currentToken);
                 parseFuncCall();
             }
-            else if (getNextToken(currentToken) == TOKEN_TYPE_ASSIGN) {
+            else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
                 getNextToken(currentToken);
                 parseVarAss();
             }
@@ -213,9 +223,7 @@ void parseStatement() {
                 HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
             }
             break;
-        case KEYWORD_UNDERSCORE:
-            parseDiscardCall();
-            break;
+
         default:
             HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR, currentToken);
             break;

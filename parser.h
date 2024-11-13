@@ -80,7 +80,7 @@ void parseReturn();
 void parseStatements();
 
 /**
- * @brief STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL
+ * @brief STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL | VAR_ASS
  */
 void parseStatement();
 
