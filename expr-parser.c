@@ -334,7 +334,8 @@ int parseExpression(AST *exprAST, Token *token) {
     }
     initStack(stack);
     // Add a dollar element which serves as a bottom of the stack
-    StackElement *dollar = createStackElement(createToken(DOLLAR), NULL);
+    Token *dollarToken = createToken(DOLLAR);
+    StackElement *dollar = createStackElement(dollarToken, NULL);
     if (dollar == NULL || dollar->tokenPtr == NULL) {
         cleanupStack(stack);
         free(stack);
@@ -497,7 +498,8 @@ int parseExpression(AST *exprAST, Token *token) {
 
             currentInputElement = top(input);
             if (isEmpty(input)) {
-                currentInputElement = createStackElement(createToken(DOLLAR), NULL);
+                dollarToken = createToken(DOLLAR);
+                currentInputElement = createStackElement(dollarToken, NULL);
             }
 
         } else {
@@ -515,6 +517,7 @@ int parseExpression(AST *exprAST, Token *token) {
         stack->top->next->tokenPtr->type == DOLLAR) {
         // Successful parsing
         exprAST->root = copyASTNode(stack->top->ASTNodePtr);
+        free(dollarToken);
         free(currentInputElement);
         cleanupStack(input);
         free(input);
@@ -523,6 +526,7 @@ int parseExpression(AST *exprAST, Token *token) {
         return 0; // Indicate successful parsing
     } else {
         // Syntax error
+        free(dollarToken);
         free(currentInputElement);
         cleanupStack(input);
         free(input);
