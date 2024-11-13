@@ -12,18 +12,30 @@
 FILE *sourceFile;
 
 int main() {
-    sourceFile = fopen("testCORRECT.txt", "r");
+    sourceFile = fopen("test1.txt", "r");
     int i = 0;
+    int result = 0;
 
     AST *exprAST = initAST();
     ASTNode *root = initASTNode();
     exprAST->root = root;
     Token *token = createToken(TOKEN_TYPE_EMPTY);
+    root->token = token;
+    printf("root token type: %d\n", root->token->type);
 
     while (token->type != TOKEN_TYPE_EOF) {
-        parseExpression(exprAST, token);
-        displayAST(exprAST);
-        printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
+        result = parseExpression(exprAST, token);
+        if (result == SYNTAX_ERROR) {
+            printf("Syntax error\n");
+            printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
+        } else if (result == INTERNAL_ERROR) {
+            printf("Internal error\n");
+            printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
+        } else {
+            printf("Successful parsing\n");
+            displayAST(exprAST);
+            printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
+        }
     }
 
     fclose(sourceFile);
