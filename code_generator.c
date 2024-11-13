@@ -45,6 +45,14 @@ int generateMain() {
     return 0;
 }
 
+int functionStart(char *functionName) {
+    dynamicStringAddString(&codeBuffer, "LABEL $");
+    dynamicStringAddString(&codeBuffer, functionName);
+    dynamicStringAddString(&codeBuffer, "\n");
+    dynamicStringAddString(&codeBuffer, "PUSHFRAME\n");
+    return 0;
+}
+
 int generateExpression(ASTNode *node) {
     if (node == NULL) {
         return INTERNAL_ERROR;
