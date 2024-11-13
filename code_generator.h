@@ -71,4 +71,12 @@ int generateExpression(ASTNode *node);
  */
 int functionStart(char *functionName);
 
+/**
+ * @brief Generates code for the end of a function, popping the frame from the stack.
+ *
+ * @param functionName The name of the function to end.
+ * @return int Returns 0 on success, or a non-zero error code on failure.
+ */
+int functionEnd(char *functionName);
+
 #endif
