@@ -72,8 +72,6 @@ char *TokenTypeToString(TokenType type) {
         return ";";
     case TOKEN_TYPE_DOT:
         return ".";
-    case TOKEN_TYPE_AT:
-        return "@";
     case TOKEN_TYPE_EXPR:
         return "EXPR";
     case TOKEN_TYPE_DOLLA:
