@@ -53,6 +53,12 @@ int functionStart(char *functionName) {
     return 0;
 }
 
+int functionEnd(char *functionName) {
+    dynamicStringAddString(&codeBuffer, "POPFRAME\n");
+    dynamicStringAddString(&codeBuffer, "RETURN\n");
+    return 0;
+}
+
 int generateExpression(ASTNode *node) {
     if (node == NULL) {
         return INTERNAL_ERROR;
