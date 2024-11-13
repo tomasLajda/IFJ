@@ -9,6 +9,7 @@ IFJ project
 #include "error_codes.h"
 
 DynamicString codeBuffer;
+int labelCounter = 0;
 
 int generateCode(FILE *outputFile, AST *ast) {
     if (ast == NULL) {
@@ -67,39 +68,57 @@ int generateExpression(ASTNode *node) {
     if (node == NULL) {
         return INTERNAL_ERROR;
     }
-
+    // TODO: kontrola typu (int + int atd int + double nelze!)
     switch (node->token->type) {
-        // case TOKEN_TYPE_ASSIGN:
-        //     break;
 
     case TOKEN_TYPE_PLUS:
+        dynamicStringAddString(&codeBuffer, "ADD LF@result LF@left LF@right\n");
         // codeGenADD node.left break;
+        break;
 
     case TOKEN_TYPE_MINUS:
+        dynamicStringAddString(&codeBuffer, "SUB LF@result LF@left LF@right\n");
         break;
 
     case TOKEN_TYPE_MUL:
+        dynamicStringAddString(&codeBuffer, "MUL LF@result LF@left LF@right\n");
         break;
 
     case TOKEN_TYPE_DIV:
+        // todo: kontrola typu
+
+        //  double / double -> DIV
+        dynamicStringAddString(&codeBuffer, "DIV LF@result LF@left LF@right\n");
+        // int / int -> IDIV
+        dynamicStringAddString(&codeBuffer, "IDIV LF@result LF@left LF@right\n");
+
         break;
 
     case TOKEN_TYPE_LTH:
+        dynamicStringAddString(&codeBuffer, "LT LF@result LF@left LF@right\n");
         break;
 
     case TOKEN_TYPE_LEQ:
+        dynamicStringAddString(&codeBuffer, "GT LF@result LF@left LF@right\n");
+        dynamicStringAddString(&codeBuffer, "NOT LF@result LF@result\n");
         break;
 
     case TOKEN_TYPE_GTH:
+        dynamicStringAddString(&codeBuffer, "GT LF@result LF@left LF@right\n");
         break;
 
     case TOKEN_TYPE_GEQ:
+        dynamicStringAddString(&codeBuffer, "LT LF@result LF@left LF@right\n");
+        dynamicStringAddString(&codeBuffer, "NOT LF@result LF@result\n");
         break;
 
     case TOKEN_TYPE_EQ:
+        dynamicStringAddString(&codeBuffer, "EQ LF@result LF@left LF@right\n");
         break;
 
     case TOKEN_TYPE_NEQ:
+        dynamicStringAddString(&codeBuffer, "EQ LF@result LF@left LF@right\n");
+        dynamicStringAddString(&codeBuffer, "NOT LF@result LF@result\n");
         break;
 
     default:
