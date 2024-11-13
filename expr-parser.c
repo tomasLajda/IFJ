@@ -35,17 +35,16 @@ char precedenceTable[14][14] = {
     /* -  */ {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'},
     /* *  */ {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'},
     /* /  */ {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'},
-    /* <  */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', '>', '>', '<', '>', '<', '>'},
-    /* >  */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', '>', '>', '<', '>', '<', '>'},
-    /* <= */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', '>', '>', '<', '>', '<', '>'},
-    /* >= */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', '>', '>', '<', '>', '<', '>'},
-    /* != */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', '>', '>', '<', '>', '<', '>'},
-    /* == */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', '>', '>', '<', '>', '<', '>'},
-    /* (  */ {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '=', '<', 'x'},
+    /* <  */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
+    /* >  */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
+    /* <= */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
+    /* >= */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
+    /* != */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
+    /* == */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
+    /* (  */ {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'x', '<', 'x'},
     /* )  */ {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'x', '>', 'x', '>'},
     /* i  */ {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'x', '>', 'x', '>'},
-    /* $  */ {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'x', '<', 'x'}
-
+    /* $  */ {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'x', '<', 'x'},
 };
 
 #define EXPR TOKEN_TYPE_EXPR
@@ -119,24 +118,12 @@ int isDelimiter(Token *token) {
            token->type == TOKEN_TYPE_RIGHT_BR;    // )    f(2+3){}
 }
 
-int isLeftAssociative(Token *token) {
-    switch (token->type) {
-    case TOKEN_TYPE_PLUS:  // +
-    case TOKEN_TYPE_MINUS: // -
-    case TOKEN_TYPE_MUL:   // *
-    case TOKEN_TYPE_DIV:   // /
-        return 1;
-    default:
-        return 0;
-    }
-}
-
 /**
  * @brief Checks if the given stack is reducible.
  *
  * @param stack A pointer to the stack to be checked.
  * @param nextInputToken A pointer to the next token to be processed.
- * @return An integer indicating whether the stack is reducible (0) or not (1).
+ * @return An integer indicating whether the stack is reducible (0), not (1), or a syntax error (2).
  */
 int isReducible(Stack *stack, Token *nextInputToken) {
     if (stack == NULL || stack->top == NULL) {
@@ -170,13 +157,10 @@ int isReducible(Stack *stack, Token *nextInputToken) {
                 return 1; // Reduce
             } else if (precedence == '<') {
                 return 0; // Shift
+            } else if (precedence == 'x') {
+                return 2; // Syntax error
             } else {
-                // Handle equal precedence based on associativity
-                if (isLeftAssociative(second->tokenPtr)) {
-                    return 1; // Reduce due to left associativity
-                } else {
-                    return 0; // Shift due to right associativity
-                }
+                return 3; // Internal error
             }
         }
     }
@@ -318,7 +302,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
             closingParentheses++;
         }
         if (closingParentheses > openingParentheses) {
-            break;
+            break; // Closing parentheses without opening -> delimiter
         }
         // Copy the token for the stack element
         Token *tempToken = copyToken(token);
@@ -342,6 +326,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     // Check if the last token is a delimiter
     *delimiterToken = *token;
     if (!isDelimiter(token)) {
+        printf("token type: %d\n", token->type);
         cleanupStack(&tempStack);
         return NULL; // Token doesn't belong in the expression - a syntax error occured
     }
