@@ -10,11 +10,11 @@ IFJ project
 #define _CODE_GENERATOR_H
 
 #include "ast.h"
+#include "dynamic_string.h"
 #include <stdio.h>
 
 /**
- * @brief Generates code from the given abstract syntax tree (AST) and writes it to the specified
- * output file.
+ * @brief Generates code from the given abstract syntax tree (AST)
  *
  * @param ast A pointer to the abstract syntax tree representing the source code.
  * @return int Returns 0 on success, or a non-zero error code on failure.
@@ -22,9 +22,9 @@ IFJ project
 int generateCode(AST *ast);
 
 /**
- * @brief Generates the header for the output file.
+ * @brief Generates the header for the code.
  *
- * This function writes the necessary header information to the provided output file.
+ * This function writes the necessary header information.
  *
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
