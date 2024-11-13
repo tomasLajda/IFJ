@@ -40,4 +40,35 @@ int generateCodeHeader();
  */
 void codeGeneratorFlush(FILE *outputFile);
 
+/**
+ * @brief Generates the main function for the code.
+ *
+ * This function is responsible for generating the main function
+ * in the code. It sets up the necessary structure and logic
+ * for the main entry point of the program.
+ *
+ * @return int Returns 0 on success, or a non-zero error code on failure.
+ */
+int generateMain();
+
+/**
+ * @brief Generates code for a given expression represented by an AST node.
+ *
+ * This function takes an abstract syntax tree (AST) node representing an expression
+ * and generates the corresponding code for it.
+ *
+ * @param node A pointer to the AST node representing the expression.
+ * @return int Returns 0 on success, or a non-zero error code on failure.
+ */
+int generateExpression(ASTNode *node);
+
+/**
+ * @brief Generates code for a given function call, creating a new frame and pushing it onto the
+ * stack.
+ *
+ * @param node A pointer to the AST node representing the function call.
+ * @return int Returns 0 on success, or a non-zero error code on failure.
+ */
+int functionStart(char *functionName);
+
 #endif
