@@ -23,21 +23,23 @@ int main() {
     root->token = token;
     printf("root token type: %d\n", root->token->type);
 
-    while (token->type != TOKEN_TYPE_EOF) {
-        result = parseExpression(exprAST, token);
-        if (result == SYNTAX_ERROR) {
-            printf("Syntax error\n");
-            printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
-        } else if (result == INTERNAL_ERROR) {
-            printf("Internal error\n");
-            printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
-        } else {
-            printf("Successful parsing\n");
-            displayAST(exprAST);
-            printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
-        }
+    // while (token->type != TOKEN_TYPE_EOF) {
+    result = parseExpression(exprAST, token);
+    if (result == SYNTAX_ERROR) {
+        printf("Syntax error\n");
+        printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
+    } else if (result == INTERNAL_ERROR) {
+        printf("Internal error\n");
+        printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
+    } else {
+        printf("Successful parsing\n");
+        displayAST(exprAST);
+        printf("%d. delimiter token type: %s\n", ++i, TokenTypeToString(token->type));
     }
+    // }
 
+    free(token);
+    free(root);
     fclose(sourceFile);
     freeAST(exprAST);
     return 0;
