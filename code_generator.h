@@ -19,7 +19,7 @@ IFJ project
  * @param ast A pointer to the abstract syntax tree representing the source code.
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
-int generateCode(AST *ast);
+int generateCode(FILE *outputFile, AST *ast);
 
 /**
  * @brief Generates the header for the code.
@@ -28,6 +28,16 @@ int generateCode(AST *ast);
  *
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
-int generateFileHeader();
+int generateCodeHeader();
+
+/**
+ * @brief Flushes the contents of the code generator to the specified output file.
+ *
+ * This function writes any buffered data to the given output file, ensuring that
+ * all generated code is properly saved.
+ *
+ * @param outputFile A pointer to the FILE object where the generated code will be written.
+ */
+void codeGeneratorFlush(FILE *outputFile);
 
 #endif
