@@ -139,7 +139,7 @@ ASTNode *copyASTNode(ASTNode *node) {
     }
     ASTNode *newNode = initASTNode();
     newNode->token = copyToken(node->token);
-    *newNode->parent = *node->parent;
+    newNode->parent = node->parent;
 
     // Copy left child and set parent
     if (node->left != NULL) {
