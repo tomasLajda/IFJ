@@ -164,3 +164,14 @@ StackElement *createStackElement(Token *token, ASTNode *astNodePtr) {
     element->next = NULL;
     return element;
 }
+
+void freeToken(Token *token) {
+    if (token == NULL) {
+        return;
+    }
+    if (token->type == TOKEN_TYPE_IDENTIFIER || token->type == TOKEN_TYPE_STRING_VALUE) {
+        free(token->attribute.string);
+        token->attribute.string = NULL;
+    }
+    free(token);
+}
