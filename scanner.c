@@ -12,52 +12,6 @@ IFJ Project
 #include <stdbool.h>
 #include <stdlib.h>
 
-// DEFINE SCANNER STATES
-#define STATE_START 0 // Start state - default
-
-// IMPORT
-#define STATE_IMPORT 1 // State for @import keyword, that has to be in every file
-
-// OPERATORS
-#define STATE_LESS 2      // Starts with '<', can be '<='
-#define STATE_MORE 3      // Starts with '>', can be '>='
-#define STATE_EQUAL 4     // Starts with '=', can be '=='
-#define STATE_EXCL_MARK 5 // Starts with '!', has to continue with '=' for NOT_EQUAL, else error
-#define STATE_DIVISION 24 // Starts with '/', can be comment '//'
-#define STATE_COMMENT 25  // Comment '//'
-
-// IDENTIFIER
-#define STATE_IDENTIFIER_OR_KEYWORD                                                                \
-    7 // Starts with letter or '_', returns string as IDENTIFIER or KEYWORD
-
-// TYPE
-#define STATE_OPENING_SQUARE_BRAC 9  // '[' was loaded after '?', ']' has to come next
-#define STATE_CLOSING_SQUARE_BRAC 10 // ']' was loaded
-#define STATE_TYPE 11                // State to clarify type after either '[]', '?' or '?[]'
-
-// NUMBER
-#define STATE_NUMBER                                                                               \
-    12 // Loads a number (1-9) and either return INT or if dot comes next continues to
-       // STATE_NUMBER_DOT, or if (e/E) is loaded, goes to STATE_EXPONENT
-#define STATE_ZERO 23       // Loads '0' (zero can't be int, only 0.smth)
-#define STATE_NUMBER_DOT 13 // '.' was loaded after a number, loads next number, goes to STATE_FLOAT
-#define STATE_FLOAT                                                                                \
-    14 // Loads numbers and returns FLOAT or IF (e/E) is loaded goes to STATE_EXPONENT
-#define STATE_EXPONENT                                                                             \
-    15 // Loads number or sign (+/-) and goes to STATE_EXP_NUMBER or STATE_EXP_SIGN
-#define STATE_EXP_SIGN 16 // Sign for exponent was loaded, loads next number
-#define STATE_EXP_NUMBER                                                                           \
-    17 // Loads next number(s) and returns number with exp (can be float with exp)
-
-// STRING
-#define STATE_READ_STRING 18 // '"' was loaded, reads ASCII > 31
-#define STATE_BACKSLASH                                                                            \
-    19                  // State for special characters after '\' ('\n', '\t', etc.) -> goes back to
-                        // STATE_READ_STRING, or '\x' to STATE HEXA0
-#define STATE_HEXA0 20  // '\x' was read, reads first part of the hexa number, goes to STATE_HEXA1
-#define STATE_HEXA1 21  // reads second part of the hexa number and goes back to STATE_READ_STRING
-#define STATE_STRING 22 // Second '"' was loaded, string ends
-
 FILE *sourceFile; // Source file to be used as input for scanner
 
 int freeAndReturn(DynamicString *string, int errorCode) {
@@ -86,7 +40,6 @@ int checkTypeValid(DynamicString *string, Token *token) {
 
 int handleIdentifierOrKeyword(DynamicString *string, Token *token) {
 
-    // TODO: check if all keywords are here or if there are some extra or missing
     if (dynamicStringCompare(string, "i32"))
         token->attribute.keyword = KEYWORD_I_32;
     else if (dynamicStringCompare(string, "f64"))
@@ -149,7 +102,6 @@ int handleIdentifierOrKeyword(DynamicString *string, Token *token) {
         token->type = TOKEN_TYPE_IDENTIFIER;
 
     if (token->type == TOKEN_TYPE_IDENTIFIER) {
-        // TODO: dynamicStringCopy(&string, &token->attribute.string) ?
         token->attribute.string = dynamicStringToCString(string);
     } else {
         token->type = TOKEN_TYPE_KEYWORD;
@@ -172,7 +124,12 @@ int getNextToken(Token *token) {
 
     while (true) {
 
-        char current = (char)getc(sourceFile);
+        int current = getc(sourceFile);
+
+        // TODO: delete debug
+        // // DEBUG
+        // printf("CURRENT: %c\n", current);
+        // printf("STATE: %d\n", state);
 
         switch (state) {
 
@@ -219,6 +176,9 @@ int getNextToken(Token *token) {
                 state = STATE_EXCL_MARK;
             } else if (current == '.') {
                 token->type = TOKEN_TYPE_DOT;
+                return TOKEN_OK;
+            } else if (current == ',') {
+                token->type = TOKEN_TYPE_COMMA;
                 return TOKEN_OK;
             } else if (current == '{') {
                 token->type = TOKEN_TYPE_LEFT_CURLY_BR;
@@ -271,7 +231,6 @@ int getNextToken(Token *token) {
             }
             // else
             else {
-                // TODO: LEXICAL ERROR / INTERNAL ERROR
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
 
@@ -385,6 +344,7 @@ int getNextToken(Token *token) {
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else if (token->type == TOKEN_TYPE_DOUBLE_VALUE) {
                     token->attribute.decimal = strtof((dynamicStringToCString(&buffer)), NULL);
+                    printf("DECIMAL: %f\n", token->attribute.decimal);
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
                     return freeAndReturn(&buffer, INTERNAL_ERROR);
@@ -506,7 +466,6 @@ int getNextToken(Token *token) {
                 token->type = TOKEN_TYPE_NEQ;
                 return TOKEN_OK;
             } else {
-                // TODO: ungetc ?
                 ungetc(current, sourceFile);
                 return LEXICAL_ERROR;
             }
