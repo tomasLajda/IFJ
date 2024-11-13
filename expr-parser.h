@@ -23,8 +23,8 @@ IFJ Project
  * @param exprAST Pointer to the AST for the expression
  * @param token Pointer to the token that ended the expression (either ';' or ')')
  *
- * @return Returns 0 if the expression was parsed successfully, 1 if a syntax error was encountered,
- * 2 if an internal parsing error was encountered
+ * @return Returns 0 if the expression was parsed successfully, SYNTAX_ERROR (2) if a syntax error
+ * was encountered, INTERNAL_ERROR (99) if an internal parsing error was encountered
  */
 int parseExpression(AST *exprAST, Token *token);
 
