@@ -31,7 +31,7 @@ typedef struct {
  * @brief Retrieves the next token from the input stream.
  *
  * @param token Pointer to a Token structure where the next token will be stored.
- * @return int Returns 0 on success, or an error code on failure.
+ * @return int Returns TOKEN_OK on success, or an error code on failure.
  */
 int getNextToken(Token *token);
 
