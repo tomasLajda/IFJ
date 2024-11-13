@@ -40,4 +40,10 @@ ASTNode *copyASTNode(ASTNode *node);
  */
 StackElement *createStackElement(Token *token, ASTNode *astNodePtr);
 
+/**
+ * @brief Function that frees the given token, including its attributes -
+ * WARNING: do not attempt to free a token with statically allocated string in keyword attribute
+ */
+void freeToken(Token *token);
+
 #endif // HELPERS_H

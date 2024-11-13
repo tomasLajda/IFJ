@@ -140,6 +140,7 @@ ASTNode *copyASTNode(ASTNode *node) {
     ASTNode *newNode = initASTNode();
     newNode->token = copyToken(node->token);
     newNode->parent = node->parent;
+
     // Copy left child and set parent
     if (node->left != NULL) {
         newNode->left = copyASTNode(node->left);
@@ -162,4 +163,15 @@ StackElement *createStackElement(Token *token, ASTNode *astNodePtr) {
     element->tokenPtr = token;
     element->next = NULL;
     return element;
+}
+
+void freeToken(Token *token) {
+    if (token == NULL) {
+        return;
+    }
+    if (token->type == TOKEN_TYPE_IDENTIFIER || token->type == TOKEN_TYPE_STRING_VALUE) {
+        free(token->attribute.string);
+        token->attribute.string = NULL;
+    }
+    free(token);
 }
