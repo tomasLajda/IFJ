@@ -7,10 +7,7 @@ IFJ Project
 */
 
 #include "scanner.h"
-#include "ast.h"
 #include "error_codes.h"
-#include "expr-parser.h"
-#include "helpers.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -564,41 +561,4 @@ int getNextToken(Token *token) {
             break;
         }
     }
-}
-
-int main() {
-    sourceFile = fopen("test.txt", "r");
-    if (sourceFile == NULL) {
-        fprintf(stderr, "Failed to open file.\n");
-        return 1;
-    }
-    Token *token = (Token *)malloc(sizeof(Token));
-    if (token == NULL) {
-        fprintf(stderr, "Memory allocation failure.\n");
-        return 1;
-    }
-
-    // Initialize AST
-    AST *exprAST = initAST();
-    ASTNode *root = initASTNode();
-    exprAST->root = root;
-
-    printf("Parsing expression...\n");
-    int result = parseExpression(exprAST, token);
-    printf("Parsing finished...\n");
-    displayAST(exprAST);
-    printf("Delimiter token: %s\n", TokenTypeToString(token->type));
-    if (result == 0) {
-        printf("Expression parsed successfully.\n");
-    } else if (result == 1) {
-        printf("Syntax error encountered.\n");
-    } else if (result == 2) {
-        printf("Internal parsing error encountered.\n");
-    }
-    // Cleanup
-
-    free(token);
-    freeAST(exprAST);
-    fclose(sourceFile);
-    return 0;
 }
