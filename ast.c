@@ -51,7 +51,7 @@ void disposeSubtree(ASTNode *node) {
     }
 
     if (node->token != NULL) {
-        free(node->token);
+        freeToken(node->token);
     }
     free(node);
 }
