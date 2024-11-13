@@ -27,9 +27,11 @@ extern AST* ast;
 bool isTokenKeyword(Token* token, Keyword keyword);
 
 /**
- * @brief Peeks the next token from scanner before consuming it
+ * @brief Checks the next token without changing the current token
+ * 
+ * @return The next token
  */
-void peek();
+Token* peek();
 
 /**
  * @brief Checks if the current token is a keyword

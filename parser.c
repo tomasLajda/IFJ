@@ -18,6 +18,20 @@ bool isTokenKeyword(Token* token, Keyword keyword) {
             token->attribute.keyword == keyword);
 }
 
+Token* peek() {
+    Token originalToken = *currentToken;
+    getNextToken(currentToken);
+
+    Token* peekedToken = (Token*)malloc(sizeof(Token));
+    if (peekedToken == NULL) {
+        HANDLE_ERROR("Memory allocation failed in peek()", INTERNAL_ERROR, currentToken);
+    }
+
+    *peekedToken = *currentToken;
+    *currentToken = originalToken;
+    return peekedToken;
+}
+
 // PROG ::= PROLOG FUNC_DEFS
 void parseProg() {
     parseProlog();
