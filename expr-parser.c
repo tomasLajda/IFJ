@@ -259,8 +259,36 @@ Token *copyToken(Token *token) {
         HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
     }
     newToken->type = token->type;
-    newToken->attribute = token->attribute;
     newToken->line = token->line;
+
+    // Deep copy attribute based on its type
+    switch (token->type) {
+    case TOKEN_TYPE_IDENTIFIER:
+    case TOKEN_TYPE_STRING_VALUE:
+        if (token->attribute.string != NULL) {
+            newToken->attribute.string = (char *)malloc(strlen(token->attribute.string) + 1);
+            if (newToken->attribute.string == NULL) {
+                HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+            }
+            strcpy(newToken->attribute.string, token->attribute.string);
+        } else {
+            newToken->attribute.string = NULL;
+        }
+        break;
+    case TOKEN_TYPE_INTEGER_VALUE:
+        newToken->attribute.integer = token->attribute.integer;
+        break;
+    case TOKEN_TYPE_DOUBLE_VALUE:
+        newToken->attribute.decimal = token->attribute.decimal;
+        break;
+    case TOKEN_TYPE_KEYWORD:
+        newToken->attribute.keyword = token->attribute.keyword;
+        break;
+    default:
+        // For token types without attributes
+        break;
+    }
+
     return newToken;
 }
 
@@ -269,10 +297,19 @@ ASTNode *copyASTNode(ASTNode *node) {
         return NULL;
     }
     ASTNode *newNode = initASTNode();
-    newNode->left = node->left;
-    newNode->right = node->right;
-    newNode->parent = node->parent;
     newNode->token = copyToken(node->token);
+    newNode->parent = node->parent;
+
+    // Copy left child and set parent
+    if (node->left != NULL) {
+        newNode->left = copyASTNode(node->left);
+    }
+
+    // Copy right child and set parent
+    if (node->right != NULL) {
+        newNode->right = copyASTNode(node->right);
+    }
+
     return newNode;
 }
 
@@ -376,7 +413,7 @@ int parseExpression(AST *exprAST, Token *token) {
     // Initialize the stack onto which the expression will be shifted and reduced
     Stack *stack = (Stack *)malloc(sizeof(Stack));
     if (stack == NULL) {
-        HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, 2);
+        HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, INTERNAL_ERROR);
     }
     initStack(stack);
     // Add a dollar element which serves as a bottom of the stack
@@ -384,7 +421,7 @@ int parseExpression(AST *exprAST, Token *token) {
     if (dollar == NULL || dollar->tokenPtr == NULL) {
         cleanupStack(stack);
         free(stack);
-        HANDLE_ERROR("Memory allocation failure.\n", INTERNAL_ERROR, 2);
+        HANDLE_ERROR("Memory allocation failure.\n", INTERNAL_ERROR, INTERNAL_ERROR);
     }
     push(stack, dollar);
 
@@ -394,18 +431,18 @@ int parseExpression(AST *exprAST, Token *token) {
         cleanupStack(stack);
         free(stack);
         free(dollar);
-        HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, 2);
+        HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, INTERNAL_ERROR);
     }
     initStack(input);
 
     // Fill the input stack with tokens up to the delimiter token
-    if (fillInputStack(input, token) == NULL) {
+    if (fillInputStack(input, token) == NULL) { // syntax error
         fprintf(stderr, "Token doesn't belong in the expression.\n");
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
         free(stack);
-        return 1; // Indicate syntax error
+        return SYNTAX_ERROR; // Indicate syntax error
     }
 
     // // LOGGING PRINTS
@@ -523,7 +560,7 @@ int parseExpression(AST *exprAST, Token *token) {
                 free(input);
                 cleanupStack(stack);
                 free(stack);
-                return 1; // Syntax error
+                return SYNTAX_ERROR; // Syntax error
             }
         } else if (!isEmpty(input)) { // Shift
             // printf("No, so shifting...\n");
@@ -553,7 +590,7 @@ int parseExpression(AST *exprAST, Token *token) {
             free(input);
             cleanupStack(stack);
             free(stack);
-            return 1; // Indicate syntax error
+            return SYNTAX_ERROR; // Indicate syntax error
         }
     }
 
@@ -566,7 +603,7 @@ int parseExpression(AST *exprAST, Token *token) {
         free(input);
         cleanupStack(stack);
         free(stack);
-        return 0;
+        return 0; // Indicate successful parsing
     } else {
         // Syntax error
         free(currentInputElement);
@@ -574,6 +611,6 @@ int parseExpression(AST *exprAST, Token *token) {
         free(input);
         cleanupStack(stack);
         free(stack);
-        return 1; // Indicate syntax error
+        return SYNTAX_ERROR; // Indicate syntax error
     }
 }
