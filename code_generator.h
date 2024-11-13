@@ -41,15 +41,24 @@ int generateCodeHeader();
 void codeGeneratorFlush(FILE *outputFile);
 
 /**
- * @brief Generates the main function for the code.
+ * @brief Generates the start of the main function.
  *
- * This function is responsible for generating the main function
- * in the code. It sets up the necessary structure and logic
- * for the main entry point of the program.
+ * This function is responsible for generating the start of the main function,
+ * setting up the initial frame and performing any necessary initialization steps.
  *
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
-int generateMain();
+int mainStart();
+
+/**
+ * @brief Generates the end of the main function.
+ *
+ * This function is responsible for generating the end of the main function,
+ * performing any necessary cleanup and finalization steps.
+ *
+ * @return int Returns 0 on success, or a non-zero error code on failure.
+ */
+int mainEnd();
 
 /**
  * @brief Generates code for a given expression represented by an AST node.
