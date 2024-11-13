@@ -5,6 +5,8 @@
  * @author Martin Valapka - xvalapm00
  */
 
+// TODO: BUILT-IN FUNCTIONS, AST, OTHERS...
+
 #include "parser.h"
 #include <string.h>
 
@@ -473,4 +475,13 @@ void parseArgs() {
     }
 
     free(peekedToken);
+}
+
+int parse() {
+    getNextToken(currentToken);
+    ast = initAST();
+    ASTNode* root = initASTNode();
+    ast->root = root;
+    parseProg();
+    return 0;
 }
