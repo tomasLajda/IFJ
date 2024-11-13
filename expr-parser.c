@@ -262,7 +262,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         // Copy the token for the stack element
         Token *tempToken = copyToken(token);
         if (tempToken == NULL) {
-            free(token);
+            freeToken(token);
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
 
@@ -271,8 +271,8 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         // Create a stack element and push it onto the temporary stack
         StackElement *newElement = createStackElement(tempToken, astNode);
         if (newElement == NULL) {
-            free(tempToken);
-            free(token);
+            freeToken(tempToken);
+            freeToken(token);
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
         push(&tempStack, newElement);
@@ -293,7 +293,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         Token *tempToken = copyToken(topElement->tokenPtr);
         if (tempToken == NULL) {
             cleanupStack(&tempStack);
-            free(token);
+            freeToken(token);
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
 
@@ -301,17 +301,17 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         ASTNode *astNode = copyASTNode(topElement->ASTNodePtr);
         if (astNode == NULL) {
             cleanupStack(&tempStack);
-            free(token);
-            free(tempToken);
+            freeToken(token);
+            freeToken(tempToken);
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
 
         // Create a new stack element with the duplicated token
         StackElement *newElement = createStackElement(tempToken, astNode);
         if (newElement == NULL) {
-            free(token);
+            freeToken(token);
             cleanupStack(&tempStack);
-            free(tempToken);
+            freeToken(tempToken);
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
 
@@ -321,7 +321,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         pop(&tempStack);
     }
     cleanupStack(&tempStack);
-    free(token);
+    freeToken(token);
     return stack;
 }
 
@@ -360,6 +360,7 @@ int parseExpression(AST *exprAST, Token *token) {
         free(input);
         cleanupStack(stack);
         free(stack);
+        free(dollar);
         return SYNTAX_ERROR; // Indicate syntax error
     }
 
@@ -504,7 +505,7 @@ int parseExpression(AST *exprAST, Token *token) {
 
         } else {
             fprintf(stderr, "Error: Cannot reduce further.\n");
-            free(dollarToken);
+            freeToken(dollarToken);
             free(currentInputElement);
             cleanupStack(input);
             free(input);
@@ -518,7 +519,7 @@ int parseExpression(AST *exprAST, Token *token) {
         stack->top->next->tokenPtr->type == DOLLAR) {
         // Successful parsing
         exprAST->root = copyASTNode(stack->top->ASTNodePtr);
-        free(dollarToken);
+        freeToken(dollarToken);
         free(currentInputElement);
         cleanupStack(input);
         free(input);
@@ -527,7 +528,7 @@ int parseExpression(AST *exprAST, Token *token) {
         return 0; // Indicate successful parsing
     } else {
         // Syntax error
-        free(dollarToken);
+        freeToken(dollarToken);
         free(currentInputElement);
         cleanupStack(input);
         free(input);
