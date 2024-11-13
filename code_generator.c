@@ -35,11 +35,15 @@ int generateCodeHeader() {
     return 0;
 }
 
-int generateMain() {
+int mainStart() {
+    dynamicStringAddString(&codeBuffer, "# Start of Main:\n");
     dynamicStringAddString(&codeBuffer, "$$main\n");
     dynamicStringAddString(&codeBuffer, "CREATEFRAME\n");
     dynamicStringAddString(&codeBuffer, "PUSHFRAME\n");
+    return 0;
+}
 
+int mainEnd() {
     dynamicStringAddString(&codeBuffer, "POPFRAME\n");
     dynamicStringAddString(&codeBuffer, "CLEARS\n");
     return 0;
