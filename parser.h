@@ -19,6 +19,14 @@ extern SymbolTable* symbolTable;
 extern AST* ast;
 
 /**
+ * @brief Checks if the current token is a keyword
+ * 
+ * @param keyword The keyword to check
+ * @return True if the current token is the keyword, false otherwise
+ */
+bool isTokenKeyword(Token* token, Keyword keyword);
+
+/**
  * @brief Peeks the next token from scanner before consuming it
  */
 void peek();
