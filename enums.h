@@ -95,6 +95,18 @@ typedef enum {
     TOKEN_TYPE_COLON,          // Colon :
     TOKEN_TYPE_SEMICOLON,      // Semicolon ;
     TOKEN_TYPE_DOT,            // Dot .
+
+    // EXPRESSION PARSING
+    TOKEN_TYPE_EXPR,
+    TOKEN_TYPE_DOLLA
 } TokenType;
+
+typedef enum {
+    SCOPE_GLOBAL = 0,
+    SCOPE_FUNCTION = KEYWORD_FN,
+    SCOPE_WHILE = KEYWORD_WHILE,
+    SCOPE_IF = KEYWORD_IF,
+    SCOPE_ELSE = KEYWORD_ELSE
+} ScopeType;
 
 #endif

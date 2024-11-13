@@ -3,13 +3,15 @@
  * @brief Header file for dynamic string
  *
  * @author Tomáš Lajda - xlajdat00
+ * @author Matúš Csirik - xcsirim00
  *
  */
 
-#ifndef _DYNAMIC_STRING_H
-#define _DYNAMIC_STRING_H
-
 #include "dynamic_string.h"
+#include "enums.h"
 #include "scanner.h"
 
-#endif _DYNAMIC_STRING_H
+/**
+ * @brief Function that transforms the token type integer to the corresponding character (string)
+ */
+char *TokenTypeToString(TokenType type);
