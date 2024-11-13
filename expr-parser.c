@@ -122,20 +122,21 @@ int isDelimiter(Token *token) {
  * @brief Checks if the given stack is reducible.
  *
  * @param stack A pointer to the stack to be checked.
- * @param nextInputToken A pointer to the next token to be processed.
+ * @param nextInputEleemnt A pointer to the next element to be processed.
  * @return An integer indicating whether the stack is reducible (0), not (1), or a syntax error (2).
  */
-int isReducible(Stack *stack, Token *nextInputToken) {
-    if (stack == NULL || stack->top == NULL) {
+int isReducible(Stack *stack, StackElement *nextInputElement) {
+    if (stack == NULL || stack->top == NULL || nextInputElement == NULL ||
+        nextInputElement->tokenPtr == NULL) {
         return 0; // Stack is empty, cannot reduce
     }
+    Token *nextInputToken = nextInputElement->tokenPtr;
 
     // printf("Checking reducibility of the stack...\n");
     // display(stack);
     // printf("Next input token: %s\n", TokenTypeToString(nextInputToken->type));
 
     StackElement *first = stack->top;
-
     // Check for operand reduction (e.g., EXPR → id)
     if (isOperand(first->tokenPtr)) {
         return 1; // Stack is reducible by operand rule
@@ -326,7 +327,6 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     // Check if the last token is a delimiter
     *delimiterToken = *token;
     if (!isDelimiter(token)) {
-        printf("token type: %d\n", token->type);
         cleanupStack(&tempStack);
         return NULL; // Token doesn't belong in the expression - a syntax error occured
     }
@@ -418,6 +418,9 @@ int parseExpression(AST *exprAST, Token *token) {
 
     // Initialize the current and next input element
     StackElement *currentInputElement = top(input);
+    if (currentInputElement == NULL) {
+        printf("currentInputElement is NULL\n");
+    }
 
     // // LOGGING PRINTS
     // printf("current token ptr type: %d\n", currentInputElement->tokenPtr->type);
@@ -429,8 +432,8 @@ int parseExpression(AST *exprAST, Token *token) {
     // printf("\nSTART\n");
 
     // Shift-reduce loop
-    while (!isEmpty(input) || isReducible(stack, currentInputElement->tokenPtr)) {
-        if (isReducible(stack, currentInputElement->tokenPtr)) { // Reduce
+    while (!isEmpty(input) || isReducible(stack, currentInputElement)) {
+        if (isReducible(stack, currentInputElement)) { // Reduce
             int rule = chooseReduceRule(stack);
             // printf("reducing ");
             // display(stack);
