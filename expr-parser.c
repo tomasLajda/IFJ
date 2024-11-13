@@ -370,11 +370,8 @@ int parseExpression(AST *exprAST, Token *token) {
     // printf(
     //     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
 
-    // Initialize the current and next input element
+    // Initialize the current input element
     StackElement *currentInputElement = top(input);
-    if (currentInputElement == NULL) {
-        printf("currentInputElement is NULL\n");
-    }
 
     // // LOGGING PRINTS
     // printf("current token ptr type: %d\n", currentInputElement->tokenPtr->type);
@@ -408,17 +405,20 @@ int parseExpression(AST *exprAST, Token *token) {
                 ASTNode *rightNode = copyASTNode(top(stack)->ASTNodePtr);
                 // printf("right node: %s\n", TokenTypeToString(rightNode->token->type));
                 pop(stack);
+                printf("right node: %s\n", TokenTypeToString(rightNode->token->type));
 
                 // Pop operator
                 ASTNode *operatorNode = initASTNode();
                 operatorNode->token = copyToken(top(stack)->tokenPtr);
                 // printf("operator node: %s\n", TokenTypeToString(top(stack)->tokenPtr->type));
                 pop(stack);
+                printf("operator node: %s\n", TokenTypeToString(operatorNode->token->type));
 
                 // Pop left operand
                 ASTNode *leftNode = copyASTNode(top(stack)->ASTNodePtr);
                 // printf("left node: %s\n", TokenTypeToString(leftNode->token->type));
                 pop(stack);
+                printf("left node: %s\n", TokenTypeToString(leftNode->token->type));
 
                 addLeftNode(exprAST, operatorNode, leftNode);
                 addRightNode(exprAST, operatorNode, rightNode);
@@ -514,7 +514,7 @@ int parseExpression(AST *exprAST, Token *token) {
     if (getStackLength(stack) == 2 && stack->top->tokenPtr->type == EXPR &&
         stack->top->next->tokenPtr->type == DOLLAR) {
         // Successful parsing
-        exprAST->root = stack->top->ASTNodePtr;
+        exprAST->root = copyASTNode(stack->top->ASTNodePtr);
         free(currentInputElement);
         cleanupStack(input);
         free(input);
