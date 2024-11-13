@@ -220,6 +220,9 @@ int getNextToken(Token *token) {
             } else if (current == '.') {
                 token->type = TOKEN_TYPE_DOT;
                 return TOKEN_OK;
+            } else if (current == ',') {
+                token->type = TOKEN_TYPE_COMMA;
+                return TOKEN_OK;
             } else if (current == '{') {
                 token->type = TOKEN_TYPE_LEFT_CURLY_BR;
                 return TOKEN_OK;
@@ -385,6 +388,7 @@ int getNextToken(Token *token) {
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else if (token->type == TOKEN_TYPE_DOUBLE_VALUE) {
                     token->attribute.decimal = strtof((dynamicStringToCString(&buffer)), NULL);
+                    printf("DECIMAL: %f\n", token->attribute.decimal);
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
                     return freeAndReturn(&buffer, INTERNAL_ERROR);
