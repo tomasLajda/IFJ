@@ -121,6 +121,42 @@ int generateExpression(ASTNode *node) {
         dynamicStringAddString(&codeBuffer, "NOT LF@result LF@result\n");
         break;
 
+        // TODO: problem pri vytvareni novych ramcu, promenna nebude v LF
+
+    case TOKEN_TYPE_INTEGER_VALUE:
+        // Deklarace bufferu pro konverzi integeru na řetězec
+        char int_str[21]; // 64bitový integer může mít až 20 číslic + znak pro ukončení řetězce
+
+        // Konverze integeru na řetězec
+        // Používáme formátovací řetězec "%lld" pro 64bitový integer typu long long int
+        snprintf(int_str, sizeof(int_str), "%lld", node->token->attribute.integer);
+
+        dynamicStringAddString(&codeBuffer, "MOVE LF@result int@");
+        dynamicStringAddString(&codeBuffer, int_str);
+        dynamicStringAddString(&codeBuffer, "\n");
+        break;
+
+    case TOKEN_TYPE_DOUBLE_VALUE:
+        // Deklarace bufferu pro konverzi double na řetězec
+        char double_str[32]; // Buffer pro float hodnotu, 32 znaků by mělo být dostatečné
+
+        // Konverze double na řetězec v hexadecimálním formátu
+        // Používáme formátovací řetězec "%a" pro hexadecimální zápis double (kompatibilní s
+        // IFJcode24)
+        snprintf(double_str, sizeof(double_str), "%a", node->token->attribute.decimal);
+
+        // Přidání instrukce do codeBuffer
+        dynamicStringAddString(&codeBuffer, "MOVE LF@result float@");
+        dynamicStringAddString(&codeBuffer, double_str);
+        dynamicStringAddString(&codeBuffer, "\n");
+        break;
+
+    case TOKEN_TYPE_IDENTIFIER:
+        dynamicStringAddString(&codeBuffer, "MOVE LF@result LF@");
+        dynamicStringAddString(&codeBuffer, node->token->attribute.string);
+        dynamicStringAddString(&codeBuffer, "\n");
+        break;
+
     default:
         return INTERNAL_ERROR;
     }
