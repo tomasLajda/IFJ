@@ -26,12 +26,12 @@ void parseProg() {
 
 // PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
 void parseProlog() {
-    if (!isKeyword(currentToken, KEYWORD_CONST)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_CONST)) {
         HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
 
-    if (!isKeyword(currentToken, KEYWORD_IFJ)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -41,7 +41,7 @@ void parseProlog() {
     }
     getNextToken(currentToken);
 
-    if (!isKeyword(currentToken, KEYWORD_IMPORT)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_IMPORT)) {
         HANDLE_ERROR("Expected '@import' in prolog", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -54,28 +54,20 @@ void parseProlog() {
 
 // FUNC_DEFS ::= FUNC_DEF FUNC_DEFS | ε
 void parseFuncDefs() {
-    while (true) {
-        if (isKeyword(currentToken, KEYWORD_PUB)) {
-            parseFuncDef();
-
-            if (!isKeyword(currentToken, KEYWORD_PUB)) {
-                break;
-            }
-        } 
-        else {
-            break;
-        }
+    if (isTokenKeyword(currentToken, KEYWORD_PUB)) {
+        parseFuncDef();
+        parseFuncDefs();
     }
 }
 
 // FUNC_DEF ::= token_pub token_fn token_func_id token_Orb PARAMS token_Crb FUNC_TYPE
 void parseFuncDef() {
-    if (!isKeyword(currentToken, KEYWORD_PUB)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_PUB)) {
         HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
 
-    if (!isKeyword(currentToken, KEYWORD_FN)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_FN)) {
         HANDLE_ERROR("Expected 'fn' in function definition", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -118,13 +110,13 @@ void parseFunc() {
 
 // TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 | token_void
 void parseType() {
-    if (isKeyword(currentToken, KEYWORD_VOID)) {
+    if (isTokenKeyword(currentToken, KEYWORD_VOID)) {
         voidFuncType = true;
         getNextToken(currentToken);
     } 
     else {
-        if (isKeyword(currentToken, KEYWORD_I_32) || isKeyword(currentToken, KEYWORD_F_64) || isKeyword(currentToken, KEYWORD_U_8_ARRAY) || 
-            isKeyword(currentToken, KEYWORD_I_32_NULL) ||  isKeyword(currentToken, KEYWORD_F_64_NULL) || isKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
+        if (isTokenKeyword(currentToken, KEYWORD_I_32) || isTokenKeyword(currentToken, KEYWORD_F_64) || isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY) || 
+            isTokenKeyword(currentToken, KEYWORD_I_32_NULL) ||  isTokenKeyword(currentToken, KEYWORD_F_64_NULL) || isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
             voidFuncType = false;
             getNextToken(currentToken);
         } 
@@ -138,7 +130,7 @@ void parseType() {
 // V_RETURN ::= token_return token_semicolon | ε 
 void parseReturn() {
     if (voidFuncType) {
-         if (isKeyword(currentToken, KEYWORD_RETURN)) {
+         if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
@@ -150,7 +142,7 @@ void parseReturn() {
         return;
     } 
     else {
-        if (isKeyword(currentToken, KEYWORD_RETURN)) {
+        if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
             HANDLE_ERROR("Expected 'return' keyword in return statement", SYNTAX_ERROR, currentToken);
         }
         getNextToken(currentToken);
@@ -171,36 +163,29 @@ void parseParams() {
         return;
     }
 
-    while (true) {
-        if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
-            HANDLE_ERROR("Expected parameter identifier", SYNTAX_ERROR, currentToken);
-        }
-        getNextToken(currentToken);
+    getNextToken(currentToken);
 
-        if (currentToken->type != TOKEN_TYPE_COLON) {
-            HANDLE_ERROR("Expected ':' after parameter identifier", SYNTAX_ERROR, currentToken);
-        }
-        getNextToken(currentToken);
+    if (currentToken->type != TOKEN_TYPE_COLON) {
+        HANDLE_ERROR("Expected ':' after parameter identifier", SYNTAX_ERROR, currentToken);
+    }
+    getNextToken(currentToken);
 
-        parseType();
+    parseType();
 
-        // peek();
-        if (currentToken->type != TOKEN_TYPE_COMMA) {
-            break;
-        }
+    // Token* nextToken = peek();
+    if (currentToken->type == TOKEN_TYPE_COMMA) {
         getNextToken(currentToken);
+        parseParams();
     }
 }
 
 // STATEMENTS ::= STATEMENT STATEMENTS | ε
 void parseStatements() {
-    while (true) {
-        parseStatement();
-
-        if (currentToken->type == TOKEN_TYPE_RIGHT_CURLY_BR) {
-            return;
-        }
+    if (currentToken->type == TOKEN_TYPE_RIGHT_CURLY_BR) {
+        return;
     }
+    parseStatement();
+    parseStatements();
 }
 
 // STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL
@@ -239,7 +224,7 @@ void parseStatement() {
 
 // VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
 void parseVarDef() {
-    if ((isKeyword(currentToken, KEYWORD_VAR) || isKeyword(currentToken, KEYWORD_CONST))) {
+    if ((isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST))) {
         getNextToken(currentToken);
     } 
     else {
@@ -298,7 +283,7 @@ void parseVarAss() {
 
 // While ::= token_while token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb
 void parseWhile() {
-    if (!isKeyword(currentToken, KEYWORD_WHILE)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_WHILE)) {
         HANDLE_ERROR("Expected 'while' at the beginning of while loop", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -350,7 +335,7 @@ void parseNullCond() {
 
 // IF ::= token_if token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb ELSE
 void parseIf() {
-    if (!isKeyword(currentToken, KEYWORD_IF)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_IF)) {
         HANDLE_ERROR("Expected 'if' at the beginning of if statement", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -386,7 +371,7 @@ void parseIf() {
 
 // ELSE ::= token_else token_Ocb STATEMENTS token_Ccb | ε
 void parseElse() {
-    if (!isKeyword(currentToken, KEYWORD_ELSE)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_ELSE)) {
         return;
     }
     getNextToken(currentToken);
@@ -431,7 +416,7 @@ void parseFuncCall() {
 
 // DISCARD_CALL ::= token_underscore token_equals EXPR token_semicolon
 void parseDiscardCall() {
-    if (!isKeyword(currentToken, KEYWORD_UNDERSCORE)) {
+    if (!isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
         HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
