@@ -88,4 +88,18 @@ int functionStart(char *functionName);
  */
 int functionEnd(char *functionName);
 
+/**
+ * @brief Generates code for a start of an if statement.
+ *
+ * @return int Returns 0 on success, or a non-zero error code on failure.
+ */
+int ifStart();
+
+/**
+ * @brief Generates code for the end of an if statement.
+ *
+ * @return int Returns 0 on success, or a non-zero error code on failure.
+ */
+int ifEnd();
+
 #endif
