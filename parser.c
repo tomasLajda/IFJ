@@ -13,9 +13,9 @@ SymbolTable* symbolTable = NULL;
 AST* ast = NULL;
 bool voidFuncType = false; 
 
-bool isKeyword(Keyword keyword) {
-    return (currentToken->type == TOKEN_TYPE_KEYWORD && 
-            currentToken->attribute.keyword == keyword);
+bool isTokenKeyword(Token* token, Keyword keyword) {
+    return (token->type == TOKEN_TYPE_KEYWORD && 
+            token->attribute.keyword == keyword);
 }
 
 // PROG ::= PROLOG FUNC_DEFS
@@ -26,12 +26,12 @@ void parseProg() {
 
 // PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
 void parseProlog() {
-    if (!isKeyword(KEYWORD_CONST)) {
+    if (!isKeyword(currentToken, KEYWORD_CONST)) {
         HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
 
-    if (!isKeyword(KEYWORD_IFJ)) {
+    if (!isKeyword(currentToken, KEYWORD_IFJ)) {
         HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -41,7 +41,7 @@ void parseProlog() {
     }
     getNextToken(currentToken);
 
-    if (!isKeyword(KEYWORD_IMPORT)) {
+    if (!isKeyword(currentToken, KEYWORD_IMPORT)) {
         HANDLE_ERROR("Expected '@import' in prolog", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -55,10 +55,10 @@ void parseProlog() {
 // FUNC_DEFS ::= FUNC_DEF FUNC_DEFS | ε
 void parseFuncDefs() {
     while (true) {
-        if (isKeyword(KEYWORD_PUB)) {
+        if (isKeyword(currentToken, KEYWORD_PUB)) {
             parseFuncDef();
 
-            if (!isKeyword(KEYWORD_PUB)) {
+            if (!isKeyword(currentToken, KEYWORD_PUB)) {
                 break;
             }
         } 
@@ -70,12 +70,12 @@ void parseFuncDefs() {
 
 // FUNC_DEF ::= token_pub token_fn token_func_id token_Orb PARAMS token_Crb FUNC_TYPE
 void parseFuncDef() {
-    if (!isKeyword(KEYWORD_PUB)) {
+    if (!isKeyword(currentToken, KEYWORD_PUB)) {
         HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
 
-    if (!isKeyword(KEYWORD_FN)) {
+    if (!isKeyword(currentToken, KEYWORD_FN)) {
         HANDLE_ERROR("Expected 'fn' in function definition", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -118,13 +118,13 @@ void parseFunc() {
 
 // TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 | token_void
 void parseType() {
-    if (isKeyword(KEYWORD_VOID)) {
+    if (isKeyword(currentToken, KEYWORD_VOID)) {
         voidFuncType = true;
         getNextToken(currentToken);
     } 
     else {
-        if (isKeyword(KEYWORD_I_32) || isKeyword(KEYWORD_F_64) || isKeyword(KEYWORD_U_8_ARRAY) || 
-            isKeyword(KEYWORD_I_32_NULL) ||  isKeyword(KEYWORD_F_64_NULL) || isKeyword(KEYWORD_U_8_ARRAY_NULL)) {
+        if (isKeyword(currentToken, KEYWORD_I_32) || isKeyword(currentToken, KEYWORD_F_64) || isKeyword(currentToken, KEYWORD_U_8_ARRAY) || 
+            isKeyword(currentToken, KEYWORD_I_32_NULL) ||  isKeyword(currentToken, KEYWORD_F_64_NULL) || isKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
             voidFuncType = false;
             getNextToken(currentToken);
         } 
@@ -138,7 +138,7 @@ void parseType() {
 // V_RETURN ::= token_return token_semicolon | ε 
 void parseReturn() {
     if (voidFuncType) {
-         if (isKeyword(KEYWORD_RETURN)) {
+         if (isKeyword(currentToken, KEYWORD_RETURN)) {
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
@@ -150,7 +150,7 @@ void parseReturn() {
         return;
     } 
     else {
-        if (isKeyword(KEYWORD_RETURN)) {
+        if (isKeyword(currentToken, KEYWORD_RETURN)) {
             HANDLE_ERROR("Expected 'return' keyword in return statement", SYNTAX_ERROR, currentToken);
         }
         getNextToken(currentToken);
@@ -239,7 +239,7 @@ void parseStatement() {
 
 // VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
 void parseVarDef() {
-    if ((isKeyword(KEYWORD_VAR) || isKeyword(KEYWORD_CONST))) {
+    if ((isKeyword(currentToken, KEYWORD_VAR) || isKeyword(currentToken, KEYWORD_CONST))) {
         getNextToken(currentToken);
     } 
     else {
@@ -298,7 +298,7 @@ void parseVarAss() {
 
 // While ::= token_while token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb
 void parseWhile() {
-    if (!isKeyword(KEYWORD_WHILE)) {
+    if (!isKeyword(currentToken, KEYWORD_WHILE)) {
         HANDLE_ERROR("Expected 'while' at the beginning of while loop", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -350,7 +350,7 @@ void parseNullCond() {
 
 // IF ::= token_if token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb ELSE
 void parseIf() {
-    if (!isKeyword(KEYWORD_IF)) {
+    if (!isKeyword(currentToken, KEYWORD_IF)) {
         HANDLE_ERROR("Expected 'if' at the beginning of if statement", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);
@@ -386,7 +386,7 @@ void parseIf() {
 
 // ELSE ::= token_else token_Ocb STATEMENTS token_Ccb | ε
 void parseElse() {
-    if (!isKeyword(KEYWORD_ELSE)) {
+    if (!isKeyword(currentToken, KEYWORD_ELSE)) {
         return;
     }
     getNextToken(currentToken);
@@ -431,7 +431,7 @@ void parseFuncCall() {
 
 // DISCARD_CALL ::= token_underscore token_equals EXPR token_semicolon
 void parseDiscardCall() {
-    if (!isKeyword(KEYWORD_UNDERSCORE)) {
+    if (!isKeyword(currentToken, KEYWORD_UNDERSCORE)) {
         HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR, currentToken);
     }
     getNextToken(currentToken);

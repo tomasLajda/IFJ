@@ -29,7 +29,7 @@ void peek();
  * @param keyword The keyword to check
  * @return True if the current token is the keyword, false otherwise
  */
-bool isKeyword(Keyword keyword);
+bool isTokenKeyword(Token* token, Keyword keyword);
 
 /**
  * @brief Parses the whole program
