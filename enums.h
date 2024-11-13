@@ -10,6 +10,50 @@
 #ifndef ENUMS_H
 #define ENUMS_H
 
+typedef enum {
+    // Start state - default
+    STATE_START,
+
+    // IMPORT
+    STATE_IMPORT, // State for @import keyword, that has to be in every file
+
+    // OPERATORS
+    STATE_LESS,      // Starts with '<', can be '<='
+    STATE_MORE,      // Starts with '>', can be '>='
+    STATE_EQUAL,     // Starts with '=', can be '=='
+    STATE_EXCL_MARK, // Starts with '!', has to continue with '=' for NOT_EQUAL, else error
+    STATE_DIVISION,  // Starts with '/', can be comment '//'
+    STATE_COMMENT,   // Comment '//'
+
+    // IDENTIFIER
+    STATE_IDENTIFIER_OR_KEYWORD, // Starts with letter or '_', returns string as IDENTIFIER or
+                                 // KEYWORD
+
+    // TYPE
+    STATE_OPENING_SQUARE_BRAC, // '[' was loaded after '?', ']' has to come next
+    STATE_CLOSING_SQUARE_BRAC, // ']' was loaded
+    STATE_TYPE,                // State to clarify type after either '[]', '?' or '?[]'
+
+    // NUMBER
+    STATE_NUMBER, // Loads a number (1-9) and either returns INT, continues to STATE_NUMBER_DOT, or
+                  // STATE_EXPONENT
+    STATE_ZERO,   // Loads '0' (zero can't be int, only 0.smth)
+    STATE_NUMBER_DOT, // '.' was loaded after a number, loads next number, goes to STATE_FLOAT
+    STATE_FLOAT,    // Loads numbers and returns FLOAT or IF (e/E) is loaded goes to STATE_EXPONENT
+    STATE_EXPONENT, // Loads number or sign (+/-) and goes to STATE_EXP_NUMBER or STATE_EXP_SIGN
+    STATE_EXP_SIGN, // Sign for exponent was loaded, loads next number
+    STATE_EXP_NUMBER, // Loads next number(s) and returns number with exp (can be float with exp)
+
+    // STRING
+    STATE_READ_STRING, // '"' was loaded, reads ASCII > 31
+    STATE_BACKSLASH,   // State for special characters after '\' ('\n', '\t', etc.) -> goes back to
+                       // STATE_READ_STRING, or '\x' to STATE_HEXA0
+    STATE_HEXA0,       // '\x' was read, reads first part of the hexa number, goes to STATE_HEXA1
+    STATE_HEXA1,       // Reads second part of the hexa number and goes back to STATE_READ_STRING
+    STATE_STRING       // Second '"' was loaded, string ends
+
+} ScannerState;
+
 // For the parts where we dont need all keywords
 typedef enum {
     TYPE_I_32 = 0,
@@ -95,7 +139,18 @@ typedef enum {
     TOKEN_TYPE_COLON,          // Colon :
     TOKEN_TYPE_SEMICOLON,      // Semicolon ;
     TOKEN_TYPE_DOT,            // Dot .
-    TOKEN_TYPE_AT,             // At @
+
+    // EXPRESSION PARSING
+    TOKEN_TYPE_EXPR,
+    TOKEN_TYPE_DOLLA
 } TokenType;
+
+typedef enum {
+    SCOPE_GLOBAL = 0,
+    SCOPE_FUNCTION = KEYWORD_FN,
+    SCOPE_WHILE = KEYWORD_WHILE,
+    SCOPE_IF = KEYWORD_IF,
+    SCOPE_ELSE = KEYWORD_ELSE
+} ScopeType;
 
 #endif

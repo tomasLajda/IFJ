@@ -35,6 +35,7 @@ typedef BinaryTreeNode *BinaryTreeNodePtr;
 
 typedef struct SymbolTable {
     BinaryTreeNodePtr root;
+    ScopeType scopeType;
     struct SymbolTable *previousTable;
 } SymbolTable;
 
@@ -51,6 +52,16 @@ typedef struct SymbolTable {
  * @param previousTable Pointer to the previous symbol table.
  */
 void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
+
+/**
+ * @brief Sets the scope type for the given symbol table.
+ *
+ * This function updates the scope type of the provided symbol table to the specified scope type.
+ *
+ * @param table Pointer to the symbol table whose scope type is to be set.
+ * @param scopeType The new scope type to be assigned to the symbol table.
+ */
+void symbolTableSetScope(SymbolTable *table, ScopeType scopeType);
 
 /**
  * @brief Frees the symbol table and all its nodes.

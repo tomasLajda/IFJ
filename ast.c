@@ -6,79 +6,68 @@
  *
  */
 
-#include <stdbool.h>
 #include "ast.h"
 #include "error_codes.h"
+#include "helpers.h"
+#include <stdbool.h>
 
-AST* initAST() {
-    AST* tree = (AST*) malloc(sizeof(AST));
+AST *initAST() {
+    AST *tree = (AST *)malloc(sizeof(AST));
+
     if (tree == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
     }
+
     tree->root = NULL;
+    tree->isExpression = false;
     return tree;
 }
 
-ASTNode* initASTNode() {
-    ASTNode* node = (ASTNode*) malloc(sizeof(ASTNode));
+ASTNode *initASTNode() {
+    ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
+
     if (node == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, NULL);
     }
-    node->isExpression = false;
-    node->nodeType.tokenType = TOKEN_TYPE_EMPTY;
+
     node->parent = NULL;
-    node->absParent = NULL;
     node->exprTree = NULL;
     node->token = NULL;
-    node->childCount = 0;
+    node->left = NULL;
+    node->right = NULL;
     return node;
 }
 
-void disposeSubtree(ASTNode* node) {
+void disposeSubtree(ASTNode *node) {
     if (node == NULL) {
         return;
     }
-    
+
     disposeSubtree(node->left);
     disposeSubtree(node->right);
-    
+
+    if (node->exprTree != NULL) {
+        freeAST(node->exprTree);
+    }
+
     if (node->token != NULL) {
         free(node->token);
     }
     free(node);
 }
 
-void freeAST(AST* ast) {
+void freeAST(AST *ast) {
     if (ast == NULL) {
         return;
     }
+
     if (ast->root != NULL) {
         disposeSubtree(ast->root);
     }
-
     free(ast);
 }
 
-AST* initExpressionTree(ASTNode* node) {
-    if (node == NULL) {
-        HANDLE_ERROR("NULL pointer passed to createExpressionTree", INTERNAL_ERROR, NULL);
-    }
-
-    node->isExpression = true;
-
-    AST* exprTree = initAST();
-    if (exprTree == NULL) {
-        HANDLE_ERROR("Failed to create expression tree", INTERNAL_ERROR, NULL);
-    }
-    exprTree->root = node;
-    node->exprTree = exprTree;
-    exprTree->root->left = NULL;
-    exprTree->root->right = NULL;
-
-    return exprTree;
-}
-
-void addLeftNode(AST* ast, ASTNode* parent, ASTNode* node) {
+void addLeftNode(AST *ast, ASTNode *parent, ASTNode *node) {
     if (ast == NULL || parent == NULL || node == NULL) {
         HANDLE_ERROR("NULL pointer passed to addLeftNode", INTERNAL_ERROR, NULL);
     }
@@ -92,13 +81,12 @@ void addLeftNode(AST* ast, ASTNode* parent, ASTNode* node) {
     if (parent->left == NULL) {
         parent->left = node;
         node->parent = parent;
-    } 
-    else {
+    } else {
         HANDLE_ERROR("Left child node is already occupied", INTERNAL_ERROR, NULL);
     }
 }
 
-void addRightNode(AST* ast, ASTNode* parent, ASTNode* node) {
+void addRightNode(AST *ast, ASTNode *parent, ASTNode *node) {
     if (ast == NULL || parent == NULL || node == NULL) {
         HANDLE_ERROR("NULL pointer passed to addRightNode", INTERNAL_ERROR, NULL);
     }
@@ -112,8 +100,43 @@ void addRightNode(AST* ast, ASTNode* parent, ASTNode* node) {
     if (parent->right == NULL) {
         parent->right = node;
         node->parent = parent;
-    } 
-    else {
+    } else {
         HANDLE_ERROR("Right child node is already occupied", INTERNAL_ERROR, NULL);
     }
+}
+
+void displayAST(AST *ast) {
+    if (ast == NULL) {
+        printf("AST is NULL\n");
+        return;
+    }
+    if (ast->root == NULL) {
+        printf("AST is empty\n");
+        return;
+    }
+    printf("AST:\n");
+    displayASTNode(ast->root, 0, true);
+}
+
+void displayASTNode(ASTNode *node, int level, bool isLeft) {
+    if (node == NULL) {
+        return;
+    }
+    for (int i = 0; i < level; i++) {
+        printf("  ");
+    }
+    printf("|-- ");
+    if (isLeft) {
+        printf("L: ");
+    } else {
+        printf("R: ");
+    }
+    if (node->token != NULL) {
+        printf("Token Type: %s", TokenTypeToString(node->token->type));
+    } else {
+        printf("NULL Token");
+    }
+    printf("\n");
+    displayASTNode(node->left, level + 1, true);
+    displayASTNode(node->right, level + 1, false);
 }

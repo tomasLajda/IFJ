@@ -116,6 +116,10 @@ void treeRebalance(BinaryTreeNodePtr *node) {
  * @param node The root node of the tree to dispose of.
  */
 void treeDispose(BinaryTreeNodePtr node) {
+    if (node == NULL) {
+        return;
+    }
+
     if (node->left != NULL) {
         treeDispose(node->left);
     }
@@ -227,6 +231,9 @@ BinaryTreeNodePtr treeDelete(BinaryTreeNodePtr node, const char *key) {
             }
 
             free(temp->data.key);
+            if (temp->data.function) {
+                listDispose(temp->data.params);
+            }
             free(temp);
         } else {
             BinaryTreeNodePtr temp = treeMinValueNode(node->right);
@@ -271,6 +278,13 @@ void treeReassign(BinaryTreeNodePtr node, const char *key, Symbol data) {
     }
 }
 
+/**
+ * @brief Retrieves the data of a node with the given key.
+ *
+ * @param node The root node of the tree.
+ * @param key The key of the node to retrieve.
+ * @return Pointer to the data of the node, or NULL if not found.
+ */
 Symbol *treeGet(BinaryTreeNodePtr node, const char *key) {
     while (node != NULL) {
         int compare = strcmp(key, node->data.key);
@@ -304,6 +318,8 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable) {
     table->root = NULL;
     table->previousTable = previousTable;
 }
+
+void symbolTableSetScope(SymbolTable *table, ScopeType scopeType) { table->scopeType = scopeType; }
 
 void symbolTableDelete(SymbolTable *table, const char *key) {
     table->root = treeDelete(table->root, key);
