@@ -170,7 +170,6 @@ void parseReturn() {
     }
 }
 
-// TODO: Reimplement the part with next comma with peek function
 // PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
 void parseParams() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
@@ -186,11 +185,14 @@ void parseParams() {
 
     parseType();
 
-    // Token* nextToken = peek();
-    if (currentToken->type == TOKEN_TYPE_COMMA) {
+    Token* peekedToken = peek();
+    if (peekedToken->type == TOKEN_TYPE_COMMA) {
+        getNextToken(currentToken);
         getNextToken(currentToken);
         parseParams();
     }
+
+    free(peekedToken);
 }
 
 // STATEMENTS ::= STATEMENT STATEMENTS | ε
@@ -224,18 +226,17 @@ void parseStatement() {
             break;
         
         case TOKEN_TYPE_IDENTIFIER:
-            // TODO: Token* nextToken = peek();
-            if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
-                getNextToken(currentToken);
+            Token* peekedToken = peek();
+            if (peekedToken->type == TOKEN_TYPE_LEFT_BR) {
                 parseFuncCall();
             }
-            else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
-                getNextToken(currentToken);
+            else if (peekedToken->type == TOKEN_TYPE_ASSIGN) {
                 parseVarAss();
             }
             else {
                 HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
             }
+            free(peekedToken);
             break;
 
         default:
@@ -458,12 +459,18 @@ void parseDiscardCall() {
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε      
 void parseArgs() {
-    parseExpression(ast, currentToken);
-
-    // peek();
-    if (currentToken->type != TOKEN_TYPE_COMMA) {
-        return;
+    if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        getNextToken(currentToken);
+    } 
+    else {
+        parseExpression(ast, currentToken);
     }
-    getNextToken(currentToken);
-    parseArgs();
+
+    Token* peekedToken = peek();
+    if (peekedToken->type == TOKEN_TYPE_COMMA) {
+        getNextToken(currentToken);
+        parseArgs();
+    }
+
+    free(peekedToken);
 }
