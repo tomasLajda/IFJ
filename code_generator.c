@@ -25,6 +25,7 @@ int generateCode(FILE *outputFile, AST *ast) {
 
     generateCodeHeader();
 
+    ADD_TO_BUFFER("$$END\n");
     codeGeneratorFlush(outputFile);
 
     dynamicStringFree(&codeBuffer);
@@ -64,6 +65,7 @@ int mainStart() {
 int mainEnd() {
     ADD_TO_BUFFER("POPFRAME\n");
     ADD_TO_BUFFER("CLEARS\n");
+    ADD_TO_BUFFER("JMP $$END\n");
 
     return 0;
 }
