@@ -79,8 +79,6 @@ IFJ project
     "LABEL $IFJ24_write\n"                                                                         \
     "PUSHFRAME\n"                                                                                  \
     "DEFVAR LF@type\n"                                                                             \
-    "DEFVAR LF@value\n"                                                                            \
-    "MOVE LF@value TF@0\n"                                                                         \
     "TYPE LF@type LF@value\n"                                                                      \
     "JUMPIFEQ $write_int LF@type string@int\n"                                                     \
     "JUMPIFEQ $write_float LF@type string@float\n"                                                 \
