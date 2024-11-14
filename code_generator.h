@@ -135,6 +135,15 @@ IFJ project
     "POPFRAME\n"                                                                                   \
     "RETURN\n"
 
+#define BUILT_IN_FUNCTION_CONCAT                                                                   \
+    "# Built-in function concat\n"                                                                 \
+    "LABEL $IFJ24_concat\n"                                                                        \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "CONCAT LF@%%retval LF@s1 LF@s2\n"                                                             \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
 /**
  * @brief Generates code from the given abstract syntax tree (AST)
  *
