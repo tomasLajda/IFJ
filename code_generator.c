@@ -34,40 +34,55 @@ int generateCode(FILE *outputFile, AST *ast) {
 int generateCodeHeader() {
     ADD_TO_BUFFER("# Header\n");
     ADD_TO_BUFFER(".IFJcode24\n");
+    generateBuiltInFunctions();
     ADD_TO_BUFFER("JUMP $$main\n");
-    dynamicStringAddString(&codeBuffer, "# Header\n");
-    dynamicStringAddString(&codeBuffer, ".IFJcode24\n");
-    dynamicStringAddString(&codeBuffer, "JUMP $$main\n");
+    ADD_TO_BUFFER("# End of Header\n");
     return 0;
 }
 
+int generateBuiltInFunctions() {
+    ADD_TO_BUFFER("# Built-in functions\n");
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_READ);
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_WRITE);
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_I2F);
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_F2I);
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_CONCAT);
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_SUBSTRING);
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_ORD);
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_CHR);
+    ADD_TO_BUFFER("# End of Built-in functions\n");
+}
+
 int mainStart() {
-    dynamicStringAddString(&codeBuffer, "# Start of Main:\n");
-    dynamicStringAddString(&codeBuffer, "$$main\n");
-    dynamicStringAddString(&codeBuffer, "CREATEFRAME\n");
-    dynamicStringAddString(&codeBuffer, "PUSHFRAME\n");
+    ADD_TO_BUFFER("# Start of Main:\n");
+    ADD_TO_BUFFER("$$main\n");
+    ADD_TO_BUFFER("CREATEFRAME\n");
+    ADD_TO_BUFFER("PUSHFRAME\n");
     return 0;
 }
 
 int mainEnd() {
-    dynamicStringAddString(&codeBuffer, "POPFRAME\n");
-    dynamicStringAddString(&codeBuffer, "CLEARS\n");
+    ADD_TO_BUFFER("POPFRAME\n");
+    ADD_TO_BUFFER("CLEARS\n");
+
     return 0;
 }
 
 int functionStart(char *functionName) {
-    dynamicStringAddString(&codeBuffer, "LABEL $");
-    dynamicStringAddString(&codeBuffer, functionName);
-    dynamicStringAddString(&codeBuffer, "\n");
-    dynamicStringAddString(&codeBuffer, "PUSHFRAME\n");
+    ADD_TO_BUFFER("LABEL $");
+    ADD_TO_BUFFER(functionName);
+    ADD_TO_BUFFER("\n");
+    ADD_TO_BUFFER("PUSHFRAME\n");
     return 0;
 }
 
 int functionEnd(char *functionName) {
-    dynamicStringAddString(&codeBuffer, "POPFRAME\n");
-    dynamicStringAddString(&codeBuffer, "RETURN\n");
+    ADD_TO_BUFFER("POPFRAME\n");
+    ADD_TO_BUFFER("RETURN\n");
     return 0;
 }
+
+// int ifStart() { generateExpression(); }
 
 int generateExpression(ASTNode *node) {
     if (node == NULL) {
