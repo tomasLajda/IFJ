@@ -108,6 +108,24 @@ IFJ project
     "POPFRAME\n"                                                                                   \
     "RETURN\n"
 
+#define BUILT_IN_FUNCTION_I2F                                                                      \
+    "# Built-in function i2f\n"                                                                    \
+    "LABEL $IFJ24_i2f\n"                                                                           \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "INT2FLOAT LF@%%retval LF@input\n"                                                             \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
+#define BUILT_IN_FUNCTION_F2I                                                                      \
+    "# Built-in function f2i\n"                                                                    \
+    "LABEL $IFJ24_f2i\n"                                                                           \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "FLOAT2INT LF@%%retval LF@input\n"                                                             \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
 /**
  * @brief Generates code from the given abstract syntax tree (AST)
  *
