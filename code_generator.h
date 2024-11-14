@@ -187,6 +187,28 @@ IFJ project
     "MOVE LF@%%retval nil@nil\n"                                                                   \
     "JUMP $substring_end\n"
 
+#define BUILT_IN_FUNCTION_STRCMP                                                                   \
+    "# Built-in function strcmp\n"                                                                 \
+    "LABEL $IFJ24_strcmp\n"                                                                        \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "DEFVAR LF@less\n"                                                                             \
+    "DEFVAR LF@greater\n"                                                                          \
+    "LT LF@less LF@s1 LF@s2\n"                                                                     \
+    "JUMPIFEQ $strcmp_less LF@less bool@true\n"                                                    \
+    "GT LF@greater LF@s1 LF@s2\n"                                                                  \
+    "JUMPIFEQ $strcmp_greater LF@greater bool@true\n"                                              \
+    "MOVE LF@%%retval int@0\n"                                                                     \
+    "JUMP $strcmp_end\n"                                                                           \
+    "LABEL $strcmp_less\n"                                                                         \
+    "MOVE LF@%%retval int@-1\n"                                                                    \
+    "JUMP $strcmp_end\n"                                                                           \
+    "LABEL $strcmp_greater\n"                                                                      \
+    "MOVE LF@%%retval int@1\n"                                                                     \
+    "LABEL $strcmp_end\n"                                                                          \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
 /**
  * @brief Generates code from the given abstract syntax tree (AST)
  *
