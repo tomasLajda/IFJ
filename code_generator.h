@@ -227,6 +227,23 @@ IFJ project
     "POPFRAME\n"                                                                                   \
     "RETURN\n"
 
+#define BUILT_IN_FUNCTION_CHR                                                                      \
+    "# Built-in function chr\n"                                                                    \
+    "LABEL $IFJ24_chr\n"                                                                           \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "DEFVAR LF@num\n"                                                                              \
+    "MOVE LF@num LF@i\n"                                                                           \
+    "JUMPIFLT $chr_error LF@num int@0\n"                                                           \
+    "JUMPIFGT $chr_error LF@num int@255\n"                                                         \
+    "INT2CHAR LF@%%retval LF@num\n"                                                                \
+    "JUMP $chr_end\n"                                                                              \
+    "LABEL $chr_error\n"                                                                           \
+    "MOVE LF@%%retval nil@nil\n"                                                                   \
+    "LABEL $chr_end\n"                                                                             \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
 /**
  * @brief Generates code from the given abstract syntax tree (AST)
  *
