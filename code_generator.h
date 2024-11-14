@@ -209,6 +209,24 @@ IFJ project
     "POPFRAME\n"                                                                                   \
     "RETURN\n"
 
+#define BUILT_IN_FUNCTION_ORD                                                                      \
+    "# Built-in function ord\n"                                                                    \
+    "LABEL $IFJ24_ord\n"                                                                           \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "DEFVAR LF@len\n"                                                                              \
+    "STRLEN LF@len LF@s\n"                                                                         \
+    "LT LF@%%retval LF@i LF@len\n"                                                                 \
+    "JUMPIFNEQ $ord_error LF@%%retval bool@true\n"                                                 \
+    "GETCHAR LF@%%retval LF@s LF@i\n"                                                              \
+    "CHAR2INT LF@%%retval LF@%%retval\n"                                                           \
+    "JUMP $ord_end\n"                                                                              \
+    "LABEL $ord_error\n"                                                                           \
+    "MOVE LF@%%retval int@0\n"                                                                     \
+    "LABEL $ord_end\n"                                                                             \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
 /**
  * @brief Generates code from the given abstract syntax tree (AST)
  *
