@@ -126,6 +126,15 @@ IFJ project
     "POPFRAME\n"                                                                                   \
     "RETURN\n"
 
+#define BUILT_IN_FUNCTION_LENGTH                                                                   \
+    "# Built-in function length\n"                                                                 \
+    "LABEL $IFJ24_length\n"                                                                        \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%retval\n"                                                                          \
+    "STRLEN LF@%retval LF@s\n"                                                                     \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
 /**
  * @brief Generates code from the given abstract syntax tree (AST)
  *
