@@ -19,6 +19,7 @@ typedef union {
     double decimal;
     char *string;
     Keyword keyword;
+    void *noAttribute;
 } TokenAttribute;
 
 typedef struct {
