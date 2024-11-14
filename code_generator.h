@@ -130,8 +130,8 @@ IFJ project
     "# Built-in function length\n"                                                                 \
     "LABEL $IFJ24_length\n"                                                                        \
     "PUSHFRAME\n"                                                                                  \
-    "DEFVAR LF@%retval\n"                                                                          \
-    "STRLEN LF@%retval LF@s\n"                                                                     \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "STRLEN LF@%%retval LF@s\n"                                                                    \
     "POPFRAME\n"                                                                                   \
     "RETURN\n"
 
