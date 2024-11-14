@@ -121,6 +121,7 @@ int getNextToken(Token *token) {
 
     int state = STATE_START;
     token->type = TOKEN_TYPE_EMPTY;
+    token->attribute.noAttribute = NULL;
 
     while (true) {
 
