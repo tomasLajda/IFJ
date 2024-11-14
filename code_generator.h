@@ -13,6 +13,31 @@ IFJ project
 #include "dynamic_string.h"
 #include <stdio.h>
 
+#define BUILT_IN_FUNCTION_READ                                                                     \
+    "# Built-in function read\n"                                                                   \
+    "LABEL $IFJ24_read\n"                                                                          \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "JUMPIFEQ $read_int LF@type string@int\n"                                                      \
+    "JUMPIFEQ $read_float LF@type string@float\n"                                                  \
+    "JUMPIFEQ $read_string LF@type string@string\n"                                                \
+    "JUMPIFEQ $read_bool LF@type string@bool\n"                                                    \
+    "LABEL $read_int\n"                                                                            \
+    "READ LF@%%retval int\n"                                                                       \
+    "JUMP $read_end\n"                                                                             \
+    "LABEL $read_float\n"                                                                          \
+    "READ LF@%%retval float\n"                                                                     \
+    "JUMP $read_end\n"                                                                             \
+    "LABEL $read_string\n"                                                                         \
+    "READ LF@%%retval string\n"                                                                    \
+    "JUMP $read_end\n"                                                                             \
+    "LABEL $read_bool\n"                                                                           \
+    "READ LF@%%retval bool\n"                                                                      \
+    "JUMP $read_end\n"                                                                             \
+    "LABEL $read_end\n"                                                                            \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
 /**
  * @brief Generates code from the given abstract syntax tree (AST)
  *
@@ -89,17 +114,10 @@ int functionStart(char *functionName);
 int functionEnd(char *functionName);
 
 /**
- * @brief Generates code for a start of an if statement.
+ * @brief Generates the built-in IFJ functions.
  *
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
-int ifStart();
-
-/**
- * @brief Generates code for the end of an if statement.
- *
- * @return int Returns 0 on success, or a non-zero error code on failure.
- */
-int ifEnd();
+int generateBuiltInFunctions();
 
 #endif
