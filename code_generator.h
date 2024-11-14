@@ -144,6 +144,49 @@ IFJ project
     "POPFRAME\n"                                                                                   \
     "RETURN\n"
 
+#define BUILT_IN_FUNCTION_SUBSTRING                                                                \
+    "# Built-in function substring\n"                                                              \
+    "LABEL $IFJ24_substring\n"                                                                     \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "DEFVAR LF@len\n"                                                                              \
+    "DEFVAR LF@current_char\n"                                                                     \
+    "DEFVAR LF@substring\n"                                                                        \
+    "DEFVAR LF@counter\n"                                                                          \
+    "DEFVAR LF@start_index\n"                                                                      \
+    "DEFVAR LF@end_index\n"                                                                        \
+    "DEFVAR LF@condition\n"                                                                        \
+    "MOVE LF@%%retval nil@nil\n"                                                                   \
+    "MOVE LF@substring string@\"\"\n"                                                              \
+    "MOVE LF@start_index LF@i\n"                                                                   \
+    "MOVE LF@end_index LF@j\n"                                                                     \
+    "STRLEN LF@len LF@s\n"                                                                         \
+    "LT LF@condition LF@start_index int@0\n"                                                       \
+    "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
+    "LT LF@condition LF@end_index int@0\n"                                                         \
+    "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
+    "GE LF@condition LF@start_index LF@len\n"                                                      \
+    "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
+    "GT LF@condition LF@end_index LF@len\n"                                                        \
+    "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
+    "LT LF@condition LF@end_index LF@start_index\n"                                                \
+    "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
+    "MOVE LF@counter LF@start_index\n"                                                             \
+    "LABEL $substring_loop\n"                                                                      \
+    "GT LF@condition LF@counter LF@end_index\n"                                                    \
+    "JUMPIFEQ $substring_end LF@condition bool@true\n"                                             \
+    "GETCHAR LF@current_char LF@s LF@counter\n"                                                    \
+    "CONCAT LF@substring LF@substring LF@current_char\n"                                           \
+    "ADD LF@counter LF@counter int@1\n"                                                            \
+    "JUMP $substring_loop\n"                                                                       \
+    "LABEL $substring_end\n"                                                                       \
+    "MOVE LF@%%retval LF@substring\n"                                                              \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"                                                                                     \
+    "LABEL $substring_error\n"                                                                     \
+    "MOVE LF@%%retval nil@nil\n"                                                                   \
+    "JUMP $substring_end\n"
+
 /**
  * @brief Generates code from the given abstract syntax tree (AST)
  *
