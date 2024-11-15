@@ -8,11 +8,13 @@
 // TODO: BUILT-IN FUNCTIONS, AST, OTHERS...
 
 #include "parser.h"
+#include "testing_utils.h"
 #include <string.h>
 
-Token* currentToken = NULL;
+// Token* currentToken = NULL;
 SymbolTable* symbolTable = NULL;
 AST* ast = NULL;
+ASTNode* currentParent = NULL;
 bool voidFuncType = false; 
 
 bool isTokenKeyword(Token* token, Keyword keyword) {
@@ -38,10 +40,16 @@ Token* peek() {
 void parseProg() {
     parseProlog();
     parseFuncDefs();
+
+    if (currentToken->type != TOKEN_TYPE_EOF) {
+        HANDLE_ERROR("Unexpected token after function definitions", SYNTAX_ERROR, currentToken);
+    }
 }
 
 // PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
 void parseProlog() {
+    printTokenInfo(currentToken);
+
     if (!isTokenKeyword(currentToken, KEYWORD_CONST)) {
         HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR, currentToken);
     }
@@ -50,21 +58,26 @@ void parseProlog() {
     if (!isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR, currentToken);
     }
+
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' in prolog", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_IMPORT)) {
         HANDLE_ERROR("Expected '@import' in prolog", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' in prolog", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -81,6 +94,13 @@ void parseFuncDef() {
     if (!isTokenKeyword(currentToken, KEYWORD_PUB)) {
         HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
     }
+
+    ast = initAST();
+    ASTNode* funcDefNode = initASTNode();
+    ast->root = funcDefNode;
+    funcDefNode->token = currentToken;
+    currentParent = funcDefNode;
+
     getNextToken(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_FN)) {
@@ -91,6 +111,11 @@ void parseFuncDef() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected function identifier in function definition", SYNTAX_ERROR, currentToken);
     }
+
+    ASTNode* funcIdNode = initASTNode();
+    funcIdNode->token = currentToken;
+    addLeftNode(ast, currentParent, funcIdNode);
+
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
@@ -478,10 +503,12 @@ void parseArgs() {
 }
 
 int parse() {
-    getNextToken(currentToken);
-    ast = initAST();
-    ASTNode* root = initASTNode();
-    ast->root = root;
+    printf("Parsing started\n");
     parseProg();
+
+    if (currentToken->type != TOKEN_TYPE_EOF) {
+        fprintf(stderr, "Error: Unexpected token after parsing the program\n");
+        return SYNTAX_ERROR;
+    }
     return 0;
 }
