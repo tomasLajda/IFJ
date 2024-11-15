@@ -71,9 +71,51 @@ int generateBuiltInFunctions() {
 }
 
 int generateFuncBody(ASTNode *node) {
-    // TODO: pridat list se vsemi promennymi
+
+    // TODO: pridat list se vsemi promennymi do parametru funkce
     // TODO: DEFVAR pro vsechny promenne z listu
-    // TODO: projit cely podstrom a zavolat potrebne funkce
+    ASTNode *currentNode = node;
+
+    while (currentNode != NULL) {
+        processNode(currentNode);
+        currentNode = currentNode->right;
+    }
+}
+
+int processNode(ASTNode *node) {
+    if (node == NULL) {
+        return INTERNAL_ERROR;
+    }
+
+    switch (node->token->type) {
+    case TOKEN_TYPE_IDENTIFIER:
+        // TODO: fix if codnitons accoardingly to the ast node structure
+        if (node.isAssignment == true) {
+            // TODO: GENERATE ASSIGNMENT
+        } else if (node.isFunctionCall == true) {
+            // TODO: GENERATE FUNCTION CALL
+        } else {
+            return INTERNAL_ERROR;
+        }
+        break;
+
+    case TOKEN_TYPE_KEYWORD:
+        if (node->token->attribute.keyword == KEYWORD_IF) {
+            // TODO: generate if
+        } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
+            // TODO: generate while loop
+        } else {
+            // TODO: Skip VARDEF and continue with the next node
+        }
+        break;
+
+    case TOKEN_TYPE_EXPR:
+        // todo: generateExpression(node);
+        break;
+
+    default:
+        break;
+    }
 }
 
 int mainStart() {
@@ -86,7 +128,7 @@ int mainStart() {
 
 int mainEnd() {
     ADD_TO_BUFFER("POPFRAME\n");
-    ADD_TO_BUFFER("CLEARS\n");
+    ADD_TO_BUFFER("CLEARS\n"); // todo: odstranit pokud nebude potreba datovy zasobnik
     ADD_TO_BUFFER("JUMP $$END\n");
 
     return 0;
