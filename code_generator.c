@@ -70,6 +70,12 @@ int generateBuiltInFunctions() {
     ADD_TO_BUFFER("# End of Built-in functions\n");
 }
 
+int generateFuncBody(ASTNode *node) {
+    // TODO: pridat list se vsemi promennymi
+    // TODO: DEFVAR pro vsechny promenne z listu
+    // TODO: projit cely podstrom a zavolat potrebne funkce
+}
+
 int mainStart() {
     ADD_TO_BUFFER("# Start of Main:\n");
     ADD_TO_BUFFER("$$main\n");
