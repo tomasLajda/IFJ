@@ -25,6 +25,22 @@ int generateCode(FILE *outputFile, AST *ast) {
 
     generateCodeHeader();
 
+    // Traverse all nodes to the right of the root - functions and generate code for them
+    ASTNode *currentNode = ast->root;
+    while (currentNode != NULL) {
+        if (currentNode->left->token->attribute.string == "main") {
+            mainStart();
+            generateFuncBody(currentNode->left);
+            mainEnd();
+        } else {
+            functionStart(currentNode->left->token->attribute.string);
+            generateFuncBody(currentNode->left);
+            functionEnd(currentNode->left->token->attribute.string);
+        }
+
+        currentNode = currentNode->right;
+    }
+
     ADD_TO_BUFFER("$$END\n");
     codeGeneratorFlush(outputFile);
 
