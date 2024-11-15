@@ -19,9 +19,19 @@ extern SymbolTable* symbolTable;
 extern AST* ast;
 
 /**
- * @brief Peeks the next token from scanner before consuming it
+ * @brief Checks if the current token is a keyword
+ * 
+ * @param keyword The keyword to check
+ * @return True if the current token is the keyword, false otherwise
  */
-void peek();
+bool isTokenKeyword(Token* token, Keyword keyword);
+
+/**
+ * @brief Checks the next token without changing the current token
+ * 
+ * @return The next token
+ */
+Token* peek();
 
 /**
  * @brief Parses the whole program
@@ -29,6 +39,11 @@ void peek();
  * @return Returns 0 if the program was parsed successfully, non-zero if an error was encountered
  */
 int parse();
+
+/**
+ * @brief PROG ::= PROLOG FUNC_DEFS
+ */
+void parseProg();
 
 /**
  * @brief PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig"); 
@@ -51,19 +66,25 @@ void parseFuncDef();
 
 /**
  * @brief FUNC ::= TYPE token_Ocb STATEMENTS RETURN token_Ccb
+ * V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
  */
 void parseFunc();
-
-/**
- * @brief V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
- */
-void parseVoidFunc();
 
 /**
  * @brief RETURN ::= token_return EXPR token_semicolon
  *        V_RETURN ::= token_return token_semicolon | ε       
  */
 void parseReturn();
+
+/**
+ * @brief STATEMENTS ::= STATEMENT STATEMENTS | ε
+ */
+void parseStatements();
+
+/**
+ * @brief STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL | VAR_ASS
+ */
+void parseStatement();
 
 /**
  * @brief PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
@@ -77,7 +98,7 @@ void parseParams();
 void parseType();
 
 /**
- * @brief VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
+ * @brief VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
  * Also handles VAR_TYPE decision (var vs const)
  */
 void parseVarDef();
@@ -88,7 +109,7 @@ void parseVarDef();
 void parseTypeSpec();
 
 /**
- * @brief TYPE_SPEC ::= token_Osb token_Csb | ε
+ * @brief VAR_ASS ::= token_id token_equals EXPR token_semicolon
  */
 void parseVarAss();
 
@@ -118,7 +139,7 @@ void parseNullCond();
 void parseFuncCall();
 
 /**
- * @brief token_underscore token_equals EXPR token_semicolon
+ * @brief DISCARD_CALL ::= token_underscore token_equals EXPR token_semicolon
  */
 void parseDiscardCall();
 
