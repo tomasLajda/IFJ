@@ -87,6 +87,9 @@ int mainEnd() {
 }
 
 int functionStart(char *functionName) {
+    ADD_TO_BUFFER("# Start of function ");
+    ADD_TO_BUFFER(functionName);
+    ADD_TO_BUFFER(":\n");
     ADD_TO_BUFFER("LABEL $");
     ADD_TO_BUFFER(functionName);
     ADD_TO_BUFFER("\n");
