@@ -326,4 +326,15 @@ int functionEnd(char *functionName);
  */
 int generateBuiltInFunctions();
 
+/**
+ * @brief Processes a function declaration node in the abstract syntax tree (AST).
+ *
+ * This function takes an AST node representing the start of a function declaration,
+ * traverses the entire subtree, and generates the function body.
+ *
+ * @param node A pointer to the AST node representing the function declaration to be processed.
+ * @return int Returns 0 on success, or a non-zero error code on failure.
+ */
+int generateFuncBody(ASTNode *node);
+
 #endif
