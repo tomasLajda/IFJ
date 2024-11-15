@@ -337,4 +337,15 @@ int generateBuiltInFunctions();
  */
 int generateFuncBody(ASTNode *node);
 
+/**
+ * @brief Processes an AST node representing a command in IFJ24.
+ *
+ * This function generates instructions according to the command type
+ * (e.g., if, while, assignment, etc.) represented by the given AST node.
+ *
+ * @param node Pointer to the AST node to be processed.
+ * @return An integer indicating the success or failure of the processing.
+ */
+int processNode(ASTNode *node);
+
 #endif
