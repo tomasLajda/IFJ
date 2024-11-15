@@ -348,7 +348,6 @@ int parseExpression(AST *exprAST, Token *token) {
     if (input == NULL) {
         cleanupStack(stack);
         free(stack);
-        free(dollar);
         HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, INTERNAL_ERROR);
     }
     initStack(input);
@@ -360,7 +359,6 @@ int parseExpression(AST *exprAST, Token *token) {
         free(input);
         cleanupStack(stack);
         free(stack);
-        free(dollar);
         return SYNTAX_ERROR; // Indicate syntax error
     }
 
@@ -528,12 +526,11 @@ int parseExpression(AST *exprAST, Token *token) {
         return 0; // Indicate successful parsing
     } else {
         // Syntax error
-        freeToken(dollarToken);
-        free(currentInputElement);
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
         free(stack);
+        free(currentInputElement);
         return SYNTAX_ERROR; // Indicate syntax error
     }
 }
