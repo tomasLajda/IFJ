@@ -87,7 +87,7 @@ int mainStart() {
 int mainEnd() {
     ADD_TO_BUFFER("POPFRAME\n");
     ADD_TO_BUFFER("CLEARS\n");
-    ADD_TO_BUFFER("JMP $$END\n");
+    ADD_TO_BUFFER("JUMP $$END\n");
 
     return 0;
 }
