@@ -131,8 +131,19 @@ int processNode(ASTNode *node) {
 
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
             // TODO: generate while loop
+
+            // ASTNode *conditionNode = node->left;
+            // ADD_TO_BUFFER("$while_start_lbl_counter\n");
+            // generateExpression(conditionNode); // conditionNode.exprTree.root
+            // defvar LF@condition
+            // pops LF@condition  ( vysledek vyrazu ze zasobniku)
+            // ADD_TO_BUFFER("JUMPIFEQ $while_end_lbl_counter LF@condition bool@false\n");
+            // processNode(conditionNode.left); // while body
+            // ADD_TO_BUFFER("JUMP $while_start_lbl_counter\n");
+            // ADD_TO_BUFFER("$while_end_lbl_counter\n");
         } else {
             // TODO: Skip VARDEF and continue with the next node
+            // TODO: nullable if (while?)
         }
         break;
 
