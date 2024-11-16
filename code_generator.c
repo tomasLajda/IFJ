@@ -240,17 +240,20 @@ int generateExpression(ASTNode *node) {
         } else if (currentTokenType == TOKEN_TYPE_DIV) {
             ADD_TO_BUFFER("DIVS\n");
         } else if (currentTokenType == TOKEN_TYPE_EQ) {
-            // todo: implement
+            ADD_TO_BUFFER("EQS\n");
         } else if (currentTokenType == TOKEN_TYPE_NEQ) {
-            // todo: implement
+            ADD_TO_BUFFER("EQS\n");
+            ADD_TO_BUFFER("NOTS\n");
         } else if (currentTokenType == TOKEN_TYPE_LTH) {
-            // todo: implement
+            ADD_TO_BUFFER("LTS\n");
         } else if (currentTokenType == TOKEN_TYPE_LEQ) {
-            // todo: implement
+            ADD_TO_BUFFER("GTS\n");
+            ADD_TO_BUFFER("NOTS\n");
         } else if (currentTokenType == TOKEN_TYPE_GTH) {
-            // todo: implement
+            ADD_TO_BUFFER("GTS\n");
         } else if (currentTokenType == TOKEN_TYPE_GEQ) {
-            // todo: implement
+            ADD_TO_BUFFER("LTS\n");
+            ADD_TO_BUFFER("NOTS\n");
         } else {
             return INTERNAL_ERROR;
         }
