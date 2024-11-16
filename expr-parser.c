@@ -107,6 +107,7 @@ int isOperand(Token *token) {
            || token->type == TOKEN_TYPE_DOUBLE_VALUE; // f64
 }
 
+// Returns 1 if the token is a parentheses, 0 otherwise
 int isParentheses(Token *token) {
     return token->type == TOKEN_TYPE_LEFT_BR || token->type == TOKEN_TYPE_RIGHT_BR;
 }
@@ -123,7 +124,8 @@ int isDelimiter(Token *token) {
  *
  * @param stack A pointer to the stack to be checked.
  * @param nextInputEleemnt A pointer to the next element to be processed.
- * @return An integer indicating whether the stack is reducible (0), not (1), or a syntax error (2).
+ * @return An integer indicating whether the stack is reducible (1), not (0), SYNTAX_ERROR (2), or
+ * INTERNAL_ERROR (99).
  */
 int isReducible(Stack *stack, StackElement *nextInputElement) {
     if (stack == NULL || stack->top == NULL || nextInputElement == NULL ||
@@ -131,12 +133,8 @@ int isReducible(Stack *stack, StackElement *nextInputElement) {
         return 0; // Stack is empty, cannot reduce
     }
     Token *nextInputToken = nextInputElement->tokenPtr;
-
-    // printf("Checking reducibility of the stack...\n");
-    // display(stack);
-    // printf("Next input token: %s\n", TokenTypeToString(nextInputToken->type));
-
     StackElement *first = stack->top;
+
     // Check for operand reduction (e.g., EXPR → id)
     if (isOperand(first->tokenPtr)) {
         return 1; // Stack is reducible by operand rule
@@ -147,6 +145,7 @@ int isReducible(Stack *stack, StackElement *nextInputElement) {
         StackElement *second = first->next;
         StackElement *third = second->next;
 
+        // Verify the pattern: Expr Operator Expr
         if (first->tokenPtr->type == EXPR && isOperator(second->tokenPtr) &&
             third->tokenPtr->type == EXPR) {
 
@@ -154,14 +153,15 @@ int isReducible(Stack *stack, StackElement *nextInputElement) {
             char precedence = precedenceTable[getTableIndex(second->tokenPtr->type)]
                                              [getTableIndex(nextInputToken->type)];
 
-            if (precedence == '>') {
+            switch (precedence) {
+            case '>':
                 return 1; // Reduce
-            } else if (precedence == '<') {
+            case '<':
                 return 0; // Shift
-            } else if (precedence == 'x') {
-                return 2; // Syntax error
-            } else {
-                return 3; // Internal error
+            case 'x':
+                return SYNTAX_ERROR; // Syntax error
+            default:
+                return INTERNAL_ERROR; // Internal error
             }
         }
     }
@@ -169,13 +169,12 @@ int isReducible(Stack *stack, StackElement *nextInputElement) {
     if (getStackLength(stack) >= 3) {
         StackElement *second = first->next;
         StackElement *third = second->next;
-
+        // Verify the pattern: ) Expr (
         if (first->tokenPtr->type == TOKEN_TYPE_RIGHT_BR && second->tokenPtr->type == EXPR &&
             third->tokenPtr->type == TOKEN_TYPE_LEFT_BR) {
             return 1; // Stack is reducible by parentheses rule
         }
     }
-
     return 0; // No reducible pattern found
 }
 
@@ -183,23 +182,40 @@ int isReducible(Stack *stack, StackElement *nextInputElement) {
  * @brief Chooses the appropriate reduction rule based on the current state of the stack. Use only
  * if isReducible() returns 0.
  *
- * @param stack A pointer to the stack used in the expression parser.
- * @return An integer representing the chosen reduction rule or -1 if no rule is applicable.
+ * @param stack Pointer to the current parsing stack.
+ * @return
+ *   - Returns a specific reduction rule identifier (e.g., EXPR_ADD) if a rule applies.
+ *   - Returns EXPR_PAR for parentheses reduction.
+ *   - Returns EXPR_ID for operand reduction.
+ *   - Returns -1 if no applicable reduction rule is found.
  */
 int chooseReduceRule(Stack *stack) {
+    if (stack == NULL || stack->top == NULL) {
+        return -1; // Invalid stack state
+    }
+
     StackElement *first = stack->top;
+
+    // Check for operand reduction (EXPR → id)
     if (isOperand(first->tokenPtr)) {
         return EXPR_ID; // Expr -> id
+    }
+
+    // Ensure there are at least three elements on the stack for further checks
+    if (getStackLength(stack) < 3) {
+        return -1; // Not enough elements to apply any reduction rule
     }
 
     StackElement *second = first->next;
     StackElement *third = second->next;
 
+    // Check for parentheses reduction (Expr → ( Expr ))
     if (first->tokenPtr->type == TOKEN_TYPE_RIGHT_BR && second->tokenPtr->type == EXPR &&
         third->tokenPtr->type == TOKEN_TYPE_LEFT_BR) {
         return EXPR_PAR; // Expr -> ( Expr )
     }
 
+    // 3. Check for Binary Operator Reduction (Expr → Expr operator Expr)
     if (first->tokenPtr->type == EXPR && isOperator(second->tokenPtr) &&
         third->tokenPtr->type == EXPR) {
         switch (second->tokenPtr->type) {
@@ -208,7 +224,7 @@ int chooseReduceRule(Stack *stack) {
         case TOKEN_TYPE_MINUS:
             return EXPR_SUB; // Expr -> Expr - Expr
         case TOKEN_TYPE_EQ:
-            return EXPR_EQ; // Expr -> Expr == Expr
+            return EXPR_EQ; //  Expr -> Expr == Expr
         case TOKEN_TYPE_NEQ:
             return EXPR_NEQ; // Expr -> Expr != Expr
         case TOKEN_TYPE_LTH:
@@ -224,7 +240,7 @@ int chooseReduceRule(Stack *stack) {
         case TOKEN_TYPE_DIV:
             return EXPR_DIV; // Expr -> Expr / Expr
         default:
-            return -1; // No rule to apply
+            return -1; // Undefined operator type
         }
     }
     return -1; // No rule to apply
@@ -233,14 +249,19 @@ int chooseReduceRule(Stack *stack) {
 /**
  * @brief Fills the input stack with tokens up to a delimiter token.
  *
- * @param stack A pointer to the stack to be filled.
- * @param delimiterToken A pointer that stores the token that acts as a delimiter.
- * @return A pointer to the filled stack if successful, NULL otherwise.
+ * @param stack Pointer to the stack to be filled with tokens.
+ * @param delimiterToken Pointer to a token that will store the encountered delimiter token.
+ *
+ * @return
+ *   - Pointer to the filled destination stack if successful.
+ *   - NULL if a syntax error occurs or memory allocation fails.
  */
 Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
+
     // Initialize a temporary stack and a token pointer
     Stack tempStack;
     initStack(&tempStack);
+
     Token *token = (Token *)malloc(sizeof(Token));
     if (token == NULL) {
         HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
@@ -248,9 +269,11 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
 
     int openingParentheses = 0;
     int closingParentheses = 0;
+
     // Begin filling
     getNextToken(token);
     while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+        // Track parentheses balance
         if (token->type == TOKEN_TYPE_LEFT_BR) {
             openingParentheses++;
         } else if (token->type == TOKEN_TYPE_RIGHT_BR) {
@@ -278,7 +301,8 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
         push(&tempStack, newElement);
         getNextToken(token);
     }
-    // Check if the last token is a delimiter
+
+    // Assign the delimiter token and check if its valid
     *delimiterToken = *token;
     if (!isDelimiter(token)) {
         cleanupStack(&tempStack);
@@ -288,6 +312,11 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     // Reverse the temporary stack and push it onto the input stack
     while (!isEmpty(&tempStack)) {
         StackElement *topElement = top(&tempStack);
+        if (topElement == NULL) {
+            cleanupStack(&tempStack);
+            freeToken(token);
+            HANDLE_ERROR("Unexpected NULL stack element", INTERNAL_ERROR, INTERNAL_ERROR);
+        }
 
         // Duplicate the token from the top element
         Token *tempToken = copyToken(topElement->tokenPtr);
@@ -327,12 +356,13 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
 
 int parseExpression(AST *exprAST, Token *token) {
 
-    // Initialize the stack onto which the expression will be shifted and reduced
+    // Initialize the parsing stack
     Stack *stack = (Stack *)malloc(sizeof(Stack));
     if (stack == NULL) {
         HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, INTERNAL_ERROR);
     }
     initStack(stack);
+
     // Add a dollar element which serves as a bottom of the stack
     Token *dollarToken = createToken(DOLLAR);
     StackElement *dollar = createStackElement(dollarToken, NULL);
@@ -362,33 +392,19 @@ int parseExpression(AST *exprAST, Token *token) {
         return SYNTAX_ERROR; // Indicate syntax error
     }
 
-    // // LOGGING PRINTS
-    // printf("      starting stack: ");
-    // display(stack);
-    // printf("starting input stack: ");
-    // display(input);
-    // printf(
-    //     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
-
     // Initialize the current input element
     StackElement *currentInputElement = top(input);
+    if (isEmpty(input)) {
+        dollarToken = createToken(DOLLAR);
+        currentInputElement = createStackElement(dollarToken, NULL);
+    }
 
-    // // LOGGING PRINTS
-    // printf("current token ptr type: %d\n", currentInputElement->tokenPtr->type);
-    // printf("next token ptr type: %d\n", nextInputElement->tokenPtr->type);
-    // printf("\nbefore_stack: ");
-    // display(stack);
-    // printf("before_input: ");
-    // display(input);
-    // printf("\nSTART\n");
-
-    // Shift-reduce loop
+    // Shift-reduce parsing loop
+    // Continue parsing as long as there are input tokens or the stack can be reduced further
     while (!isEmpty(input) || isReducible(stack, currentInputElement)) {
-        if (isReducible(stack, currentInputElement)) { // Reduce
+        int reducible = isReducible(stack, currentInputElement);
+        if (reducible == 1) { // Reduce
             int rule = chooseReduceRule(stack);
-            // printf("reducing ");
-            // display(stack);
-
             switch (rule) {
             case EXPR_ADD: // Expr -> Expr + Expr
             case EXPR_SUB: // Expr -> Expr - Expr
@@ -403,57 +419,32 @@ int parseExpression(AST *exprAST, Token *token) {
 
                 // Pop right operand
                 ASTNode *rightNode = copyASTNode(top(stack)->ASTNodePtr);
-                // printf("right node: %s\n", TokenTypeToString(rightNode->token->type));
                 pop(stack);
-                printf("right node: %s\n", TokenTypeToString(rightNode->token->type));
-
                 // Pop operator
                 ASTNode *operatorNode = initASTNode();
                 operatorNode->token = copyToken(top(stack)->tokenPtr);
-                // printf("operator node: %s\n", TokenTypeToString(top(stack)->tokenPtr->type));
                 pop(stack);
-                printf("operator node: %s\n", TokenTypeToString(operatorNode->token->type));
-
                 // Pop left operand
                 ASTNode *leftNode = copyASTNode(top(stack)->ASTNodePtr);
-                // printf("left node: %s\n", TokenTypeToString(leftNode->token->type));
                 pop(stack);
-                printf("left node: %s\n", TokenTypeToString(leftNode->token->type));
 
                 addLeftNode(exprAST, operatorNode, leftNode);
                 addRightNode(exprAST, operatorNode, rightNode);
 
                 // Push Expr token to replace the reduced expression
                 push(stack, createStackElement(createToken(EXPR), operatorNode));
-                // printf("\n[Reduce] Applied rule: %d\n", (rule));
-                // printf("Parser Stack after reduction:\n");
-                // display(stack);
-                // printf("---------------------------------------------------------------------------"
-                //        "----"
-                //        "------------------------------------\n");
                 break;
-            case EXPR_ID: // id -> Expr
-                // printf("REDUCING BY ID RULE: ");
-                // display(stack);
 
+            case EXPR_ID: // id -> Expr
                 // Pop id
                 ASTNode *idNode = copyASTNode(top(stack)->ASTNodePtr);
-                // printf("id node: %s\n", TokenTypeToString(top(stack)->ASTNodePtr->token->type));
                 pop(stack);
-                // printf("id node: %s\n", TokenTypeToString(idNode->token->type));
+
                 // Push Expr token to replace the id
                 push(stack, createStackElement(createToken(EXPR), idNode));
-                // printf("id node: %s\n", TokenTypeToString(idNode->token->type));
-                // printf("\n[Reduce] Applied rule: %d\n", (rule));
-                // printf("Parser Stack after reduction:\n");
-                // display(stack);
-                // printf("---------------------------------------------------------------------------"
-                //        "----"
-                //        "------------------------------------\n");
                 break;
+
             case EXPR_PAR: // ( Expr ) -> Expr
-                // printf("REDUCING BY PARENTHESES RULE: ");
-                // display(stack);
                 // Pop the right parenthesis
                 pop(stack);
                 // Pop the expression
@@ -464,13 +455,8 @@ int parseExpression(AST *exprAST, Token *token) {
 
                 // Push Expr token to replace the reduced expression
                 push(stack, createStackElement(createToken(EXPR), parenthesesNode));
-                // printf("\n[Reduce] Applied rule: %d\n", (rule));
-                // printf("Parser Stack after reduction:\n");
-                // display(stack);
-                // printf("---------------------------------------------------------------------------"
-                //        "----"
-                //        "------------------------------------\n");
                 break;
+
             default:
                 fprintf(stderr, "Syntax error.\n");
                 cleanupStack(input);
@@ -479,21 +465,19 @@ int parseExpression(AST *exprAST, Token *token) {
                 free(stack);
                 return SYNTAX_ERROR; // Syntax error
             }
+        } else if (reducible == 2) { // Syntax error detected
+            fprintf(stderr, "Syntax error.\n");
+            cleanupStack(input);
+            free(input);
+            cleanupStack(stack);
+            free(stack);
+            return SYNTAX_ERROR;      // Syntax error
         } else if (!isEmpty(input)) { // Shift
-            // printf("No, so shifting...\n");
-
             Token *currentToken = createToken(currentInputElement->tokenPtr->type);
             ASTNode *currentASTNode = copyASTNode(currentInputElement->ASTNodePtr);
             pop(input);
             StackElement *newElement = createStackElement(currentToken, currentASTNode);
             push(stack, newElement);
-
-            // printf("STACK AFTER SHIFTING: ");
-            // display(stack);
-            // printf("INPUT AFTER SHIFTING: ");
-            // display(input);
-            // printf("-------------------------------------------------------------------------------"
-            //        "------------------------------------\n");
 
             currentInputElement = top(input);
             if (isEmpty(input)) {
@@ -513,6 +497,7 @@ int parseExpression(AST *exprAST, Token *token) {
         }
     }
 
+    // Verify successful parsing by checking the final stack state
     if (getStackLength(stack) == 2 && stack->top->tokenPtr->type == EXPR &&
         stack->top->next->tokenPtr->type == DOLLAR) {
         // Successful parsing
@@ -525,12 +510,13 @@ int parseExpression(AST *exprAST, Token *token) {
         free(stack);
         return 0; // Indicate successful parsing
     } else {
-        // Syntax error
+        // Parsing incomplete or incorrect
+        freeToken(dollarToken);
+        free(currentInputElement);
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
         free(stack);
-        free(currentInputElement);
         return SYNTAX_ERROR; // Indicate syntax error
     }
 }
