@@ -46,4 +46,28 @@ StackElement *createStackElement(Token *token, ASTNode *astNodePtr);
  */
 void freeToken(Token *token);
 
+/**
+ * @brief Function that checks if the given token is an operator
+ * @return 1 if the token is an operator, 0 otherwise
+ */
+int isOperator(Token *token);
+
+/**
+ * @brief Function that checks if the given token is an operand
+ * @return 1 if the token is an operand, 0 otherwise
+ */
+int isOperand(Token *token);
+
+/**
+ * @brief Function that checks if the given token is a parentheses
+ * @return 1 if the token is a parentheses, 0 otherwise
+ */
+int isParentheses(Token *token);
+
+/**
+ * @brief Function that checks if the given token is a delimiter
+ * @return 1 if the token is a delimiter, 0 otherwise
+ */
+int isDelimiter(Token *token);
+
 #endif // HELPERS_H

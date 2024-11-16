@@ -86,39 +86,6 @@ int getTableIndex(TokenType type) {
     }
 }
 
-// Returns 1 if the token is an operator, 0 otherwise
-int isOperator(Token *token) {
-    return token->type == TOKEN_TYPE_PLUS ||  // +
-           token->type == TOKEN_TYPE_MINUS || // -
-           token->type == TOKEN_TYPE_MUL ||   // /
-           token->type == TOKEN_TYPE_DIV ||   // *
-           token->type == TOKEN_TYPE_EQ ||    // ==
-           token->type == TOKEN_TYPE_NEQ ||   // !=
-           token->type == TOKEN_TYPE_LTH ||   // <
-           token->type == TOKEN_TYPE_LEQ ||   // <=
-           token->type == TOKEN_TYPE_GTH ||   // >
-           token->type == TOKEN_TYPE_GEQ;     // >=
-}
-
-// Returns 1 if the token is an operand, 0 otherwise
-int isOperand(Token *token) {
-    return token->type == TOKEN_TYPE_IDENTIFIER       // id
-           || token->type == TOKEN_TYPE_INTEGER_VALUE // i32
-           || token->type == TOKEN_TYPE_DOUBLE_VALUE; // f64
-}
-
-// Returns 1 if the token is a parentheses, 0 otherwise
-int isParentheses(Token *token) {
-    return token->type == TOKEN_TYPE_LEFT_BR || token->type == TOKEN_TYPE_RIGHT_BR;
-}
-
-// Returns 1 if the token is a delimiter, 0 otherwise
-int isDelimiter(Token *token) {
-    return token->type == TOKEN_TYPE_SEMICOLON || // ;    a = 2 + 3;
-           token->type == TOKEN_TYPE_COMMA ||     // ,    f(2+3, 4){}
-           token->type == TOKEN_TYPE_RIGHT_BR;    // )    f(2+3){}
-}
-
 /**
  * @brief Checks if the given stack is reducible.
  *
