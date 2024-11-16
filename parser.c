@@ -96,7 +96,9 @@ void parseFuncDef() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+    if (currentToken->type != TOKEN_TYPE_IDENTIFIER && 
+        !isTokenKeyword(currentToken, KEYWORD_MAIN)) {
+        printTokenInfo(currentToken);
         HANDLE_ERROR("Expected function identifier in function definition", SYNTAX_ERROR, currentToken);
     }
 
@@ -106,7 +108,7 @@ void parseFuncDef() {
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
+    
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' in function definition", SYNTAX_ERROR, currentToken);
     }
@@ -133,7 +135,7 @@ void parseFunc() {
     getNextToken(currentToken);
 
     parseStatements();
-    parseReturn();
+    // parseReturn();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
@@ -218,6 +220,14 @@ void parseStatements() {
     if (currentToken->type == TOKEN_TYPE_RIGHT_CURLY_BR) {
         return;
     }
+
+    if (currentToken->type == TOKEN_TYPE_KEYWORD && isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+        parseReturn();
+        if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
+            HANDLE_ERROR("Unreachable code after return statement", SYNTAX_ERROR, currentToken);
+        }
+        return;
+    }
     parseStatement();
     parseStatements();
 }
@@ -226,8 +236,6 @@ void parseStatements() {
 void parseStatement() {
     switch (currentToken->type) {
         case TOKEN_TYPE_KEYWORD:
-            printTokenInfo(currentToken);
-
             if (isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST)) {
                 parseVarDef();
             } 
@@ -236,17 +244,20 @@ void parseStatement() {
             } 
             else if (isTokenKeyword(currentToken, KEYWORD_WHILE)) {
                 parseWhile();
-            } 
+            }
             else if (isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
                 parseDiscardCall();
+            }
+            else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+                parseReturn();
             } 
             else {
+                printTokenInfo(currentToken);
                 HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
             }
             break;
         
         case TOKEN_TYPE_IDENTIFIER:
-            printTokenInfo(currentToken);
             getNextToken(currentToken);
 
             if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
@@ -293,6 +304,7 @@ void parseVarDef() {
     parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+        printTokenInfo(currentToken);
         HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
