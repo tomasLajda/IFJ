@@ -225,3 +225,12 @@ int isDelimiter(Token *token) {
            token->type == TOKEN_TYPE_COMMA ||     // ,    f(2+3, 4){}
            token->type == TOKEN_TYPE_RIGHT_BR;    // )    f(2+3){}
 }
+
+int isRelOperator(Token *token) {
+    return token->type == TOKEN_TYPE_EQ ||  // ==
+           token->type == TOKEN_TYPE_NEQ || // !=
+           token->type == TOKEN_TYPE_LTH || // <
+           token->type == TOKEN_TYPE_LEQ || // <=
+           token->type == TOKEN_TYPE_GTH || // >
+           token->type == TOKEN_TYPE_GEQ;   // >=
+}

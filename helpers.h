@@ -70,4 +70,10 @@ int isParentheses(Token *token);
  */
 int isDelimiter(Token *token);
 
+/**
+ * @brief Function that checks if the given token is a relational operator
+ * @return 1 if the token is a relational operator, 0 otherwise
+ */
+int isRelOperator(Token *token);
+
 #endif // HELPERS_H
