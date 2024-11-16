@@ -91,6 +91,7 @@ void parseFuncDefs() {
 
 // FUNC_DEF ::= token_pub token_fn token_func_id token_Orb PARAMS token_Crb FUNC_TYPE
 void parseFuncDef() {
+    printTokenInfo(currentToken);
     if (!isTokenKeyword(currentToken, KEYWORD_PUB)) {
         HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
     }
@@ -102,10 +103,11 @@ void parseFuncDef() {
     currentParent = funcDefNode;
 
     getNextToken(currentToken);
-
+    
     if (!isTokenKeyword(currentToken, KEYWORD_FN)) {
         HANDLE_ERROR("Expected 'fn' in function definition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
@@ -116,17 +118,20 @@ void parseFuncDef() {
     funcIdNode->token = currentToken;
     addLeftNode(ast, currentParent, funcIdNode);
 
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' in function definition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
     parseParams();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' in function definition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
     parseFunc();
 }
@@ -138,6 +143,7 @@ void parseFunc() {
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -146,6 +152,7 @@ void parseFunc() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -153,15 +160,18 @@ void parseFunc() {
 void parseType() {
     if (isTokenKeyword(currentToken, KEYWORD_VOID)) {
         voidFuncType = true;
+        printTokenInfo(currentToken);
         getNextToken(currentToken);
     } 
     else {
         if (isTokenKeyword(currentToken, KEYWORD_I_32) || isTokenKeyword(currentToken, KEYWORD_F_64) || isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY) || 
             isTokenKeyword(currentToken, KEYWORD_I_32_NULL) ||  isTokenKeyword(currentToken, KEYWORD_F_64_NULL) || isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
             voidFuncType = false;
+            printTokenInfo(currentToken);
             getNextToken(currentToken);
         } 
         else {
+            printTokenInfo(currentToken);
             HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
         }
     }
@@ -172,20 +182,23 @@ void parseType() {
 void parseReturn() {
     if (voidFuncType) {
          if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+            printTokenInfo(currentToken);
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
                 HANDLE_ERROR("Expected ';' after return in void function", SYNTAX_ERROR, currentToken);
             }
-
+            printTokenInfo(currentToken);
             getNextToken(currentToken);
         }
         return;
     } 
     else {
+        printTokenInfo(currentToken);
         if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
             HANDLE_ERROR("Expected 'return' keyword in return statement", SYNTAX_ERROR, currentToken);
         }
+        printTokenInfo(currentToken);
         getNextToken(currentToken);
         
         parseExpression(ast, currentToken);
@@ -193,6 +206,7 @@ void parseReturn() {
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
         }
+        printTokenInfo(currentToken);
         getNextToken(currentToken);
     }
 }
@@ -202,24 +216,22 @@ void parseParams() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         return;
     }
-
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_COLON) {
         HANDLE_ERROR("Expected ':' after parameter identifier", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseType();
 
-    Token* peekedToken = peek();
-    if (peekedToken->type == TOKEN_TYPE_COMMA) {
-        getNextToken(currentToken);
+    if (currentToken->type == TOKEN_TYPE_COMMA) {
+        printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseParams();
     }
-
-    free(peekedToken);
 }
 
 // STATEMENTS ::= STATEMENT STATEMENTS | ε
@@ -275,6 +287,7 @@ void parseStatement() {
 // VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
 void parseVarDef() {
     if ((isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST))) {
+        printTokenInfo(currentToken);
         getNextToken(currentToken);
     } 
     else {
@@ -284,6 +297,7 @@ void parseVarDef() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected variable identifier", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseTypeSpec();
@@ -291,6 +305,7 @@ void parseVarDef() {
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' in variable definition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseExpression(ast, currentToken);
@@ -298,6 +313,7 @@ void parseVarDef() {
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -306,6 +322,7 @@ void parseTypeSpec() {
     if (currentToken->type != TOKEN_TYPE_COLON) {
         return;
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseType();
@@ -316,11 +333,13 @@ void parseVarAss() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected identifier at the beginning of variable assignment", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseExpression(ast, currentToken);
@@ -328,6 +347,7 @@ void parseVarAss() {
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -336,11 +356,13 @@ void parseWhile() {
     if (!isTokenKeyword(currentToken, KEYWORD_WHILE)) {
         HANDLE_ERROR("Expected 'while' at the beginning of while loop", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after 'while'", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseExpression(ast, currentToken);
@@ -348,6 +370,7 @@ void parseWhile() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseNullCond();
@@ -355,6 +378,7 @@ void parseWhile() {
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of while loop", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -362,6 +386,7 @@ void parseWhile() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of while loop", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -370,16 +395,19 @@ void parseNullCond() {
     if (currentToken->type != TOKEN_TYPE_OR) {
         return;
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected identifier in null condition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_OR) {
         HANDLE_ERROR("Expected '|' after identifier in null condition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -388,11 +416,13 @@ void parseIf() {
     if (!isTokenKeyword(currentToken, KEYWORD_IF)) {
         HANDLE_ERROR("Expected 'if' at the beginning of if statement", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after 'if'", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseExpression(ast, currentToken);
@@ -400,6 +430,7 @@ void parseIf() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseNullCond();
@@ -407,6 +438,7 @@ void parseIf() {
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of if statement", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -414,6 +446,7 @@ void parseIf() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of if statement", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseElse();
@@ -424,11 +457,13 @@ void parseElse() {
     if (!isTokenKeyword(currentToken, KEYWORD_ELSE)) {
         return;
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -436,6 +471,7 @@ void parseElse() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of else statement", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -444,11 +480,13 @@ void parseFuncCall() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected identifier at the beginning of function call", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseArgs();
@@ -456,11 +494,13 @@ void parseFuncCall() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after arguments in function call", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of function call", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -469,11 +509,13 @@ void parseDiscardCall() {
     if (!isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
         HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after '_' in discard call", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseExpression(ast, currentToken);
@@ -481,20 +523,24 @@ void parseDiscardCall() {
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε      
 void parseArgs() {
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        printTokenInfo(currentToken);
         getNextToken(currentToken);
     } 
     else {
+        printTokenInfo(currentToken);
         parseExpression(ast, currentToken);
     }
 
     Token* peekedToken = peek();
     if (peekedToken->type == TOKEN_TYPE_COMMA) {
+        printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseArgs();
     }
