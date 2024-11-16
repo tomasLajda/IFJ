@@ -22,6 +22,27 @@ bool isTokenKeyword(Token* token, Keyword keyword) {
             token->attribute.keyword == keyword);
 }
 
+// CONCAT, STRCMP - 2 ARGS
+bool isTokenBuiltInFunction(Token* token) {
+    switch (token->attribute.keyword) {
+        case KEYWORD_STRING:
+        case KEYWORD_LENGTH:
+        case KEYWORD_CONCAT:
+        case KEYWORD_SUBSTRING:
+        case KEYWORD_STRCMP:
+        case KEYWORD_ORD:
+        case KEYWORD_CHR:
+        case KEYWORD_READSTR:
+        case KEYWORD_READI32:
+        case KEYWORD_READF64:
+        case KEYWORD_I2F:
+        case KEYWORD_F2I:
+            return true;
+        default:
+            return false;
+    }
+}
+
 // PROG ::= PROLOG FUNC_DEFS
 void parseProg() {
     parseProlog();
@@ -279,6 +300,7 @@ void parseStatement() {
             break;
         
         case TOKEN_TYPE_IDENTIFIER:
+            printTokenInfo(currentToken);
             getNextToken(currentToken);
 
             if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
@@ -351,9 +373,9 @@ void parseVarAss() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+        printTokenInfo(currentToken);
         HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);

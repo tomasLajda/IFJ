@@ -27,6 +27,13 @@ extern AST* ast;
 bool isTokenKeyword(Token* token, Keyword keyword);
 
 /**
+ * @brief Checks if the current token is a built-in function
+ * 
+ * @return True if the current token is a built-in function, false otherwise
+ */
+bool isTokenBuiltInFunction(Token* token);
+
+/**
  * @brief Checks if the current token is a keyword
  * 
  * @param keyword The keyword to check
