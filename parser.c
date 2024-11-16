@@ -655,10 +655,10 @@ void parseArgs() {
             HANDLE_ERROR("This built-in function takes no arguments", 4, currentToken);
         }
         if (onlyTwoArgs && argCounter != 2) {
-            HANDLE_ERROR("Built-in functions concat and strcmp require exactly 2 arguments", 4, currentToken);
+            HANDLE_ERROR("Built-in functions require exactly 2 arguments", 4, currentToken);
         }
         if (onlyOneArg && argCounter != 1) {
-            HANDLE_ERROR("Built-in function string requires exactly 1 argument", 4, currentToken);
+            HANDLE_ERROR("Built-in function requires exactly 1 argument", 4, currentToken);
         }
         argCounter = 0;
         onlyZeroArgs = false;
