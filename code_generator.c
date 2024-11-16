@@ -17,6 +17,10 @@ int labelCounter = 0;
 int expressionCounter = 0;
 int tempVarCounter = 0;
 
+// TODO: function for generating unique labels
+// TODO : function for generating unique temporary variables? mozna nebude potreba - diky pouziti
+// datoveho zasobniku pro expressions
+
 int generateCode(FILE *outputFile, AST *ast) {
     if (ast == NULL) {
         return INTERNAL_ERROR;
@@ -166,7 +170,7 @@ int mainStart() {
 
 int mainEnd() {
     ADD_TO_BUFFER("POPFRAME\n");
-    ADD_TO_BUFFER("CLEARS\n"); // todo: odstranit pokud nebude potreba datovy zasobnik
+    ADD_TO_BUFFER("CLEARS\n");
     ADD_TO_BUFFER("JUMP $$END\n");
 
     return 0;
@@ -188,8 +192,6 @@ int functionEnd(char *functionName) {
     ADD_TO_BUFFER("RETURN\n");
     return 0;
 }
-
-// int ifStart() { generateExpression(); }
 
 int generateExpression(ASTNode *node) {
     if (node == NULL) {
