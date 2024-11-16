@@ -5,7 +5,7 @@
  * @author Martin Valapka - xvalapm00
  */
 
-// TODO: BUILT-IN FUNCTIONS, AST, OTHERS...
+// TODO: BUILT-IN FUNCTIONS, AST, OTHERS, RETURN TO STATEMENTS
 
 #include "parser.h"
 #include "testing_utils.h"
@@ -20,20 +20,6 @@ bool voidFuncType = false;
 bool isTokenKeyword(Token* token, Keyword keyword) {
     return (token->type == TOKEN_TYPE_KEYWORD && 
             token->attribute.keyword == keyword);
-}
-
-Token* peek() {
-    Token originalToken = *currentToken;
-    getNextToken(currentToken);
-
-    Token* peekedToken = (Token*)malloc(sizeof(Token));
-    if (peekedToken == NULL) {
-        HANDLE_ERROR("Memory allocation failed in peek()", INTERNAL_ERROR, currentToken);
-    }
-
-    *peekedToken = *currentToken;
-    *currentToken = originalToken;
-    return peekedToken;
 }
 
 // PROG ::= PROLOG FUNC_DEFS
@@ -180,29 +166,22 @@ void parseType() {
 // RETURN ::= token_return EXPR token_semicolon
 // V_RETURN ::= token_return token_semicolon | ε 
 void parseReturn() {
-    if (voidFuncType) {
-         if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
-            printTokenInfo(currentToken);
-            getNextToken(currentToken);
+    if (!isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+        HANDLE_ERROR("Expected 'return' keyword", SYNTAX_ERROR, currentToken);
+    }
+    printTokenInfo(currentToken);
+    getNextToken(currentToken);
 
-            if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-                HANDLE_ERROR("Expected ';' after return in void function", SYNTAX_ERROR, currentToken);
-            }
-            printTokenInfo(currentToken);
-            getNextToken(currentToken);
-        }
-        return;
-    } 
-    else {
-        printTokenInfo(currentToken);
-        if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
-            HANDLE_ERROR("Expected 'return' keyword in return statement", SYNTAX_ERROR, currentToken);
+    if (voidFuncType) {
+        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR, currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-        
+    } 
+    else {
         parseExpression(ast, currentToken);
-        
+
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
         }
@@ -247,6 +226,8 @@ void parseStatements() {
 void parseStatement() {
     switch (currentToken->type) {
         case TOKEN_TYPE_KEYWORD:
+            printTokenInfo(currentToken);
+
             if (isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST)) {
                 parseVarDef();
             } 
@@ -265,17 +246,18 @@ void parseStatement() {
             break;
         
         case TOKEN_TYPE_IDENTIFIER:
-            Token* peekedToken = peek();
-            if (peekedToken->type == TOKEN_TYPE_LEFT_BR) {
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
+
+            if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
                 parseFuncCall();
             }
-            else if (peekedToken->type == TOKEN_TYPE_ASSIGN) {
+            else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
                 parseVarAss();
             }
             else {
                 HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
             }
-            free(peekedToken);
             break;
 
         default:
@@ -330,12 +312,6 @@ void parseTypeSpec() {
 
 // VAR_ASS ::= token_id token_equals EXPR token_semicolon
 void parseVarAss() {
-    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
-        HANDLE_ERROR("Expected identifier at the beginning of variable assignment", SYNTAX_ERROR, currentToken);
-    }
-    printTokenInfo(currentToken);
-    getNextToken(currentToken);
-
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR, currentToken);
     }
@@ -477,12 +453,6 @@ void parseElse() {
 
 // FUNC_CALL ::= token_id token_Orb ARGS token_Crb token_semicolon
 void parseFuncCall() {
-    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
-        HANDLE_ERROR("Expected identifier at the beginning of function call", SYNTAX_ERROR, currentToken);
-    }
-    printTokenInfo(currentToken);
-    getNextToken(currentToken);
-
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
     }
@@ -529,23 +499,23 @@ void parseDiscardCall() {
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε      
 void parseArgs() {
+    if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
+        return;
+    }
+
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } 
     else {
-        printTokenInfo(currentToken);
         parseExpression(ast, currentToken);
     }
 
-    Token* peekedToken = peek();
-    if (peekedToken->type == TOKEN_TYPE_COMMA) {
+    if (currentToken->type == TOKEN_TYPE_COMMA) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseArgs();
     }
-
-    free(peekedToken);
 }
 
 int parse() {

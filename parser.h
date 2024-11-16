@@ -27,13 +27,6 @@ extern AST* ast;
 bool isTokenKeyword(Token* token, Keyword keyword);
 
 /**
- * @brief Checks the next token without changing the current token
- * 
- * @return The next token
- */
-Token* peek();
-
-/**
  * @brief Checks if the current token is a keyword
  * 
  * @param keyword The keyword to check
