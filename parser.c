@@ -5,7 +5,7 @@
  * @author Martin Valapka - xvalapm00
  */
 
-// TODO: BUILT-IN FUNCTIONS, AST, OTHERS, RETURN TO STATEMENTS
+// TODO: BUILT-IN FUNCTIONS, AST, OTHERS
 
 #include "parser.h"
 #include "testing_utils.h"
@@ -250,7 +250,28 @@ void parseStatement() {
             }
             else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
                 parseReturn();
-            } 
+            }
+            else if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
+                printTokenInfo(currentToken);
+                getNextToken(currentToken);
+
+                if (currentToken->type != TOKEN_TYPE_DOT) {
+                    HANDLE_ERROR("Unexpected token in built-in functin", SYNTAX_ERROR, currentToken);
+                }
+                printTokenInfo(currentToken);
+                getNextToken(currentToken);
+
+                if (!isTokenKeyword(currentToken, KEYWORD_WRITE)) {
+                    HANDLE_ERROR("Unexpected built-in function in function call", SYNTAX_ERROR, currentToken);
+                }
+                printTokenInfo(currentToken);
+                getNextToken(currentToken);
+
+                if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+                    HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+                }
+                parseFuncCall();
+            }
             else {
                 printTokenInfo(currentToken);
                 HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
