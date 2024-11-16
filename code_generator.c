@@ -78,7 +78,18 @@ int generateFuncBody(ASTNode *node) {
 
     // TODO: pridat list se vsemi promennymi do parametru funkce
     // TODO: DEFVAR pro vsechny promenne z listu
-    ASTNode *currentNode = node;
+    // zrovna udelat node.right a parametry vygenerovat v func start?
+
+    // FUNCTION PARAMETERS
+    ASTNode *currentNode = node->left;
+
+    while (currentNode != NULL) {
+        createParam(currentNode); // DEFVAR pro parametry MOV z TF do LF
+        currentNode = currentNode->left;
+    }
+
+    // FUNCTION CODE
+    currentNode = node->right;
 
     while (currentNode != NULL) {
         processNode(currentNode);
@@ -93,7 +104,7 @@ int processNode(ASTNode *node) {
 
     switch (node->token->type) {
     case TOKEN_TYPE_IDENTIFIER:
-        // TODO: fix if codnitons accoardingly to the ast node structure
+        // TODO: fix if conditions accoardingly to the ast node structure
         if (node.isAssignment == true) {
             // TODO: GENERATE ASSIGNMENT
         } else if (node.isFunctionCall == true) {
@@ -106,6 +117,18 @@ int processNode(ASTNode *node) {
     case TOKEN_TYPE_KEYWORD:
         if (node->token->attribute.keyword == KEYWORD_IF) {
             // TODO: generate if
+
+            // ASTNode *conditionNode = node->left;
+            // generateExpression(conditionNode); // conditionNode.exprTree.root
+            // defvar LF@condition
+            // pops LF@condition  ( vysledek vyrazu ze zasobniku)
+            // ADD_TO_BUFFER("JUMPIFEQ $if_false_lbl_counter LF@condition bool@false\n");
+            // processNode(conditionNode.left); // true
+            // ADD_TO_BUFFER("JUMP $if_end_lbl_counter\n");
+            // ADD_TO_BUFFER("$if_false_lbl_counter\n");
+            // processNode(conditionNode.right); // false
+            // ADD_TO_BUFFER("$if_end_lbl_counter\n");
+
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
             // TODO: generate while loop
         } else {
@@ -206,17 +229,17 @@ int generateExpression(ASTNode *node) {
         } else if (currentTokenType == TOKEN_TYPE_DIV) {
             ADD_TO_BUFFER("DIVS\n");
         } else if (currentTokenType == TOKEN_TYPE_EQ) {
-            /* code */
+            // todo: implement
         } else if (currentTokenType == TOKEN_TYPE_NEQ) {
-            /* code */
+            // todo: implement
         } else if (currentTokenType == TOKEN_TYPE_LTH) {
-            /* code */
+            // todo: implement
         } else if (currentTokenType == TOKEN_TYPE_LEQ) {
-            /* code */
+            // todo: implement
         } else if (currentTokenType == TOKEN_TYPE_GTH) {
-            /* code */
+            // todo: implement
         } else if (currentTokenType == TOKEN_TYPE_GEQ) {
-            /* code */
+            // todo: implement
         } else {
             return INTERNAL_ERROR;
         }
