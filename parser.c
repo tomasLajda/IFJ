@@ -15,7 +15,11 @@
 SymbolTable* symbolTable = NULL;
 AST* ast = NULL;
 ASTNode* currentParent = NULL;
-bool voidFuncType = false; 
+bool voidFuncType = false;
+bool onlyZeroArgs = false; 
+bool onlyOneArg = false;
+bool onlyTwoArgs = false;
+unsigned int argCounter = 0;
 
 bool isTokenKeyword(Token* token, Keyword keyword) {
     return (token->type == TOKEN_TYPE_KEYWORD && 
@@ -23,6 +27,7 @@ bool isTokenKeyword(Token* token, Keyword keyword) {
 }
 
 // CONCAT, STRCMP - 2 ARGS
+// KEYWORD_READSTR, KEYWORD_READI32 , KEYWORD_READF64 - 0 ARGS
 bool isTokenBuiltInFunction(Token* token) {
     switch (token->attribute.keyword) {
         case KEYWORD_STRING:
@@ -291,6 +296,7 @@ void parseStatement() {
                 if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
                     HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
                 }
+                onlyOneArg = true;
                 parseFuncCall();
             }
             else {
@@ -373,6 +379,38 @@ void parseVarAss() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
+    if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+        
+        if (currentToken->type != TOKEN_TYPE_DOT) {
+            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
+        }
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+
+        if (!isTokenBuiltInFunction(currentToken)) {
+            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
+        }
+
+        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)) {
+            onlyTwoArgs = true;
+        } 
+        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE)) {
+            onlyOneArg = true;
+        }
+        else if (isTokenKeyword(currentToken, KEYWORD_READSTR) || isTokenKeyword(currentToken, KEYWORD_READI32) ||
+            isTokenKeyword(currentToken, KEYWORD_READF64)) {
+            onlyZeroArgs = true;
+        }
+        printTokenInfo(currentToken);
+        getNextToken(currentToken); 
+        parseFuncCall();
+        return;
+    }
+    else {
+        parseExpression(ast, currentToken);
+    }
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         printTokenInfo(currentToken);
@@ -555,7 +593,24 @@ void parseDiscardCall() {
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε      
 void parseArgs() {
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
+        if (onlyZeroArgs && argCounter > 0) {
+            HANDLE_ERROR("This built-in function takes no arguments", SYNTAX_ERROR, currentToken);
+        }
+        if (onlyTwoArgs && argCounter != 2) {
+            HANDLE_ERROR("Built-in functions concat and strcmp require exactly 2 arguments", SYNTAX_ERROR, currentToken);
+        }
+        if (onlyOneArg && argCounter != 1) {
+            HANDLE_ERROR("Built-in function string requires exactly 1 argument", SYNTAX_ERROR, currentToken);
+        }
+        argCounter = 0;
+        onlyZeroArgs = false;
+        onlyOneArg = false;
+        onlyTwoArgs = false;
         return;
+    }
+
+    if (onlyZeroArgs) {
+        HANDLE_ERROR("This built-in function takes no arguments", SYNTAX_ERROR, currentToken);
     }
 
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
@@ -566,6 +621,12 @@ void parseArgs() {
         parseExpression(ast, currentToken);
     }
 
+    argCounter++;
+
+    if (onlyOneArg && argCounter > 1) {
+        HANDLE_ERROR("Built-in function string requires exactly 1 argument", SYNTAX_ERROR, currentToken);
+    }
+    
     if (currentToken->type == TOKEN_TYPE_COMMA) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
