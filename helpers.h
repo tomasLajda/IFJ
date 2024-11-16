@@ -15,3 +15,12 @@
  * @brief Function that transforms the token type integer to the corresponding character (string)
  */
 char *TokenTypeToString(TokenType type);
+
+/**
+ * @brief Checks if the given token type is an operator.
+ *
+ * @param TokenType The token type to check.
+ * @return true if the token type is an operator, false otherwise.
+ */
+
+bool isTokenTypeOperator(TokenType type);
