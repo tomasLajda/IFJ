@@ -13,6 +13,7 @@
 #include "helpers.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "testing_utils.h"
 
 // typedef enum {
 //     EXPR_ADD, // Expr     -> Expr + Expr
@@ -538,10 +539,16 @@
 //     }
 // }
 
+// FOR TESTING PURPOSES
 int parseExpression(AST *exprAST, Token *token) {
-    (void)exprAST;
-    (void)token;
-    
-    printf("Expression node\n");
+    if (exprAST == NULL || token == NULL) {
+        HANDLE_ERROR("NULL pointer passed to parseExpression", INTERNAL_ERROR, token);
+    }
+
+    ASTNode *exprNode = initASTNode();
+    exprNode->token = token;
+
+    printTokenInfo(token);
+    getNextToken(token);
     return 0;
 }

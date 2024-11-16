@@ -150,7 +150,9 @@ void printTokenInfo(Token* token) {
             break;
 
         default:
-            printf("UNKNOWN_TOKEN");
+            if (token->attribute.string != NULL) {
+                printf("UNKNOWN TOKEN (\"%s\")\n", token->attribute.string);
+            }
             break;
     }
 }
