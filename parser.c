@@ -328,6 +328,11 @@ void parseStatement() {
 
 // VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
 void parseVarDef() {
+    onlyZeroArgs = false;
+    onlyOneArg = false;
+    onlyTwoArgs = false;
+    argCounter = 0;
+
     if ((isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST))) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -350,14 +355,45 @@ void parseVarDef() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    parseExpression(ast, currentToken);
-
-    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+    if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         printTokenInfo(currentToken);
-        HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
+        getNextToken(currentToken);
+        
+        if (currentToken->type != TOKEN_TYPE_DOT) {
+            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
+        }
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+
+        if (!isTokenBuiltInFunction(currentToken)) {
+            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
+        }
+
+        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)) {
+            onlyTwoArgs = true;
+        } 
+        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE)) {
+            onlyOneArg = true;
+        }
+        else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||  isTokenKeyword(currentToken, KEYWORD_READI32) ||
+            isTokenKeyword(currentToken, KEYWORD_READF64)) {
+            onlyZeroArgs = true;
+        }
+        printTokenInfo(currentToken);
+        getNextToken(currentToken); 
+        parseFuncCall();
+        return;
     }
-    printTokenInfo(currentToken);
-    getNextToken(currentToken);
+    else {
+        parseExpression(ast, currentToken);
+
+        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            printTokenInfo(currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
+        }
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+    }
 }
 
 // TYPE_SPEC ::= token_colon TYPE | ε
@@ -373,6 +409,11 @@ void parseTypeSpec() {
 
 // VAR_ASS ::= token_id token_equals EXPR token_semicolon
 void parseVarAss() {
+    onlyZeroArgs = false;
+    onlyOneArg = false;
+    onlyTwoArgs = false;
+    argCounter = 0;
+    
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR, currentToken);
     }
