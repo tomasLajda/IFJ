@@ -19,6 +19,7 @@ bool voidFuncType = false;
 bool onlyZeroArgs = false; 
 bool onlyOneArg = false;
 bool onlyTwoArgs = false;
+bool onlyThreeArgs = false;
 unsigned int argCounter = 0;
 
 bool isTokenKeyword(Token* token, Keyword keyword) {
@@ -26,8 +27,10 @@ bool isTokenKeyword(Token* token, Keyword keyword) {
             token->attribute.keyword == keyword);
 }
 
-// CONCAT, STRCMP - 2 ARGS
+// CONCAT, STRCMP, ORD - 2 ARGS
 // KEYWORD_READSTR, KEYWORD_READI32 , KEYWORD_READF64 - 0 ARGS
+// KEYWORD_STRING, KEYWORD_LENGTH, KEYWORD_CHR, KEYWORD_I2F, KEYWORD_F2I - 1 ARG
+// KEYWORD_SUBSTRING - 3 ARGS
 bool isTokenBuiltInFunction(Token* token) {
     switch (token->attribute.keyword) {
         case KEYWORD_STRING:
@@ -260,6 +263,12 @@ void parseStatements() {
 
 // STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL | VAR_ASS
 void parseStatement() {
+    onlyZeroArgs = false; 
+    onlyOneArg = false;
+    onlyTwoArgs = false;
+    onlyThreeArgs = false;
+    argCounter = 0;
+
     switch (currentToken->type) {
         case TOKEN_TYPE_KEYWORD:
             if (isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST)) {
@@ -331,6 +340,7 @@ void parseVarDef() {
     onlyZeroArgs = false;
     onlyOneArg = false;
     onlyTwoArgs = false;
+    onlyThreeArgs = false;
     argCounter = 0;
 
     if ((isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST))) {
@@ -369,10 +379,13 @@ void parseVarDef() {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
 
-        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)) {
+        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)
+            || isTokenKeyword(currentToken, KEYWORD_ORD)) {
             onlyTwoArgs = true;
         } 
-        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE)) {
+        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE) ||
+            isTokenKeyword(currentToken, KEYWORD_LENGTH) || isTokenKeyword(currentToken, KEYWORD_CHR) ||
+            isTokenKeyword(currentToken, KEYWORD_I2F) || isTokenKeyword(currentToken, KEYWORD_F2I)) {
             onlyOneArg = true;
         }
         else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||  isTokenKeyword(currentToken, KEYWORD_READI32) ||
@@ -412,8 +425,9 @@ void parseVarAss() {
     onlyZeroArgs = false;
     onlyOneArg = false;
     onlyTwoArgs = false;
+    onlyThreeArgs = false;
     argCounter = 0;
-    
+
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR, currentToken);
     }
@@ -434,13 +448,16 @@ void parseVarAss() {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
 
-        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)) {
+        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)
+            || isTokenKeyword(currentToken, KEYWORD_ORD)) {
             onlyTwoArgs = true;
         } 
-        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE)) {
+        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE) ||
+            isTokenKeyword(currentToken, KEYWORD_LENGTH) || isTokenKeyword(currentToken, KEYWORD_CHR) ||
+            isTokenKeyword(currentToken, KEYWORD_I2F) || isTokenKeyword(currentToken, KEYWORD_F2I)) {
             onlyOneArg = true;
         }
-        else if (isTokenKeyword(currentToken, KEYWORD_READSTR) || isTokenKeyword(currentToken, KEYWORD_READI32) ||
+        else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||  isTokenKeyword(currentToken, KEYWORD_READI32) ||
             isTokenKeyword(currentToken, KEYWORD_READF64)) {
             onlyZeroArgs = true;
         }
@@ -635,13 +652,13 @@ void parseDiscardCall() {
 void parseArgs() {
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         if (onlyZeroArgs && argCounter > 0) {
-            HANDLE_ERROR("This built-in function takes no arguments", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("This built-in function takes no arguments", 4, currentToken);
         }
         if (onlyTwoArgs && argCounter != 2) {
-            HANDLE_ERROR("Built-in functions concat and strcmp require exactly 2 arguments", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Built-in functions concat and strcmp require exactly 2 arguments", 4, currentToken);
         }
         if (onlyOneArg && argCounter != 1) {
-            HANDLE_ERROR("Built-in function string requires exactly 1 argument", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Built-in function string requires exactly 1 argument", 4, currentToken);
         }
         argCounter = 0;
         onlyZeroArgs = false;
@@ -651,7 +668,7 @@ void parseArgs() {
     }
 
     if (onlyZeroArgs) {
-        HANDLE_ERROR("This built-in function takes no arguments", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("This built-in function takes no arguments", 4, currentToken);
     }
 
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
@@ -665,7 +682,7 @@ void parseArgs() {
     argCounter++;
 
     if (onlyOneArg && argCounter > 1) {
-        HANDLE_ERROR("Built-in function string requires exactly 1 argument", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Built-in function requires exactly 1 argument", 4, currentToken);
     }
     
     if (currentToken->type == TOKEN_TYPE_COMMA) {
