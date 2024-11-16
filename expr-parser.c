@@ -236,6 +236,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
 
     int openingParentheses = 0;
     int closingParentheses = 0;
+    int relationOperators = 0;
 
     // Begin filling
     getNextToken(token);
@@ -247,7 +248,13 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
             closingParentheses++;
         }
         if (closingParentheses > openingParentheses) {
-            break; // Closing parentheses without opening -> delimiter
+            break;
+        }
+        if (isRelOperator(token)) {
+            relationOperators++;
+        }
+        if (relationOperators > 1) {
+            break;
         }
         // Copy the token for the stack element
         Token *tempToken = copyToken(token);
@@ -351,7 +358,6 @@ int parseExpression(AST *exprAST, Token *token) {
 
     // Fill the input stack with tokens up to the delimiter token
     if (fillInputStack(input, token) == NULL) { // syntax error
-        fprintf(stderr, "Token doesn't belong in the expression.\n");
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
@@ -425,7 +431,6 @@ int parseExpression(AST *exprAST, Token *token) {
                 break;
 
             default:
-                fprintf(stderr, "Syntax error.\n");
                 cleanupStack(input);
                 free(input);
                 cleanupStack(stack);
@@ -433,7 +438,6 @@ int parseExpression(AST *exprAST, Token *token) {
                 return SYNTAX_ERROR; // Syntax error
             }
         } else if (reducible == 2) { // Syntax error detected
-            fprintf(stderr, "Syntax error.\n");
             cleanupStack(input);
             free(input);
             cleanupStack(stack);
@@ -453,7 +457,7 @@ int parseExpression(AST *exprAST, Token *token) {
             }
 
         } else {
-            fprintf(stderr, "Error: Cannot reduce further.\n");
+            // Cannot reduce further
             freeToken(dollarToken);
             free(currentInputElement);
             cleanupStack(input);
