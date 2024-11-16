@@ -72,13 +72,29 @@ char *TokenTypeToString(TokenType type) {
         return ";";
     case TOKEN_TYPE_DOT:
         return ".";
-    case TOKEN_TYPE_AT:
-        return "@";
     case TOKEN_TYPE_EXPR:
         return "EXPR";
     case TOKEN_TYPE_DOLLA:
         return "$";
     default:
         return "UNKNOWN_TOKEN_TYPE";
+    }
+}
+
+bool isTokenTypeOperator(TokenType type) {
+    switch (type) {
+    case TOKEN_TYPE_EQ:
+    case TOKEN_TYPE_NEQ:
+    case TOKEN_TYPE_LTH:
+    case TOKEN_TYPE_LEQ:
+    case TOKEN_TYPE_GTH:
+    case TOKEN_TYPE_GEQ:
+    case TOKEN_TYPE_PLUS:
+    case TOKEN_TYPE_MINUS:
+    case TOKEN_TYPE_MUL:
+    case TOKEN_TYPE_DIV:
+        return true;
+    default:
+        return false;
     }
 }
