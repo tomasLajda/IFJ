@@ -4,6 +4,7 @@
  *
  * @author Tomáš Lajda - xlajdat00
  * @author Matúš Csirik - xcsirim00
+ * @author Vojtěch Gajdušek - xgajduv00
  *
  */
 
@@ -174,4 +175,22 @@ void freeToken(Token *token) {
         token->attribute.string = NULL;
     }
     free(token);
+}
+
+bool isTokenTypeOperator(TokenType type) {
+    switch (type) {
+    case TOKEN_TYPE_EQ:
+    case TOKEN_TYPE_NEQ:
+    case TOKEN_TYPE_LTH:
+    case TOKEN_TYPE_LEQ:
+    case TOKEN_TYPE_GTH:
+    case TOKEN_TYPE_GEQ:
+    case TOKEN_TYPE_PLUS:
+    case TOKEN_TYPE_MINUS:
+    case TOKEN_TYPE_MUL:
+    case TOKEN_TYPE_DIV:
+        return true;
+    default:
+        return false;
+    }
 }

@@ -4,6 +4,7 @@
  *
  * @author Tomáš Lajda - xlajdat00
  * @author Matúš Csirik - xcsirim00
+ * @author Vojtěch Gajdušek - xgajduv00
  *
  */
 
@@ -45,5 +46,14 @@ StackElement *createStackElement(Token *token, ASTNode *astNodePtr);
  * WARNING: do not attempt to free a token with statically allocated string in keyword attribute
  */
 void freeToken(Token *token);
+
+/**
+ * @brief Checks if the given token type is an operator.
+ *
+ * @param TokenType The token type to check.
+ * @return true if the token type is an operator, false otherwise.
+ */
+
+bool isTokenTypeOperator(TokenType type);
 
 #endif // HELPERS_H
