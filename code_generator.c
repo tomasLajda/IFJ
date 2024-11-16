@@ -6,12 +6,16 @@ IFJ project
 @author Vojtěch Gajdušek - xgajduv00
 */
 #include "code_generator.h"
+#include "enums.h"
 #include "error_codes.h"
+#include "helpers.h"
 
 #define ADD_TO_BUFFER(_code) dynamicStringAddString(&codeBuffer, (const char *)(_code))
 
 DynamicString codeBuffer;
 int labelCounter = 0;
+int expressionCounter = 0;
+int tempVarCounter = 0;
 
 int generateCode(FILE *outputFile, AST *ast) {
     if (ast == NULL) {
@@ -157,96 +161,66 @@ int generateExpression(ASTNode *node) {
     if (node == NULL) {
         return INTERNAL_ERROR;
     }
-    // TODO: kontrola typu (int + int atd int + double nelze!)
-    switch (node->token->type) {
 
-    case TOKEN_TYPE_PLUS:
-        dynamicStringAddString(&codeBuffer, "ADD LF@result LF@left LF@right\n");
-        // codeGenADD node.left break;
-        break;
+    // process left subtree
+    generateExpression(node->left);
+    // process right subtree
+    generateExpression(node->right);
 
-    case TOKEN_TYPE_MINUS:
-        dynamicStringAddString(&codeBuffer, "SUB LF@result LF@left LF@right\n");
-        break;
+    TokenType currentTokenType = node->token->type;
 
-    case TOKEN_TYPE_MUL:
-        dynamicStringAddString(&codeBuffer, "MUL LF@result LF@left LF@right\n");
-        break;
+    if (currentTokenType == TOKEN_TYPE_IDENTIFIER) {
+        // Push variable onto the data stack
+        ADD_TO_BUFFER("PUSHS LF@");
+        ADD_TO_BUFFER(node->token->attribute.string);
+        ADD_TO_BUFFER(" \n");
 
-    case TOKEN_TYPE_DIV:
-        // todo: kontrola typu
+    } else if (currentTokenType == TOKEN_TYPE_INTEGER_VALUE) {
+        // Push integer value onto the data stack
+        // PUSHS int@value
+        ADD_TO_BUFFER("PUSHS int@");
+        int enoughSpaceForInt =
+            (int)((ceil(log10(node->token->attribute.integer)) + 1) * sizeof(char));
+        char intStr[enoughSpaceForInt];
+        snprintf(intStr, sizeof(intStr), "%d", node->token->attribute.integer);
+        ADD_TO_BUFFER(intStr);
+        ADD_TO_BUFFER(" \n");
 
-        //  double / double -> DIV
-        dynamicStringAddString(&codeBuffer, "DIV LF@result LF@left LF@right\n");
-        // int / int -> IDIV
-        dynamicStringAddString(&codeBuffer, "IDIV LF@result LF@left LF@right\n");
+    } else if (currentTokenType == TOKEN_TYPE_DOUBLE_VALUE) {
+        // Push double value onto the data stack
+        // PUSHS float@value
+        ADD_TO_BUFFER("PUSHS float@");
+        int enoughSpaceForDouble = 64;
+        char doubleStr[enoughSpaceForDouble];
+        snprintf(doubleStr, sizeof(doubleStr), "%a", node->token->attribute.decimal);
+        ADD_TO_BUFFER(doubleStr);
+        ADD_TO_BUFFER(" \n");
 
-        break;
-
-    case TOKEN_TYPE_LTH:
-        dynamicStringAddString(&codeBuffer, "LT LF@result LF@left LF@right\n");
-        break;
-
-    case TOKEN_TYPE_LEQ:
-        dynamicStringAddString(&codeBuffer, "GT LF@result LF@left LF@right\n");
-        dynamicStringAddString(&codeBuffer, "NOT LF@result LF@result\n");
-        break;
-
-    case TOKEN_TYPE_GTH:
-        dynamicStringAddString(&codeBuffer, "GT LF@result LF@left LF@right\n");
-        break;
-
-    case TOKEN_TYPE_GEQ:
-        dynamicStringAddString(&codeBuffer, "LT LF@result LF@left LF@right\n");
-        dynamicStringAddString(&codeBuffer, "NOT LF@result LF@result\n");
-        break;
-
-    case TOKEN_TYPE_EQ:
-        dynamicStringAddString(&codeBuffer, "EQ LF@result LF@left LF@right\n");
-        break;
-
-    case TOKEN_TYPE_NEQ:
-        dynamicStringAddString(&codeBuffer, "EQ LF@result LF@left LF@right\n");
-        dynamicStringAddString(&codeBuffer, "NOT LF@result LF@result\n");
-        break;
-
-        // TODO: problem pri vytvareni novych ramcu, promenna nebude v LF
-
-    case TOKEN_TYPE_INTEGER_VALUE:
-        // Deklarace bufferu pro konverzi integeru na řetězec
-        char int_str[21]; // 64bitový integer může mít až 20 číslic + znak pro ukončení řetězce
-
-        // Konverze integeru na řetězec
-        // Používáme formátovací řetězec "%lld" pro 64bitový integer typu long long int
-        snprintf(int_str, sizeof(int_str), "%lld", node->token->attribute.integer);
-
-        dynamicStringAddString(&codeBuffer, "MOVE LF@result int@");
-        dynamicStringAddString(&codeBuffer, int_str);
-        dynamicStringAddString(&codeBuffer, "\n");
-        break;
-
-    case TOKEN_TYPE_DOUBLE_VALUE:
-        // Deklarace bufferu pro konverzi double na řetězec
-        char double_str[32]; // Buffer pro float hodnotu, 32 znaků by mělo být dostatečné
-
-        // Konverze double na řetězec v hexadecimálním formátu
-        // Používáme formátovací řetězec "%a" pro hexadecimální zápis double (kompatibilní s
-        // IFJcode24)
-        snprintf(double_str, sizeof(double_str), "%a", node->token->attribute.decimal);
-
-        // Přidání instrukce do codeBuffer
-        dynamicStringAddString(&codeBuffer, "MOVE LF@result float@");
-        dynamicStringAddString(&codeBuffer, double_str);
-        dynamicStringAddString(&codeBuffer, "\n");
-        break;
-
-    case TOKEN_TYPE_IDENTIFIER:
-        dynamicStringAddString(&codeBuffer, "MOVE LF@result LF@");
-        dynamicStringAddString(&codeBuffer, node->token->attribute.string);
-        dynamicStringAddString(&codeBuffer, "\n");
-        break;
-
-    default:
+    } else if (isTokenTypeOperator(currentTokenType)) {
+        if (currentTokenType == TOKEN_TYPE_PLUS) {
+            ADD_TO_BUFFER("ADDS\n");
+        } else if (currentTokenType == TOKEN_TYPE_MINUS) {
+            ADD_TO_BUFFER("SUBS\n");
+        } else if (currentTokenType == TOKEN_TYPE_MUL) {
+            ADD_TO_BUFFER("MULS\n");
+        } else if (currentTokenType == TOKEN_TYPE_DIV) {
+            ADD_TO_BUFFER("DIVS\n");
+        } else if (currentTokenType == TOKEN_TYPE_EQ) {
+            /* code */
+        } else if (currentTokenType == TOKEN_TYPE_NEQ) {
+            /* code */
+        } else if (currentTokenType == TOKEN_TYPE_LTH) {
+            /* code */
+        } else if (currentTokenType == TOKEN_TYPE_LEQ) {
+            /* code */
+        } else if (currentTokenType == TOKEN_TYPE_GTH) {
+            /* code */
+        } else if (currentTokenType == TOKEN_TYPE_GEQ) {
+            /* code */
+        } else {
+            return INTERNAL_ERROR;
+        }
+    } else {
         return INTERNAL_ERROR;
     }
 
