@@ -58,7 +58,10 @@ void pop(Stack *stack) {
     StackElement *tmp = stack->top;
     stack->top = stack->top->next;
     if (tmp->tokenPtr != NULL) {
-        free(tmp->tokenPtr);
+        freeToken(tmp->tokenPtr);
+    }
+    if (tmp->ASTNodePtr != NULL) {
+        disposeSubtree(tmp->ASTNodePtr);
     }
     // if (tmp->ASTNodePtr != NULL) {
     //     disposeSubtree(tmp->ASTNodePtr);
