@@ -458,3 +458,34 @@ void symbolTablePop(Stack *stack) {
 }
 
 void symbolTablePrint(SymbolTable *table) { treePrint(table->root, 0); }
+
+void symbolTableCopyFunctionParams(SymbolTable *table, List *params) {
+    if (params == NULL) {
+        return;
+    }
+
+    listFirst(params);
+    while (listIsActive(params)) {
+        ListData data;
+        listGetValue(params, &data);
+        Symbol newSymbol;
+        symbolSetValues(&newSymbol, data.key, data.type, false, true);
+        symbolTableInsert(table, newSymbol);
+        listNext(params);
+    }
+}
+
+void symbolSetValues(Symbol *symbol, const char *key, DataType type, bool defined, bool function) {
+    symbol->key = key;
+    symbol->type = type;
+    symbol->defined = defined;
+    symbol->function = function;
+}
+
+void symbolResetValues(Symbol *symbol) {
+    symbol->key = NULL;
+    symbol->type = TYPE_VOID;
+    symbol->defined = false;
+    symbol->function = false;
+    symbol->params = NULL;
+}
