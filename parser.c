@@ -27,25 +27,32 @@ bool isTokenKeyword(Token* token, Keyword keyword) {
             token->attribute.keyword == keyword);
 }
 
-// CONCAT, STRCMP, ORD - 2 ARGS
-// KEYWORD_READSTR, KEYWORD_READI32 , KEYWORD_READF64 - 0 ARGS
-// KEYWORD_STRING, KEYWORD_LENGTH, KEYWORD_CHR, KEYWORD_I2F, KEYWORD_F2I - 1 ARG
-// KEYWORD_SUBSTRING - 3 ARGS
 bool isTokenBuiltInFunction(Token* token) {
     switch (token->attribute.keyword) {
-        case KEYWORD_STRING:
-        case KEYWORD_LENGTH:
-        case KEYWORD_CONCAT:
-        case KEYWORD_SUBSTRING:
-        case KEYWORD_STRCMP:
-        case KEYWORD_ORD:
-        case KEYWORD_CHR:
         case KEYWORD_READSTR:
         case KEYWORD_READI32:
         case KEYWORD_READF64:
+            onlyZeroArgs = true;
+            return true;
+            
+        case KEYWORD_STRING:
+        case KEYWORD_LENGTH:
+        case KEYWORD_CHR:
         case KEYWORD_I2F:
         case KEYWORD_F2I:
+            onlyOneArg = true;
             return true;
+            
+        case KEYWORD_CONCAT:
+        case KEYWORD_STRCMP:
+        case KEYWORD_ORD:
+            onlyTwoArgs = true;
+            return true;
+            
+        case KEYWORD_SUBSTRING:
+            onlyThreeArgs = true;
+            return true;
+            
         default:
             return false;
     }
@@ -337,19 +344,11 @@ void parseStatement() {
 
 // VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
 void parseVarDef() {
-    onlyZeroArgs = false;
-    onlyOneArg = false;
-    onlyTwoArgs = false;
-    onlyThreeArgs = false;
-    argCounter = 0;
-
-    if ((isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST))) {
-        printTokenInfo(currentToken);
-        getNextToken(currentToken);
-    } 
-    else {
+    if (!isTokenKeyword(currentToken, KEYWORD_VAR) && !isTokenKeyword(currentToken, KEYWORD_CONST)) {
         HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR, currentToken);
     }
+    printTokenInfo(currentToken);
+    getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected variable identifier", SYNTAX_ERROR, currentToken);
@@ -378,30 +377,15 @@ void parseVarDef() {
         if (!isTokenBuiltInFunction(currentToken)) {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
-
-        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)
-            || isTokenKeyword(currentToken, KEYWORD_ORD)) {
-            onlyTwoArgs = true;
-        } 
-        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE) ||
-            isTokenKeyword(currentToken, KEYWORD_LENGTH) || isTokenKeyword(currentToken, KEYWORD_CHR) ||
-            isTokenKeyword(currentToken, KEYWORD_I2F) || isTokenKeyword(currentToken, KEYWORD_F2I)) {
-            onlyOneArg = true;
-        }
-        else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||  isTokenKeyword(currentToken, KEYWORD_READI32) ||
-            isTokenKeyword(currentToken, KEYWORD_READF64)) {
-            onlyZeroArgs = true;
-        }
+        
         printTokenInfo(currentToken);
-        getNextToken(currentToken); 
+        getNextToken(currentToken);
         parseFuncCall();
-        return;
     }
     else {
         parseExpression(ast, currentToken);
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            printTokenInfo(currentToken);
             HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
         }
         printTokenInfo(currentToken);
@@ -422,12 +406,6 @@ void parseTypeSpec() {
 
 // VAR_ASS ::= token_id token_equals EXPR token_semicolon
 void parseVarAss() {
-    onlyZeroArgs = false;
-    onlyOneArg = false;
-    onlyTwoArgs = false;
-    onlyThreeArgs = false;
-    argCounter = 0;
-
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR, currentToken);
     }
@@ -447,22 +425,9 @@ void parseVarAss() {
         if (!isTokenBuiltInFunction(currentToken)) {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
-
-        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)
-            || isTokenKeyword(currentToken, KEYWORD_ORD)) {
-            onlyTwoArgs = true;
-        } 
-        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE) ||
-            isTokenKeyword(currentToken, KEYWORD_LENGTH) || isTokenKeyword(currentToken, KEYWORD_CHR) ||
-            isTokenKeyword(currentToken, KEYWORD_I2F) || isTokenKeyword(currentToken, KEYWORD_F2I)) {
-            onlyOneArg = true;
-        }
-        else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||  isTokenKeyword(currentToken, KEYWORD_READI32) ||
-            isTokenKeyword(currentToken, KEYWORD_READF64)) {
-            onlyZeroArgs = true;
-        }
+        
         printTokenInfo(currentToken);
-        getNextToken(currentToken); 
+        getNextToken(currentToken);
         parseFuncCall();
         return;
     }
@@ -471,7 +436,6 @@ void parseVarAss() {
     }
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-        printTokenInfo(currentToken);
         HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
@@ -652,13 +616,13 @@ void parseDiscardCall() {
 void parseArgs() {
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         if (onlyZeroArgs && argCounter > 0) {
-            HANDLE_ERROR("This built-in function takes no arguments", 4, currentToken);
+            HANDLE_ERROR("This built-in function takes no arguments", PARAMETER_ERROR, currentToken);
         }
         if (onlyTwoArgs && argCounter != 2) {
-            HANDLE_ERROR("Built-in functions require exactly 2 arguments", 4, currentToken);
+            HANDLE_ERROR("Built-in functions require exactly 2 arguments", PARAMETER_ERROR, currentToken);
         }
         if (onlyOneArg && argCounter != 1) {
-            HANDLE_ERROR("Built-in function requires exactly 1 argument", 4, currentToken);
+            HANDLE_ERROR("Built-in function requires exactly 1 argument", PARAMETER_ERROR, currentToken);
         }
         argCounter = 0;
         onlyZeroArgs = false;
@@ -668,7 +632,7 @@ void parseArgs() {
     }
 
     if (onlyZeroArgs) {
-        HANDLE_ERROR("This built-in function takes no arguments", 4, currentToken);
+        HANDLE_ERROR("This built-in function takes no arguments", PARAMETER_ERROR, currentToken);
     }
 
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
@@ -682,7 +646,7 @@ void parseArgs() {
     argCounter++;
 
     if (onlyOneArg && argCounter > 1) {
-        HANDLE_ERROR("Built-in function requires exactly 1 argument", 4, currentToken);
+        HANDLE_ERROR("Built-in function requires exactly 1 argument", PARAMETER_ERROR, currentToken);
     }
     
     if (currentToken->type == TOKEN_TYPE_COMMA) {
