@@ -4,6 +4,7 @@
 
 void test_treeInsert();
 void test_treeReassign();
+void test_stackTable();
 void test_checkDeclaration();
 void test_checkAssignmentType();
 void test_checkVariableDefined();
@@ -14,6 +15,7 @@ int main() {
     printf("Running symtable tests...\n");
     test_treeInsert();
     test_treeReassign();
+    test_stackTable();
     printf("Symtable tests passed!\n");
 
     printf("Running semantic analysis tests...\n");

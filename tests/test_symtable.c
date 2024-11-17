@@ -99,3 +99,54 @@ void test_treeReassign() {
 
     symbolTableDispose(&table);
 }
+
+void test_stackTable() {
+    SymbolTable table;
+    symbolTableInit(&table, NULL);
+
+    Symbol symbol1 = {.key = "a", .type = TYPE_I_32, .defined = true, .function = false};
+    Symbol symbol2 = {.key = "b", .type = TYPE_F_64, .defined = false, .function = false};
+    Symbol symbol3 = {.key = "c", .type = TYPE_U_8_ARRAY, .defined = false, .function = false};
+    Symbol symbol4 = {.key = "d", .type = TYPE_VOID, .defined = false, .function = false};
+
+    symbolTableInsert(&table, symbol1);
+    symbolTableInsert(&table, symbol2);
+    symbolTableInsert(&table, symbol3);
+    symbolTableInsert(&table, symbol4);
+
+    Stack stack;
+    initStack(&stack);
+
+    symbolTablePush(&stack, &table);
+    SymbolTable *top = symbolTableTop(&stack);
+    symbolTablePrint(top);
+    assert(top != NULL);
+    assert(top->root != NULL);
+
+    SymbolTable table2;
+    symbolTableInit(&table2, &table);
+
+    Symbol symbol5 = {.key = "e", .type = TYPE_I_32, .defined = true, .function = false};
+    Symbol symbol6 = {.key = "f", .type = TYPE_F_64, .defined = false, .function = false};
+    Symbol symbol7 = {.key = "g", .type = TYPE_U_8_ARRAY, .defined = false, .function = false};
+    Symbol symbol8 = {.key = "h", .type = TYPE_VOID, .defined = false, .function = false};
+
+    symbolTableInsert(&table2, symbol5);
+    symbolTableInsert(&table2, symbol6);
+    symbolTableInsert(&table2, symbol7);
+    symbolTableInsert(&table2, symbol8);
+
+    symbolTablePush(&stack, &table2);
+    top = symbolTableTop(&stack);
+    symbolTablePrint(top);
+    assert(top != NULL);
+
+    symbolTablePop(&stack);
+    top = symbolTableTop(&stack);
+    symbolTablePrint(top);
+    assert(top != NULL);
+
+    symbolTablePop(&stack);
+    top = symbolTableTop(&stack);
+    assert(top == NULL);
+}
