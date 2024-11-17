@@ -61,4 +61,27 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
  */
 bool checkReturnType(SymbolTable *table, DataType type);
 
+/**
+ * @brief Checks if a function is defined in the symbol table.
+ *
+ * This function searches the symbol table for a function with the specified key
+ * and determines if it has been defined.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key The key representing the function to check.
+ * @return true if the function is defined, false otherwise.
+ */
+bool checkFunctionDefined(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a function is defined within the global scope in the symbol table.
+ *
+ * This function verifies that a function is defined within
+ * the global scope in the symbol table.
+ *
+ * @param table Pointer to the symbol table.
+ * @return true if the function is defined within the correct scope, false otherwise.
+ */
+bool checkFunctionDefinitionScope(SymbolTable *table);
+
 #endif

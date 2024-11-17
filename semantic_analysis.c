@@ -65,3 +65,8 @@ bool checkReturnType(SymbolTable *table, DataType type) {
 
     return symbol != NULL && symbol->type == type;
 }
+
+bool checkFunctionDefined(SymbolTable *table, const char *key) {
+    Symbol *symbol = symbolTableGetSymbol(table, key);
+    return symbol != NULL && symbol->function;
+}
