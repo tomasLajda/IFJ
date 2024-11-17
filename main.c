@@ -20,6 +20,7 @@ void printToken(Token *token) {
         printf("Token attribute (string): %s\n", token->attribute.string);
         break;
     case TOKEN_TYPE_KEYWORD:
+        // TODO: Print keyword as string
         printf("Token attribute (keyword): %d\n", token->attribute.keyword);
         break;
     case TOKEN_TYPE_IDENTIFIER:
@@ -46,7 +47,33 @@ void printToken(Token *token) {
     case TOKEN_TYPE_RIGHT_BR:
         printf("Token is a RIGHT BRACKET.\n");
         break;
-    // Add cases for other token types as needed
+    case TOKEN_TYPE_COLON:
+        printf("Token is a COLON.\n");
+        break;
+    case TOKEN_TYPE_DOT:
+        printf("Token is a DOT.\n");
+        break;
+    case TOKEN_TYPE_COMMA:
+        printf("Token is a COMMA.\n");
+        break;
+    case TOKEN_TYPE_LEFT_CURLY_BR:
+        printf("Token is a LEFT CURLY BRACKET.\n");
+        break;
+    case TOKEN_TYPE_RIGHT_CURLY_BR:
+        printf("Token is a RIGHT CURLY BRACKET.\n");
+        break;
+    case TOKEN_TYPE_EQ:
+        printf("Token is an EQUAL operator.\n");
+        break;
+    case TOKEN_TYPE_NEQ:
+        printf("Token is a NOT_EQUAL operator.\n");
+        break;
+    case TOKEN_TYPE_ASSIGN:
+        printf("Token is an ASSIGNMENT operator.\n");
+        break;
+
+        // Add cases for other token types as needed
+
     default:
         printf("Token has no attribute or unrecognized type.\n");
         break;
@@ -372,6 +399,30 @@ void test_getNextToken() {
     }
     assert(result != 0);
 
+    fclose(testFile);
+    // Test 13: complex test - ifj24.zig
+    printf("Test 13: complex test - ifj24.zig\n-----------------------------\n");
+    testFile = fopen("test13.txt", "w+");
+    fprintf(testFile, "\
+    const ifj = @import(\"ifj24.zig\");\
+    pub fn build(x : []u8, y : []u8) []u8 {\
+        const res = ifj.concat(x, y);\
+        return res;\
+    }\
+    pub fn main() void {\
+        const a = ifj.string(\"ahoj \");\
+        var ct : []u8 = ifj.string(\"svete\");\
+        ct = build(a, ct);\
+        ifj.write(ct);\
+    }");
+    rewind(testFile);
+    sourceFile = testFile;
+
+    int retval;
+    while ((retval = getNextToken(&token)) == 0 && token.type != TOKEN_TYPE_EOF) {
+        printToken(&token);
+    }
+    printToken(&token);
     fclose(testFile);
 
     printf("All tests passed!\n");
