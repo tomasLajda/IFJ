@@ -12,42 +12,45 @@
 #include <string.h>
 
 // Token* currentToken = NULL;
-SymbolTable* symbolTable = NULL;
-AST* ast = NULL;
-ASTNode* currentParent = NULL;
+Stack symbolStack;
+Symbol currentSymbol;
+ListData currentParam;
+bool isFuncDef = false;
+
+AST *ast = NULL;
+ASTNode *currentParent = NULL;
 bool voidFuncType = false;
-bool onlyZeroArgs = false; 
+bool onlyZeroArgs = false;
 bool onlyOneArg = false;
 bool onlyTwoArgs = false;
 bool onlyThreeArgs = false;
 unsigned int argCounter = 0;
 
-bool isTokenKeyword(Token* token, Keyword keyword) {
-    return (token->type == TOKEN_TYPE_KEYWORD && 
-            token->attribute.keyword == keyword);
+bool isTokenKeyword(Token *token, Keyword keyword) {
+    return (token->type == TOKEN_TYPE_KEYWORD && token->attribute.keyword == keyword);
 }
 
 // CONCAT, STRCMP, ORD - 2 ARGS
 // KEYWORD_READSTR, KEYWORD_READI32 , KEYWORD_READF64 - 0 ARGS
 // KEYWORD_STRING, KEYWORD_LENGTH, KEYWORD_CHR, KEYWORD_I2F, KEYWORD_F2I - 1 ARG
 // KEYWORD_SUBSTRING - 3 ARGS
-bool isTokenBuiltInFunction(Token* token) {
+bool isTokenBuiltInFunction(Token *token) {
     switch (token->attribute.keyword) {
-        case KEYWORD_STRING:
-        case KEYWORD_LENGTH:
-        case KEYWORD_CONCAT:
-        case KEYWORD_SUBSTRING:
-        case KEYWORD_STRCMP:
-        case KEYWORD_ORD:
-        case KEYWORD_CHR:
-        case KEYWORD_READSTR:
-        case KEYWORD_READI32:
-        case KEYWORD_READF64:
-        case KEYWORD_I2F:
-        case KEYWORD_F2I:
-            return true;
-        default:
-            return false;
+    case KEYWORD_STRING:
+    case KEYWORD_LENGTH:
+    case KEYWORD_CONCAT:
+    case KEYWORD_SUBSTRING:
+    case KEYWORD_STRCMP:
+    case KEYWORD_ORD:
+    case KEYWORD_CHR:
+    case KEYWORD_READSTR:
+    case KEYWORD_READI32:
+    case KEYWORD_READF64:
+    case KEYWORD_I2F:
+    case KEYWORD_F2I:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -74,6 +77,10 @@ void parseProlog() {
         HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR, currentToken);
     }
 
+    SymbolTable *table = symbolTableTop(&symbolStack);
+    symbolSetValues(&currentSymbol, "ifj24", TYPE_VOID, false, true);
+    symbolTableInsert(table, currentSymbol);
+    symbolResetValues(&currentSymbol);
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -112,38 +119,53 @@ void parseFuncDef() {
     }
 
     ast = initAST();
-    ASTNode* funcDefNode = initASTNode();
+    ASTNode *funcDefNode = initASTNode();
     ast->root = funcDefNode;
     funcDefNode->token = currentToken;
     currentParent = funcDefNode;
 
     getNextToken(currentToken);
-    
+
     if (!isTokenKeyword(currentToken, KEYWORD_FN)) {
         HANDLE_ERROR("Expected 'fn' in function definition", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    if (currentToken->type != TOKEN_TYPE_IDENTIFIER && 
+    if (currentToken->type != TOKEN_TYPE_IDENTIFIER &&
         !isTokenKeyword(currentToken, KEYWORD_MAIN)) {
         printTokenInfo(currentToken);
-        HANDLE_ERROR("Expected function identifier in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected function identifier in function definition", SYNTAX_ERROR,
+                     currentToken);
     }
 
-    ASTNode* funcIdNode = initASTNode();
+    isFuncDef = true;
+    if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        currentSymbol.key = currentToken->attribute.string;
+    } else {
+        currentSymbol.key = "main";
+    }
+    currentSymbol.function = true;
+    if (checkDeclaration(symbolTableTop(&symbolStack), currentSymbol.key)) {
+        HANDLE_ERROR("Function already declared", REDEFINITION_ERROR,
+                     currentToken); // TODO - correct error code check
+    }
+
+    ASTNode *funcIdNode = initASTNode();
     funcIdNode->token = currentToken;
     addLeftNode(ast, currentParent, funcIdNode);
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-    
+
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' in function definition", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
     parseParams();
+
+    isFuncDef = false;
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' in function definition", SYNTAX_ERROR, currentToken);
@@ -157,11 +179,24 @@ void parseFuncDef() {
 void parseFunc() {
     parseType();
 
+    currentSymbol.defined = true;
+    symbolTableInsert(&symbolTableTop, currentSymbol);
+
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    SymbolTable *newTable = malloc(sizeof(SymbolTable));
+    if (newTable == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
+    }
+    symbolTableInit(newTable, symbolTableTop(&symbolStack));
+    symbolTablePush(&symbolStack, newTable);
+    symbolTableSetFunctionKey(newTable, currentSymbol.key);
+    symbolTableCopyFunctionParams(newTable, currentSymbol.params);
+    symbolResetValues(&currentSymbol);
 
     parseStatements();
     // parseReturn();
@@ -171,6 +206,8 @@ void parseFunc() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    symbolTablePop(&symbolStack);
 }
 
 // TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 | token_void
@@ -179,15 +216,30 @@ void parseType() {
         voidFuncType = true;
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } 
-    else {
-        if (isTokenKeyword(currentToken, KEYWORD_I_32) || isTokenKeyword(currentToken, KEYWORD_F_64) || isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY) || 
-            isTokenKeyword(currentToken, KEYWORD_I_32_NULL) ||  isTokenKeyword(currentToken, KEYWORD_F_64_NULL) || isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
+    } else {
+        if (isTokenKeyword(currentToken, KEYWORD_I_32) ||
+            isTokenKeyword(currentToken, KEYWORD_F_64) ||
+            isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY) ||
+            isTokenKeyword(currentToken, KEYWORD_I_32_NULL) ||
+            isTokenKeyword(currentToken, KEYWORD_F_64_NULL) ||
+            isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
+            if (isFuncDef) {
+                currentParam.type = currentToken->attribute.keyword;
+                if (listIsActive(currentSymbol.params)) {
+                    listInsertFirst(currentSymbol.params, currentParam);
+                    listFirst(currentSymbol.params);
+                } else {
+                    listInsertAfter(currentSymbol.params, currentParam);
+                    listNext(currentSymbol.params);
+                }
+            } else {
+                currentSymbol.type = currentToken->attribute.keyword;
+            }
+
             voidFuncType = false;
             printTokenInfo(currentToken);
             getNextToken(currentToken);
-        } 
-        else {
+        } else {
             printTokenInfo(currentToken);
             HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
         }
@@ -195,7 +247,7 @@ void parseType() {
 }
 
 // RETURN ::= token_return EXPR token_semicolon
-// V_RETURN ::= token_return token_semicolon | ε 
+// V_RETURN ::= token_return token_semicolon | ε
 void parseReturn() {
     if (!isTokenKeyword(currentToken, KEYWORD_RETURN)) {
         HANDLE_ERROR("Expected 'return' keyword", SYNTAX_ERROR, currentToken);
@@ -205,12 +257,12 @@ void parseReturn() {
 
     if (voidFuncType) {
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR,
+                         currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } 
-    else {
+    } else {
         parseExpression(ast, currentToken);
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
@@ -226,6 +278,17 @@ void parseParams() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         return;
     }
+
+    currentParam.key = currentToken->attribute.string;
+    if (currentSymbol.params == NULL) {
+        currentSymbol.params = malloc(sizeof(List));
+        if (currentSymbol.params == NULL) {
+            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
+        }
+
+        listInit(currentSymbol.params);
+    }
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -263,75 +326,69 @@ void parseStatements() {
 
 // STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL | VAR_ASS
 void parseStatement() {
-    onlyZeroArgs = false; 
+    onlyZeroArgs = false;
     onlyOneArg = false;
     onlyTwoArgs = false;
     onlyThreeArgs = false;
     argCounter = 0;
 
     switch (currentToken->type) {
-        case TOKEN_TYPE_KEYWORD:
-            if (isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST)) {
-                parseVarDef();
-            } 
-            else if (isTokenKeyword(currentToken, KEYWORD_IF)) {
-                parseIf();
-            } 
-            else if (isTokenKeyword(currentToken, KEYWORD_WHILE)) {
-                parseWhile();
-            }
-            else if (isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
-                parseDiscardCall();
-            }
-            else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
-                parseReturn();
-            }
-            else if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
-                printTokenInfo(currentToken);
-                getNextToken(currentToken);
-
-                if (currentToken->type != TOKEN_TYPE_DOT) {
-                    HANDLE_ERROR("Unexpected token in built-in functin", SYNTAX_ERROR, currentToken);
-                }
-                printTokenInfo(currentToken);
-                getNextToken(currentToken);
-
-                if (!isTokenKeyword(currentToken, KEYWORD_WRITE)) {
-                    HANDLE_ERROR("Unexpected built-in function in function call", SYNTAX_ERROR, currentToken);
-                }
-                printTokenInfo(currentToken);
-                getNextToken(currentToken);
-
-                if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-                    HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
-                }
-                onlyOneArg = true;
-                parseFuncCall();
-            }
-            else {
-                printTokenInfo(currentToken);
-                HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
-            }
-            break;
-        
-        case TOKEN_TYPE_IDENTIFIER:
+    case TOKEN_TYPE_KEYWORD:
+        if (isTokenKeyword(currentToken, KEYWORD_VAR) ||
+            isTokenKeyword(currentToken, KEYWORD_CONST)) {
+            parseVarDef();
+        } else if (isTokenKeyword(currentToken, KEYWORD_IF)) {
+            parseIf();
+        } else if (isTokenKeyword(currentToken, KEYWORD_WHILE)) {
+            parseWhile();
+        } else if (isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
+            parseDiscardCall();
+        } else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+            parseReturn();
+        } else if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
             printTokenInfo(currentToken);
             getNextToken(currentToken);
 
-            if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
-                parseFuncCall();
+            if (currentToken->type != TOKEN_TYPE_DOT) {
+                HANDLE_ERROR("Unexpected token in built-in functin", SYNTAX_ERROR, currentToken);
             }
-            else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
-                parseVarAss();
-            }
-            else {
-                HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
-            }
-            break;
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
 
-        default:
-            HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR, currentToken);
-            break;
+            if (!isTokenKeyword(currentToken, KEYWORD_WRITE)) {
+                HANDLE_ERROR("Unexpected built-in function in function call", SYNTAX_ERROR,
+                             currentToken);
+            }
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
+
+            if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+                HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+            }
+            onlyOneArg = true;
+            parseFuncCall();
+        } else {
+            printTokenInfo(currentToken);
+            HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
+        }
+        break;
+
+    case TOKEN_TYPE_IDENTIFIER:
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+
+        if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
+            parseFuncCall();
+        } else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
+            parseVarAss();
+        } else {
+            HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
+        }
+        break;
+
+    default:
+        HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR, currentToken);
+        break;
     }
 }
 
@@ -343,12 +400,13 @@ void parseVarDef() {
     onlyThreeArgs = false;
     argCounter = 0;
 
-    if ((isTokenKeyword(currentToken, KEYWORD_VAR) || isTokenKeyword(currentToken, KEYWORD_CONST))) {
+    if ((isTokenKeyword(currentToken, KEYWORD_VAR) ||
+         isTokenKeyword(currentToken, KEYWORD_CONST))) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } 
-    else {
-        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR, currentToken);
+    } else {
+        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR,
+                     currentToken);
     }
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
@@ -368,7 +426,7 @@ void parseVarDef() {
     if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-        
+
         if (currentToken->type != TOKEN_TYPE_DOT) {
             HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
         }
@@ -379,30 +437,33 @@ void parseVarDef() {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
 
-        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)
-            || isTokenKeyword(currentToken, KEYWORD_ORD)) {
+        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) ||
+            isTokenKeyword(currentToken, KEYWORD_STRCMP) ||
+            isTokenKeyword(currentToken, KEYWORD_ORD)) {
             onlyTwoArgs = true;
-        } 
-        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE) ||
-            isTokenKeyword(currentToken, KEYWORD_LENGTH) || isTokenKeyword(currentToken, KEYWORD_CHR) ||
-            isTokenKeyword(currentToken, KEYWORD_I2F) || isTokenKeyword(currentToken, KEYWORD_F2I)) {
+        } else if (isTokenKeyword(currentToken, KEYWORD_STRING) ||
+                   isTokenKeyword(currentToken, KEYWORD_WRITE) ||
+                   isTokenKeyword(currentToken, KEYWORD_LENGTH) ||
+                   isTokenKeyword(currentToken, KEYWORD_CHR) ||
+                   isTokenKeyword(currentToken, KEYWORD_I2F) ||
+                   isTokenKeyword(currentToken, KEYWORD_F2I)) {
             onlyOneArg = true;
-        }
-        else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||  isTokenKeyword(currentToken, KEYWORD_READI32) ||
-            isTokenKeyword(currentToken, KEYWORD_READF64)) {
+        } else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||
+                   isTokenKeyword(currentToken, KEYWORD_READI32) ||
+                   isTokenKeyword(currentToken, KEYWORD_READF64)) {
             onlyZeroArgs = true;
         }
         printTokenInfo(currentToken);
-        getNextToken(currentToken); 
+        getNextToken(currentToken);
         parseFuncCall();
         return;
-    }
-    else {
+    } else {
         parseExpression(ast, currentToken);
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             printTokenInfo(currentToken);
-            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR,
+                         currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -429,7 +490,8 @@ void parseVarAss() {
     argCounter = 0;
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
-        HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR,
+                     currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -437,7 +499,7 @@ void parseVarAss() {
     if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-        
+
         if (currentToken->type != TOKEN_TYPE_DOT) {
             HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
         }
@@ -448,25 +510,27 @@ void parseVarAss() {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
 
-        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) || isTokenKeyword(currentToken, KEYWORD_STRCMP)
-            || isTokenKeyword(currentToken, KEYWORD_ORD)) {
+        if (isTokenKeyword(currentToken, KEYWORD_CONCAT) ||
+            isTokenKeyword(currentToken, KEYWORD_STRCMP) ||
+            isTokenKeyword(currentToken, KEYWORD_ORD)) {
             onlyTwoArgs = true;
-        } 
-        else if (isTokenKeyword(currentToken, KEYWORD_STRING) || isTokenKeyword(currentToken, KEYWORD_WRITE) ||
-            isTokenKeyword(currentToken, KEYWORD_LENGTH) || isTokenKeyword(currentToken, KEYWORD_CHR) ||
-            isTokenKeyword(currentToken, KEYWORD_I2F) || isTokenKeyword(currentToken, KEYWORD_F2I)) {
+        } else if (isTokenKeyword(currentToken, KEYWORD_STRING) ||
+                   isTokenKeyword(currentToken, KEYWORD_WRITE) ||
+                   isTokenKeyword(currentToken, KEYWORD_LENGTH) ||
+                   isTokenKeyword(currentToken, KEYWORD_CHR) ||
+                   isTokenKeyword(currentToken, KEYWORD_I2F) ||
+                   isTokenKeyword(currentToken, KEYWORD_F2I)) {
             onlyOneArg = true;
-        }
-        else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||  isTokenKeyword(currentToken, KEYWORD_READI32) ||
-            isTokenKeyword(currentToken, KEYWORD_READF64)) {
+        } else if (isTokenKeyword(currentToken, KEYWORD_READSTR) ||
+                   isTokenKeyword(currentToken, KEYWORD_READI32) ||
+                   isTokenKeyword(currentToken, KEYWORD_READF64)) {
             onlyZeroArgs = true;
         }
         printTokenInfo(currentToken);
-        getNextToken(currentToken); 
+        getNextToken(currentToken);
         parseFuncCall();
         return;
-    }
-    else {
+    } else {
         parseExpression(ast, currentToken);
     }
 
@@ -588,7 +652,8 @@ void parseElse() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
-        HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR,
+                     currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -648,7 +713,7 @@ void parseDiscardCall() {
     getNextToken(currentToken);
 }
 
-// ARGS ::= (EXPR | token_id) NEXT_ARG | ε      
+// ARGS ::= (EXPR | token_id) NEXT_ARG | ε
 void parseArgs() {
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         if (onlyZeroArgs && argCounter > 0) {
@@ -674,8 +739,7 @@ void parseArgs() {
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } 
-    else {
+    } else {
         parseExpression(ast, currentToken);
     }
 
@@ -684,7 +748,7 @@ void parseArgs() {
     if (onlyOneArg && argCounter > 1) {
         HANDLE_ERROR("Built-in function requires exactly 1 argument", 4, currentToken);
     }
-    
+
     if (currentToken->type == TOKEN_TYPE_COMMA) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -694,11 +758,18 @@ void parseArgs() {
 
 int parse() {
     printf("Parsing started\n");
+
+    initStack(&symbolStack);
+    SymbolTable *globalTable = initSymbolTable(NULL);
+    symbolTablePush(&symbolStack, globalTable);
+
     parseProg();
 
     if (currentToken->type != TOKEN_TYPE_EOF) {
         fprintf(stderr, "Error: Unexpected token after parsing the program\n");
         return SYNTAX_ERROR;
     }
+
+    symbolTablePop(&symbolStack);
     return 0;
 }
