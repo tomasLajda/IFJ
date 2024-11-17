@@ -12,6 +12,7 @@
 #include "error_codes.h"
 #include "expr-parser.h"
 #include "scanner.h"
+#include "semantic_analysis.h"
 #include "symtable.h"
 
 extern Token *currentToken;
