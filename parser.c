@@ -30,34 +30,34 @@ bool isTokenKeyword(Token *token, Keyword keyword) {
     return (token->type == TOKEN_TYPE_KEYWORD && token->attribute.keyword == keyword);
 }
 
-bool isTokenBuiltInFunction(Token* token) {
+bool isTokenBuiltInFunction(Token *token) {
     switch (token->attribute.keyword) {
-        case KEYWORD_READSTR:
-        case KEYWORD_READI32:
-        case KEYWORD_READF64:
-            onlyZeroArgs = true;
-            return true;
-            
-        case KEYWORD_STRING:
-        case KEYWORD_LENGTH:
-        case KEYWORD_CHR:
-        case KEYWORD_I2F:
-        case KEYWORD_F2I:
-            onlyOneArg = true;
-            return true;
-            
-        case KEYWORD_CONCAT:
-        case KEYWORD_STRCMP:
-        case KEYWORD_ORD:
-            onlyTwoArgs = true;
-            return true;
-            
-        case KEYWORD_SUBSTRING:
-            onlyThreeArgs = true;
-            return true;
-            
-        default:
-            return false;
+    case KEYWORD_READSTR:
+    case KEYWORD_READI32:
+    case KEYWORD_READF64:
+        onlyZeroArgs = true;
+        return true;
+
+    case KEYWORD_STRING:
+    case KEYWORD_LENGTH:
+    case KEYWORD_CHR:
+    case KEYWORD_I2F:
+    case KEYWORD_F2I:
+        onlyOneArg = true;
+        return true;
+
+    case KEYWORD_CONCAT:
+    case KEYWORD_STRCMP:
+    case KEYWORD_ORD:
+        onlyTwoArgs = true;
+        return true;
+
+    case KEYWORD_SUBSTRING:
+        onlyThreeArgs = true;
+        return true;
+
+    default:
+        return false;
     }
 }
 
@@ -187,7 +187,7 @@ void parseFunc() {
     parseType();
 
     currentSymbol.defined = true;
-    symbolTableInsert(&symbolTableTop, currentSymbol);
+    symbolTableInsert(symbolTableTop(&symbolStack), currentSymbol);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
@@ -231,7 +231,7 @@ void parseType() {
             isTokenKeyword(currentToken, KEYWORD_F_64_NULL) ||
             isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
             if (isFuncDef) {
-                currentParam.type = currentToken->attribute.keyword;
+                currentParam.type = (DataType)currentToken->attribute.keyword;
                 if (listIsActive(currentSymbol.params)) {
                     listInsertFirst(currentSymbol.params, currentParam);
                     listFirst(currentSymbol.params);
@@ -240,7 +240,7 @@ void parseType() {
                     listNext(currentSymbol.params);
                 }
             } else {
-                currentSymbol.type = currentToken->attribute.keyword;
+                currentSymbol.type = (DataType)currentToken->attribute.keyword;
             }
 
             voidFuncType = false;
@@ -401,8 +401,10 @@ void parseStatement() {
 
 // VAR_DEF ::= VAR_TYPE token_id TYPE_SPEC token_equals EXPR token_semicolon
 void parseVarDef() {
-    if (!isTokenKeyword(currentToken, KEYWORD_VAR) && !isTokenKeyword(currentToken, KEYWORD_CONST)) {
-        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR, currentToken);
+    if (!isTokenKeyword(currentToken, KEYWORD_VAR) &&
+        !isTokenKeyword(currentToken, KEYWORD_CONST)) {
+        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR,
+                     currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -434,16 +436,16 @@ void parseVarDef() {
         if (!isTokenBuiltInFunction(currentToken)) {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
-        
+
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseFuncCall();
-    }
-    else {
+    } else {
         parseExpression(ast, currentToken);
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR,
+                         currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -483,7 +485,7 @@ void parseVarAss() {
         if (!isTokenBuiltInFunction(currentToken)) {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
-        
+
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseFuncCall();
@@ -674,13 +676,16 @@ void parseDiscardCall() {
 void parseArgs() {
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         if (onlyZeroArgs && argCounter > 0) {
-            HANDLE_ERROR("This built-in function takes no arguments", PARAMETER_ERROR, currentToken);
+            HANDLE_ERROR("This built-in function takes no arguments", PARAMETER_ERROR,
+                         currentToken);
         }
         if (onlyTwoArgs && argCounter != 2) {
-            HANDLE_ERROR("Built-in functions require exactly 2 arguments", PARAMETER_ERROR, currentToken);
+            HANDLE_ERROR("Built-in functions require exactly 2 arguments", PARAMETER_ERROR,
+                         currentToken);
         }
         if (onlyOneArg && argCounter != 1) {
-            HANDLE_ERROR("Built-in function requires exactly 1 argument", PARAMETER_ERROR, currentToken);
+            HANDLE_ERROR("Built-in function requires exactly 1 argument", PARAMETER_ERROR,
+                         currentToken);
         }
         argCounter = 0;
         onlyZeroArgs = false;
@@ -703,7 +708,8 @@ void parseArgs() {
     argCounter++;
 
     if (onlyOneArg && argCounter > 1) {
-        HANDLE_ERROR("Built-in function requires exactly 1 argument", PARAMETER_ERROR, currentToken);
+        HANDLE_ERROR("Built-in function requires exactly 1 argument", PARAMETER_ERROR,
+                     currentToken);
     }
 
     if (currentToken->type == TOKEN_TYPE_COMMA) {
@@ -717,7 +723,11 @@ int parse() {
     printf("Parsing started\n");
 
     initStack(&symbolStack);
-    SymbolTable *globalTable = initSymbolTable(NULL);
+    SymbolTable *globalTable = malloc(sizeof(SymbolTable));
+    if (globalTable == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
+    }
+    symbolTableInit(globalTable, NULL);
     symbolTablePush(&symbolStack, globalTable);
 
     parseProg();
