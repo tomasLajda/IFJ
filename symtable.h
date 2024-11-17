@@ -160,4 +160,38 @@ Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key);
  */
 void symbolTablePrint(SymbolTable *table);
 
+/**
+ * @brief Copies function parameters into the symbol table.
+ *
+ * This function copies the parameters into the symbol table, ensuring that
+ * the parameters are defined in the local scope and preventing shadowing.
+ *
+ * @param table Pointer to the symbol table.
+ * @param params List of parameters to be copied.
+ */
+void symbolTableCopyFunctionParams(SymbolTable *table, List *params);
+
+/**
+ * @brief Sets the values of a symbol.
+ *
+ * This function initializes a symbol with the provided key, data type,
+ * function flag, and defined flag.
+ *
+ * @param symbol Pointer to the symbol to be initialized.
+ * @param key The key associated with the symbol.
+ * @param type The data type of the symbol.
+ * @param function Boolean flag indicating if the symbol represents a function.
+ * @param defined Boolean flag indicating if the symbol is defined.
+ */
+void symbolSetValues(Symbol *symbol, const char *key, DataType type, bool function, bool defined);
+
+/**
+ * @brief Resets the values of a symbol.
+ *
+ * This function resets the values of a symbol to their default state.
+ *
+ * @param symbol Pointer to the symbol to be reset.
+ */
+void symbolResetValues(Symbol *symbol);
+
 #endif

@@ -63,6 +63,7 @@ typedef enum {
     TYPE_U_8_ARRAY,
     TYPE_U_8_ARRAY_NULL,
     TYPE_VOID,
+    TYPE_BOOL
 } DataType;
 
 typedef enum {
@@ -144,5 +145,13 @@ typedef enum {
     TOKEN_TYPE_EXPR,
     TOKEN_TYPE_DOLLA
 } TokenType;
+
+typedef enum {
+    SCOPE_GLOBAL = 0,
+    SCOPE_FUNCTION = KEYWORD_FN,
+    SCOPE_WHILE = KEYWORD_WHILE,
+    SCOPE_IF = KEYWORD_IF,
+    SCOPE_ELSE = KEYWORD_ELSE
+} ScopeType;
 
 #endif

@@ -16,15 +16,18 @@ IFJ Project
 #include "stack.h"
 
 /**
- * @brief Begins parsing the expression token by token until the end of the expression.
- * Returns a pointer to the AST of the expression through the 'exprAST' parameter.
- * Returns a pointer to the token that ended the expression through the 'token' parameter.
- *  *
- * @param exprAST Pointer to the AST for the expression
- * @param token Pointer to the token that ended the expression (either ';' or ')')
+ * @brief Parses an expression and constructs its Abstract Syntax Tree (AST).
  *
- * @return Returns 0 if the expression was parsed successfully, 1 if a syntax error was encountered,
- * 2 if an internal parsing error was encountered
+ * This function implements a shift-reduce parsing algorithm to analyze the given
+ * tokens and build the corresponding AST. It utilizes a parsing and input stacks,
+ * reduction rules, and checks the correctness of the syntax of the expression.
+ *
+ * @param exprAST Pointer to the AST structure to be populated.
+ * @param token Pointer to the initial token to begin parsing.
+ * @return
+ *   - 0 on successful parsing.
+ *   - SYNTAX_ERROR (2) if a syntax error is encountered.
+ *   - INTERNAL_ERROR (99) for internal failures (e.g., memory allocation issues).
  */
 int parseExpression(AST *exprAST, Token *token);
 
