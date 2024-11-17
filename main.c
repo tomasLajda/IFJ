@@ -1,7 +1,7 @@
-#include "scanner.h"
-#include "error_codes.h"
 #include "enums.h"
+#include "error_codes.h"
 #include "parser.h"
+#include "scanner.h"
 #include "testing_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@ int main() {
     //     }
 
     //     printTokenInfo(currentToken);
-        
+
     //     if (currentToken->type == TOKEN_TYPE_EOF) {
     //         break;
     //     }
@@ -51,8 +51,6 @@ int main() {
     // printf("--------------------------------\n");
     // printf("Finished scanning tokens\n");
 
-
-    
     int parseResult = parse();
     printf("\nRESULT: %d\n", parseResult);
 

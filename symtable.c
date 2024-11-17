@@ -127,8 +127,6 @@ void treeDispose(BinaryTreeNodePtr node) {
         treeDispose(node->right);
     }
 
-    free(node->data.key);
-
     if (node->data.function) {
         listDispose(node->data.params);
     }
@@ -300,7 +298,56 @@ Symbol *treeGet(BinaryTreeNodePtr node, const char *key) {
     return NULL;
 }
 
-bool symbolTableSearch(SymbolTable *table, const char *key) { return treeSearch(table->root, key); }
+/**
+ * @brief Prints a specified number of spaces.
+ *
+ * This function prints a given number of spaces to the standard output.
+ *
+ * @param count The number of spaces to print.
+ */
+void printSpaces(int count) {
+    for (int i = 0; i < count; i++) {
+        printf(" ");
+    }
+}
+
+/**
+ * @brief Recursively prints a binary tree in a structured format.
+ *
+ * This function performs an in-order traversal of a binary tree and prints
+ * each node's key with indentation corresponding to its level in the tree.
+ *
+ * @param node A pointer to the current node in the binary tree.
+ * @param level The current level of the node in the binary tree.
+ */
+void treePrint(BinaryTreeNodePtr node, int level) {
+    if (node == NULL) {
+        return;
+    }
+
+    treePrint(node->right, level + 1);
+
+    printSpaces(level * 4);
+    printf("%s\n", node->data.key);
+
+    treePrint(node->left, level + 1);
+}
+
+bool symbolTableSearch(SymbolTable *table, const char *key) {
+    bool found = false;
+
+    while (!found) {
+        found = treeSearch(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    return found;
+}
 
 void symbolTableInsert(SymbolTable *table, Symbol data) {
     table->root = treeInsert(table->root, data);
@@ -319,7 +366,9 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable) {
     table->previousTable = previousTable;
 }
 
-void symbolTableSetScope(SymbolTable *table, ScopeType scopeType) { table->scopeType = scopeType; }
+void symbolTableSetFunctionKey(SymbolTable *table, char *functionKey) {
+    table->functionKey = functionKey;
+}
 
 void symbolTableDelete(SymbolTable *table, const char *key) {
     table->root = treeDelete(table->root, key);
@@ -329,8 +378,40 @@ void symbolTableReassign(SymbolTable *table, const char *key, Symbol data) {
     treeReassign(table->root, key, data);
 }
 
+void symbolTableSetDefined(SymbolTable *table, const char *key) {
+    Symbol *symbol = NULL;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    if (symbol == NULL) {
+        HANDLE_ERROR("Symbol not found", INTERNAL_ERROR);
+    }
+
+    symbol->defined = true;
+}
+
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key) {
-    return treeGet(table->root, key);
+    Symbol *symbol = NULL;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    return symbol;
 }
 
 void symbolTablePush(Stack *stack, SymbolTable *table) {
@@ -375,3 +456,5 @@ void symbolTablePop(Stack *stack) {
     stack->top = stack->top->next;
     free(tmp);
 }
+
+void symbolTablePrint(SymbolTable *table) { treePrint(table->root, 0); }
