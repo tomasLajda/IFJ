@@ -200,7 +200,7 @@ int getNextToken(Token *token) {
                 token->type = TOKEN_TYPE_COLON;
                 return TOKEN_OK;
             } else if (current == '|') {
-                token->type = TOKEN_TYPE_OR;
+                token->type = TOKEN_TYPE_VB;
                 return TOKEN_OK;
             }
 
