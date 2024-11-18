@@ -10,7 +10,7 @@ FILE *sourceFile;
 Token *currentToken = NULL;
 
 int main() {
-    sourceFile = fopen("ttest.txt", "r");
+    sourceFile = fopen("test_input.txt", "r");
     if (sourceFile == NULL) {
         fprintf(stderr, "Error: Cannot open input file.\n");
         return INTERNAL_ERROR;

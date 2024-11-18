@@ -1,0 +1,178 @@
+
+x == (y + 3.14);
+a != b <= c > d, e == (f * g);
+h / (i - 2.71);
+j < k >= l != m == n;
+o + p * q - r / s;
+t * (u + v) / w;
+x < y > z <= a >= b != c == d;
+e + (f * (g / h + i)) - (j >= k <= l != m == n) * (o > p < q + r) / (s - (t + u * (v / w - x) + y)) + z) * a >= (b != c <= d > (e + f) * g / (h - i + (j * k) - l)) - m * (n + o) + (p / (q - r) * s + t)) < ((u + (v * w - x) / y) * (z >= a) + b != c) / d == e != ((f * g + (h - i)) / j - k) + l * (m / n >= o) - p > q;
+
+alpha + beta * gamma - delta / epsilon;
+theta * (lambda + mu) / nu,
+xi < omicron >= pi != rho == sigma;
+tau + (upsilon * phi + chi),
+psi / omega - alpha * beta;
+gamma < delta > epsilon <= zeta >= eta != theta == iota;
+
+kappa + lambda * mu - nu / xi;
+omicron < pi >= rho != sigma == tau;
+upsilon + phi * chi - psi / omega;
+
+(alpha + (beta * gamma) - (delta / epsilon));
+theta * (lambda + (mu / nu)) / xi,
+omicron < (pi >= rho) != sigma == (tau + upsilon);
+(phi + chi) * (psi - omega) / alpha;
+
+1 + + 2;
+x * / y;
+(1 + 2;
+a + (b * c)) == d;
+e < < f;
+g != != h;
+i + (j * k)) == (l;
+m + * n;
+o == == p;
+q + (r * (s / t -));
+u + (v * w) + ;
+x + (y * z) / / a;
+b + (c * d)) / (e - f) + g;
+h + (i * j / (k - l) + m;
+n + (o * p) / (q - r) + s)) + t;
+
+alpha + beta * gamma -;
+delta / (epsilon - zeta);
+eta < theta >= iota != kappa == lambda,
+mu + (nu * xi) / omicron;
+pi < < rho;
+sigma == tau != upsilon <= phi > chi;
+
+var1 == (var2 != 3.5);
+result <= (value1 + value2) * value3;
+output >= (input1 / input2) - (threshold != limit);
+sum == (a + b) != (c * d) <= e > f;
+
+(abc + def;
+ghi + jkl));
+mno * * pqr;
+stu / / vwx;
+yza < < bcd;
+efg != != hij;
+
+alpha + beta * gamma - delta / epsilon; theta * (lambda + mu) / nu, xi < omicron >= pi != rho == sigma;
+tau + (upsilon * phi + chi), psi / omega - alpha * beta;
+
+((((x + y) * (z - a)) / (b + (c * d))) - e) * f;
+
+((((x + y) * (z - a)) / (b + (c * d))) - e) *;
+
+((x)) + (((y))) * (z);
+
+((x + y)) + (z;
+
+x + * y;
+a + (b -);
+(c * d;
+e / f +;
+
+var1 + 2.5 * var2 - (var3 / 4.0);
+result == (value1 != 3.14), data >= (temp <= pressure);
+count != (sum + average), total == (min - max);
+speed < (velocity * time), distance >= (acceleration / force);
+
+1.0 + 2 * 3.5 - 4 / 5.0;
+x1 + y2 * z3 - a4 / b5;
+c6 + (d7 * e8) / f9;
+
+1.0 + * 2;
+x1 + (y2 * )z3;
+a4 / / b5;
+
+varName1 + varName2 * varName3 - varName4 / varName5;
+longVariableName + (anotherVar * thirdVar) / fourthVar;
+
+var1 + * var2;
+longVariable + (anotherVar * )thirdVar;
+fourthVar / / fifthVar;
+
+validExpr1 + validExpr2 * validExpr3 - invalidExpr4 / ;
+(validExpr5 + validExpr6) * invalidExpr7;
+validExpr8 >= validExpr9 != (invalidExpr10 == );
+
+alpha1 + 2.2 * beta2 - gamma3 / 4.4;
+delta4 == (epsilon5 != 6.6 <= zeta6 > eta7);
+theta8 + (iota9 * kappa10) / lambda11;
+
+alpha1 + + beta2;
+delta4 * / gamma3;
+(theta8 + (iota9 * )kappa10;
+
+a < b > c <= d >= e != f == g;
+x1 != y2 <= z3 > a4 == b5;
+
+a < < b;
+x1 != != y2;
+
+a + b * c; d / e - f, g < h > i;
+j != k == l; m <= n > o, p != q;
+
+r + s * t - u / v;
+w < x >= y != z == a;
+b + (c * d) / e;
+
+alpha + beta * gamma - delta / epsilon;
+theta * (lambda + mu) / nu,
+xi < omicron >= pi != rho == sigma;
+
+valid1 + valid2 * valid3 - invalid1 / ;
+(valid4 + valid5) * invalid2;
+valid6 >= valid7 != (invalid3 == );
+
+;
+,;
+)
+
+1 + (2 * (3 + (4 / 5)));
+x == y == z;
+a != (b + c);
+( d + e ) * ( f - g ) / h;
+i + j * k - l / m;
+n < o > p <= q >= r != s == t;
+
+a + ;
++ b - c;
+d * (e / );
+f / * g;
+h - / i;
+
+(a + b)) + c;
+((d * e) + f;
+
+((a + b) + c;
+
+x + y * z; a / b - c, d < e > f;
+g != h == i; j <= k > l, m != n;
+
+var1 + 2.5 * var2 - (var3 / 4) == var4 != (var5 <= var6 > var7);
+
+var1 + * 2.5;
+(var2 / 4 ==) var3;
+var4 != != var5;
+
+(((x + y) * z));
+((a + b) * (c - d)) / e;
+(a + (b * c)) / (d - e));
+
+(a + b) * (c - d;
+a + (b * c;
+
+a + b)) * c;
+(a + b * c;
+
+a + + b;
+c * / d;
+
+expr1 + expr2 * expr3 - expr4 / expr5;
+(expr6 + expr7) * expr8 / expr9,
+expr10 < expr11 >= expr12 != expr13 == expr14;
+expr15 + (expr16 * expr17) / expr18;
