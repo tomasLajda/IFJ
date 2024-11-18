@@ -348,4 +348,13 @@ int generateFuncBody(ASTNode *node);
  */
 int processNode(ASTNode *node);
 
+/**
+ * @brief Generates code for a parameter node in the abstract syntax tree (AST). (DEFVAR, MOVE from
+ * TF to LF)
+ *
+ * @param node Pointer to the AST node representing the parameter.
+ * @return An integer indicating the success or failure of the processing.
+ */
+int generateParam(ASTNode *node);
+
 #endif
