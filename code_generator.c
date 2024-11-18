@@ -17,6 +17,24 @@ int labelCounter = 0;
 int expressionCounter = 0;
 int tempVarCounter = 0;
 
+addFloatToBuffer(float value) {
+    ADD_TO_BUFFER("float@");
+    int enoughSpaceForDouble = 64;
+    char doubleStr[enoughSpaceForDouble];
+    snprintf(doubleStr, sizeof(doubleStr), "%a", value);
+    ADD_TO_BUFFER(doubleStr);
+    ADD_TO_BUFFER(" \n");
+}
+
+addIntToBuffer(int value) {
+    ADD_TO_BUFFER("int@");
+    int enoughSpaceForInt = (int)((ceil(log10(value)) + 1) * sizeof(char));
+    char intStr[enoughSpaceForInt];
+    snprintf(intStr, sizeof(intStr), "%d", value);
+    ADD_TO_BUFFER(intStr);
+    ADD_TO_BUFFER(" \n");
+}
+
 // TODO: function for generating unique labels
 // TODO : function for generating unique temporary variables? mozna nebude potreba - diky pouziti
 // datoveho zasobniku pro expressions
@@ -86,10 +104,11 @@ int generateFuncBody(ASTNode *node) {
 
     // FUNCTION PARAMETERS
     ASTNode *currentNode = node->left;
-
+    int paramID = 0;
     while (currentNode != NULL) {
-        generateParam(currentNode); // DEFVAR pro parametry MOV z TF do LF
+        generateParam(currentNode, paramID); // DEFVAR pro parametry MOV z TF do LF
         currentNode = currentNode->right;
+        paramID++;
     }
 
     // FUNCTION CODE
@@ -229,23 +248,14 @@ int generateExpression(ASTNode *node) {
     } else if (currentTokenType == TOKEN_TYPE_INTEGER_VALUE) {
         // Push integer value onto the data stack
         // PUSHS int@value
-        ADD_TO_BUFFER("PUSHS int@");
-        int enoughSpaceForInt =
-            (int)((ceil(log10(node->token->attribute.integer)) + 1) * sizeof(char));
-        char intStr[enoughSpaceForInt];
-        snprintf(intStr, sizeof(intStr), "%d", node->token->attribute.integer);
-        ADD_TO_BUFFER(intStr);
-        ADD_TO_BUFFER(" \n");
+        ADD_TO_BUFFER("PUSHS ");
+        addIntToBuffer(node->token->attribute.integer);
 
     } else if (currentTokenType == TOKEN_TYPE_DOUBLE_VALUE) {
         // Push double value onto the data stack
         // PUSHS float@value
-        ADD_TO_BUFFER("PUSHS float@");
-        int enoughSpaceForDouble = 64;
-        char doubleStr[enoughSpaceForDouble];
-        snprintf(doubleStr, sizeof(doubleStr), "%a", node->token->attribute.decimal);
-        ADD_TO_BUFFER(doubleStr);
-        ADD_TO_BUFFER(" \n");
+        ADD_TO_BUFFER("PUSHS ");
+        addFloatToBuffer(node->token->attribute.decimal);
 
     } else if (isTokenTypeOperator(currentTokenType)) {
         if (currentTokenType == TOKEN_TYPE_PLUS) {
@@ -306,25 +316,11 @@ int generateFuncCall(ASTNode *node) {
         if (currentType == TOKEN_TYPE_IDENTIFIER) {
             ADD_TO_BUFFER("LF@");
             ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.string);
-            ADD_TO_BUFFER("\n");
+            ADD_TO_BUFFER(" \n");
         } else if (currentType == TOKEN_TYPE_INTEGER_VALUE) {
-            ADD_TO_BUFFER("int@");
-            int enoughSpaceForInt =
-                (int)((ceil(log10(currentNode->exprTree->root->token->attribute.integer)) + 1) *
-                      sizeof(char));
-            char intStr[enoughSpaceForInt];
-            snprintf(intStr, sizeof(intStr), "%d",
-                     currentNode->exprTree->root->token->attribute.integer);
-            ADD_TO_BUFFER(intStr);
-            ADD_TO_BUFFER("\n");
+            addIntToBuffer(currentNode->exprTree->root->token->attribute.integer);
         } else if (currentType == TOKEN_TYPE_DOUBLE_VALUE) {
-            ADD_TO_BUFFER("float@");
-            int enoughSpaceForDouble = 64;
-            char doubleStr[enoughSpaceForDouble];
-            snprintf(doubleStr, sizeof(doubleStr), "%a",
-                     currentNode->exprTree->root->token->attribute.decimal);
-            ADD_TO_BUFFER(doubleStr);
-            ADD_TO_BUFFER("\n");
+            addFloatToBuffer(currentNode->exprTree->root->token->attribute.decimal);
         } else {
             return INTERNAL_ERROR;
         }
@@ -336,18 +332,19 @@ int generateFuncCall(ASTNode *node) {
     return 0;
 }
 
-int generateParam(ASTNode *node) {
+int generateParam(ASTNode *node, int paramID) {
     if (node == NULL) {
         return INTERNAL_ERROR;
     }
+    char *paramName = node->token->attribute.string;
 
     ADD_TO_BUFFER("DEFVAR LF@");
-    // TODO: var name
+    ADD_TO_BUFFER(paramName);
     ADD_TO_BUFFER("\n");
     ADD_TO_BUFFER("MOVE LF@");
-    // TODO: var name
-    ADD_TO_BUFFER(" TF@");
-    // TODO: var name
+    ADD_TO_BUFFER(paramName);
+    ADD_TO_BUFFER(" LF@");
+    // ADD_TO_BUFFER(argID);
     ADD_TO_BUFFER("\n");
     return 0;
 }
