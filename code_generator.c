@@ -108,7 +108,6 @@ int processNode(ASTNode *node) {
 
     switch (node->token->type) {
     case TOKEN_TYPE_IDENTIFIER:
-        // TODO: fix if conditions accoardingly to the ast node structure
         if (node->isAssignment == true) {
             // TODO: GENERATE ASSIGNMENT
             // pro node.left.exprTree rozhodnout jestli je func call nebo expr
@@ -120,7 +119,7 @@ int processNode(ASTNode *node) {
             }
 
         } else {
-            // TODO: GENERATE FUNCTION CALL
+            generateFuncCall(node);
         }
         break;
 
