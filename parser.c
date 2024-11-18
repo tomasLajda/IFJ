@@ -18,13 +18,15 @@ ListData currentParam;
 List functionCalls;
 
 AST *ast = NULL;
-ASTNode *currentParent = NULL;
+ASTNode *mainParent = NULL;
+ASTNode *currenParent = NULL;
 bool voidFuncType = false;
 bool onlyZeroArgs = false;
 bool onlyOneArg = false;
 bool onlyTwoArgs = false;
 bool onlyThreeArgs = false;
 unsigned int argCounter = 0;
+unsigned int paramCounter = 0;
 
 bool isTokenKeyword(Token *token, Keyword keyword) {
     return (token->type == TOKEN_TYPE_KEYWORD && token->attribute.keyword == keyword);
@@ -120,6 +122,8 @@ void parseFuncDefs() {
 
 // FUNC_DEF ::= token_pub token_fn token_func_id token_Orb PARAMS token_Crb FUNC_TYPE
 void parseFuncDef() {
+    paramCounter = 0;
+
     printTokenInfo(currentToken);
     if (!isTokenKeyword(currentToken, KEYWORD_PUB)) {
         HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
@@ -129,7 +133,10 @@ void parseFuncDef() {
     ASTNode *funcDefNode = initASTNode();
     ast->root = funcDefNode;
     funcDefNode->token = currentToken;
-    currentParent = funcDefNode;
+
+    printf("\n");
+    displayAST(ast);
+    printf("\n");
 
     getNextToken(currentToken);
 
@@ -146,6 +153,17 @@ void parseFuncDef() {
                      currentToken);
     }
 
+    ASTNode *funcIdNode = initASTNode();
+    funcIdNode->token = currentToken;
+    funcIdNode->parent = funcDefNode;
+    addLeftNode(ast, funcDefNode, funcIdNode);
+    currenParent = funcIdNode;
+    mainParent = funcIdNode;
+
+    printf("\n");
+    displayAST(ast);
+    printf("\n");
+
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         currentSymbol.key = currentToken->attribute.string;
     } else {
@@ -156,10 +174,6 @@ void parseFuncDef() {
         HANDLE_ERROR("Function already declared", REDEFINITION_ERROR,
                      currentToken); // TODO - correct error code check
     }
-
-    ASTNode *funcIdNode = initASTNode();
-    funcIdNode->token = currentToken;
-    addLeftNode(ast, currentParent, funcIdNode);
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -235,6 +249,16 @@ void parseType() {
             }
 
             voidFuncType = false;
+
+            ASTNode *typeNode = initASTNode();
+            typeNode->token = currentToken;
+
+            addLeftNode(ast, currenParent, typeNode);
+
+            printf("\n");
+            displayAST(ast);
+            printf("\n");
+
             printTokenInfo(currentToken);
             getNextToken(currentToken);
         } else {
@@ -273,9 +297,30 @@ void parseReturn() {
 
 // PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
 void parseParams() {
-    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+    if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         return;
     }
+    if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+        HANDLE_ERROR("Expected parameter identifier", SYNTAX_ERROR, currentToken);
+    }
+    paramCounter++;
+
+    ASTNode *paramNode = initASTNode();
+    paramNode->token = currentToken;
+    paramNode->parent = currenParent;
+
+    if (paramCounter == 1) {
+        addLeftNode(ast, currenParent, paramNode);
+        currenParent = paramNode;
+    }
+    else {
+        addRightNode(ast, currenParent, paramNode);
+        currenParent = paramNode;
+    }
+
+    printf("\n");
+    displayAST(ast);
+    printf("\n");
 
     currentParam.key = currentToken->attribute.string;
     currentParam.params = NULL;
@@ -769,5 +814,7 @@ int parse() {
     }
 
     symbolTablePop(&symbolStack);
+    displayAST(ast);
+
     return 0;
 }
