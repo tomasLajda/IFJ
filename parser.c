@@ -15,6 +15,7 @@
 Stack symbolStack;
 Symbol currentSymbol;
 ListData currentParam;
+List functionCalls;
 
 AST *ast = NULL;
 ASTNode *currentParent = NULL;
@@ -283,6 +284,7 @@ void parseParams() {
     }
 
     currentParam.key = currentToken->attribute.string;
+    currentParam.params = NULL;
     if (currentSymbol.params == NULL) {
         currentSymbol.params = malloc(sizeof(List));
         if (currentSymbol.params == NULL) {
@@ -745,6 +747,7 @@ void parseArgs() {
 int parse() {
     printf("Parsing started\n");
 
+    listInit(&functionCalls);
     initStack(&symbolStack);
     SymbolTable *globalTable = malloc(sizeof(SymbolTable));
     if (globalTable == NULL) {
