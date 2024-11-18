@@ -21,6 +21,7 @@ typedef struct List List;
 typedef struct ListData {
     char *key;
     DataType type;
+    DataType returnType;
     List *params;
 } ListData;
 
