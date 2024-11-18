@@ -333,6 +333,20 @@ void treePrint(BinaryTreeNodePtr node, int level) {
     treePrint(node->left, level + 1);
 }
 
+void treeCheckUsed(BinaryTreeNodePtr node) {
+    if (node == NULL) {
+        return;
+    }
+
+    treeCheckUsed(node->left);
+
+    if (!node->data.used) {
+        HANDLE_ERROR("Variable is declared but not used", UNUSED_VARIABLE_ERROR);
+    }
+
+    treeCheckUsed(node->right);
+}
+
 bool symbolTableSearch(SymbolTable *table, const char *key) {
     bool found = false;
 
@@ -393,6 +407,10 @@ void symbolTableSetDefined(SymbolTable *table, const char *key) {
 
     if (symbol == NULL) {
         HANDLE_ERROR("Symbol not found", UNDEFINED_ERROR);
+    }
+
+    if (symbol->constant) {
+        HANDLE_ERROR("Cannot redefine constant", REDEFINITION_ERROR);
     }
 
     symbol->defined = true;
@@ -508,4 +526,14 @@ void symbolResetValues(Symbol *symbol) {
     symbol->defined = false;
     symbol->function = false;
     symbol->params = NULL;
+}
+
+void symbolTableCheckUsed(SymbolTable *table) {
+    if (table == NULL) {
+        return;
+    }
+
+    if (table->root != NULL) {
+        treeCheckUsed(table->root);
+    }
 }

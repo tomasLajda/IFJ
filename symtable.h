@@ -204,4 +204,15 @@ void symbolSetValues(Symbol *symbol, const char *key, DataType type, bool functi
  */
 void symbolResetValues(Symbol *symbol);
 
+/**
+ * @brief Checks if all symbols in the symbol table have been used.
+ *
+ * This function iterates through the given symbol table and verifies
+ * whether each symbol has been used. It can be used to ensure that
+ * there are no unused symbols in the table, if there is any unused
+ * variable, it will throw an error.
+ * @param table Pointer to the symbol table to be checked.
+ */
+void symbolTableCheckUsed(SymbolTable *table);
+
 #endif
