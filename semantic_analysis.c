@@ -7,6 +7,7 @@
  */
 
 #include "semantic_analysis.h"
+#include "ast.h"
 
 extern AST *ast;
 Stack symbolTableStack;
@@ -76,9 +77,9 @@ bool checkFunctionDefined(SymbolTable *table, const char *key) {
 
 bool isConstruct() {
     return constructNode->token->type == TOKEN_TYPE_KEYWORD &&
-               constructNode->token->attribute.keyword == KEYWORD_IF ||
-           constructNode->token->attribute.keyword == KEYWORD_PUB ||
-           constructNode->token->attribute.keyword == KEYWORD_WHILE;
+           (constructNode->token->attribute.keyword == KEYWORD_IF ||
+            constructNode->token->attribute.keyword == KEYWORD_PUB ||
+            constructNode->token->attribute.keyword == KEYWORD_WHILE);
 }
 
 void jumpToPreviousConstruct() {
@@ -88,53 +89,11 @@ void jumpToPreviousConstruct() {
 }
 
 bool checkBuildInFunction(const char *key) {
-    return key == "readstr" || key == "readi32" || key == "readf64" || key == "write" ||
-           key == "i2f" || key == "f2i" || key == "string" || key == "length" || key == "concat" ||
-           key == "substring" || key == "strcmp" || key == "ord" || key == "chr";
-}
-
-void functionAnalysis() {
-    currentSymbol.function = true;
-    currentSymbol.constant = true;
-    currentSymbol.used = true;
-
-    constructNode = constructNode->left;
-    currentNode = constructNode->right;
-
-    currentSymbol.type = (DataType)currentNode->token->attribute.keyword;
-
-    constructNode = constructNode->left;
-    currentNode = constructNode->left;
-    if (currentNode->token->type == TOKEN_TYPE_KEYWORD &&
-        currentNode->token->attribute.keyword == KEYWORD_MAIN) {
-        currentSymbol.key = "main";
-    } else {
-        currentSymbol.key = currentNode->token->attribute.string;
-    }
-
-    if (checkBuildInFunction(currentSymbol.key)) {
-        HANDLE_ERROR("Cannot redefine build-in function", REDEFINITION_ERROR);
-    }
-
-    if (checkDeclaration(symbolTableStack.top, currentSymbol.key)) {
-        HANDLE_ERROR("Function redefinition", REDEFINITION_ERROR);
-    }
-
-    functionParameterAnalysis();
-    currentNode = constructNode->right;
-
-    if (currentSymbol.key == "main") {
-        if (currentSymbol.type != TYPE_VOID) {
-            HANDLE_ERROR("Main function must return void", PARAMETER_ERROR);
-        }
-        if (currentSymbol.params != NULL) {
-            HANDLE_ERROR("Main function cannot have parameters", PARAMETER_ERROR);
-        }
-    }
-
-    jumpToPreviousConstruct();
-    constructNode = constructNode->right;
-    functionAnalysis();
+    return strcmp(key, "readstr") == 0 || strcmp(key, "readi32") == 0 ||
+           strcmp(key, "readf64") == 0 || strcmp(key, "write") == 0 || strcmp(key, "i2f") == 0 ||
+           strcmp(key, "f2i") == 0 || strcmp(key, "string") == 0 || strcmp(key, "length") == 0 ||
+           strcmp(key, "concat") == 0 || strcmp(key, "substring") == 0 ||
+           strcmp(key, "strcmp") == 0 || strcmp(key, "ord") == 0 || strcmp(key, "chr") == 0;
 }
 
 void functionParameterAnalysis() {
@@ -144,7 +103,6 @@ void functionParameterAnalysis() {
 
     currentParameter.key = currentNode->token->attribute.string;
     currentParameter.type = (DataType)currentNode->left->token->attribute.keyword;
-    currentNode = currentNode->right;
 
     if (currentSymbol.params == NULL) {
         currentSymbol.params = malloc(sizeof(List));
@@ -159,7 +117,57 @@ void functionParameterAnalysis() {
         listNext(currentSymbol.params);
     }
 
+    currentNode = currentNode->right;
     functionParameterAnalysis();
+}
+
+void functionAnalysis() {
+    if (currentNode == NULL) {
+        return;
+    }
+
+    currentSymbol.function = true;
+    currentSymbol.constant = true;
+    currentSymbol.used = true;
+
+    constructNode = constructNode->left;
+    currentNode = constructNode->right;
+
+    currentSymbol.type = (DataType)currentNode->token->attribute.keyword;
+
+    constructNode = constructNode->left;
+    currentNode = constructNode;
+    if (currentNode->token->type == TOKEN_TYPE_KEYWORD &&
+        currentNode->token->attribute.keyword == KEYWORD_MAIN) {
+        currentSymbol.key = "main";
+    } else {
+        currentSymbol.key = currentNode->token->attribute.string;
+    }
+
+    if (checkBuildInFunction(currentSymbol.key)) {
+        HANDLE_ERROR("Cannot redefine build-in function", REDEFINITION_ERROR);
+    }
+
+    if (checkDeclaration(symbolTableTop(&symbolTableStack), currentSymbol.key)) {
+        HANDLE_ERROR("Function redefinition", REDEFINITION_ERROR);
+    }
+
+    currentNode = constructNode->left;
+    functionParameterAnalysis();
+    currentNode = constructNode->right;
+
+    if (strcmp(currentSymbol.key, "main") == 0) {
+        if (currentSymbol.type != TYPE_VOID) {
+            HANDLE_ERROR("Main function must return void", PARAMETER_ERROR);
+        }
+        if (currentSymbol.params != NULL) {
+            HANDLE_ERROR("Main function cannot have parameters", PARAMETER_ERROR);
+        }
+    }
+
+    jumpToPreviousConstruct();
+    constructNode = constructNode->right;
+    functionAnalysis();
 }
 
 int semanticAnalysis() {
@@ -175,6 +183,10 @@ int semanticAnalysis() {
 
     symbolTableInsert(globalTable, currentSymbol);
     symbolResetValues(&currentSymbol);
+
+    if (ast == NULL) {
+        HANDLE_ERROR("AST is NULL", INTERNAL_ERROR);
+    }
 
     currentNode = ast->root->right;
     constructNode = ast->root->right;
