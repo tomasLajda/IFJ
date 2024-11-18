@@ -22,6 +22,7 @@ bool onlyZeroArgs = false;
 bool onlyOneArg = false;
 bool onlyTwoArgs = false;
 bool onlyThreeArgs = false;
+bool parsingReturnType = false;
 unsigned int argCounter = 0;
 unsigned int paramCounter = 0;
 
@@ -181,6 +182,7 @@ void parseFuncDef() {
 
 // FUNC ::= TYPE token_Ocb STATEMENTS token_Ccb
 void parseFunc() {
+    voidFuncType = false;
     parseType();
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
@@ -190,7 +192,6 @@ void parseFunc() {
     getNextToken(currentToken);
 
     parseStatements();
-    // parseReturn();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
@@ -199,38 +200,55 @@ void parseFunc() {
     getNextToken(currentToken);
 }
 
-// TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 | token_void
+// V_FUNC ::= token_void token_Ocb STATEMENTS token_Ccb
+void parseVoidFunc() {
+    voidFuncType = true;
+
+    if (!isTokenKeyword(currentToken, KEYWORD_VOID)) {
+        HANDLE_ERROR("Expected 'void' in function definition", SYNTAX_ERROR, currentToken);
+    }
+
+    ASTNode *voidNode = initASTNode();
+    voidNode->token = copyToken(currentToken);
+    addLeftNode(ast, currenParent, voidNode);
+    currenParent = voidNode;
+
+    printTokenInfo(currentToken);
+    getNextToken(currentToken);
+
+    if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
+        HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
+    }
+    printTokenInfo(currentToken);
+    getNextToken(currentToken);
+
+    parseStatements();
+    parseReturn();
+
+    if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
+        HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
+    }
+    printTokenInfo(currentToken);
+    getNextToken(currentToken);
+}
+
+// TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8
 void parseType() {
-    if (isTokenKeyword(currentToken, KEYWORD_VOID)) {
-        if (parsingParameters) {
-            HANDLE_ERROR("Parameter cannot be of type void", PARAMETER_ERROR, currentToken);
-        }
-        voidFuncType = true;
+    if (isTokenKeyword(currentToken, KEYWORD_I_32) ||
+        isTokenKeyword(currentToken, KEYWORD_F_64) ||
+        isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY) ||
+        isTokenKeyword(currentToken, KEYWORD_I_32_NULL) ||
+        isTokenKeyword(currentToken, KEYWORD_F_64_NULL) ||
+        isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
+
+        ASTNode *typeNode = initASTNode();
+        typeNode->token = copyToken(currentToken);
+        addLeftNode(ast, currenParent, typeNode);
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
-        if (isTokenKeyword(currentToken, KEYWORD_I_32) ||
-            isTokenKeyword(currentToken, KEYWORD_F_64) ||
-            isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY) ||
-            isTokenKeyword(currentToken, KEYWORD_I_32_NULL) ||
-            isTokenKeyword(currentToken, KEYWORD_F_64_NULL) ||
-            isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
-            voidFuncType = false;
-
-            ASTNode *typeNode = initASTNode();
-            typeNode->token = copyToken(currentToken);
-            addLeftNode(ast, currenParent, typeNode);
-
-            printf("\n");
-            displayAST(ast);
-            printf("\n");
-
-            printTokenInfo(currentToken);
-            getNextToken(currentToken);
-        } else {
-            printTokenInfo(currentToken);
-            HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
-        }
+        printTokenInfo(currentToken);
+        HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
     }
 }
 

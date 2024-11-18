@@ -65,16 +65,18 @@ void parseFuncDefs();
 
 /**
  * @brief FUNC_DEF ::= token_pub token_fn token_func_id token_Orb PARAMS token_Crb FUNC_TYPE
- *
- * Also handles FUNC_TYPE decision (void vs non-void)
- * V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
- * FUNC ::= TYPE token_Ocb STATEMENTS RETURN token_Ccb
  */
 void parseFuncDef();
 
+
+// FUNC TYPE ::= V_FUNC | FUNC
+/**
+ * @brief V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
+ */
+void parseVoidFunc();
+
 /**
  * @brief FUNC ::= TYPE token_Ocb STATEMENTS RETURN token_Ccb
- * V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
  */
 void parseFunc();
 
