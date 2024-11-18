@@ -368,4 +368,18 @@ int generateParam(ASTNode *node, int paramID);
  */
 int generateFuncCall(ASTNode *node);
 
+/**
+ * @brief Adds an integer to the buffer as string.
+ *
+ * @param num The integer value to be added to the buffer.
+ */
+void addIntToBuffer(int num);
+
+/**
+ * @brief Adds a float to the buffer as string.
+ *
+ * @param num The float value to be added to the buffer.
+ */
+void addFloatToBuffer(double num);
+
 #endif
