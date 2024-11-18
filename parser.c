@@ -17,7 +17,6 @@ AST *ast = NULL;
 ASTNode *mainParent = NULL;
 ASTNode *currenParent = NULL;
 bool voidFuncType = false;
-bool parsingParameters = false;
 bool onlyZeroArgs = false;
 bool onlyOneArg = false;
 bool onlyTwoArgs = false;
@@ -177,12 +176,23 @@ void parseFuncDef() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-    parseFunc();
+    parseFuncType();
+}
+
+// FUNC_TYPE ::= V_FUNC | FUNC
+void parseFuncType() {
+    if (isTokenKeyword(currentToken, KEYWORD_VOID)) {
+        voidFuncType = true;
+        parseVoidFunc();
+    } 
+    else {
+        voidFuncType = false;
+        parseFunc();
+    }
 }
 
 // FUNC ::= TYPE token_Ocb STATEMENTS token_Ccb
 void parseFunc() {
-    voidFuncType = false;
     parseType();
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
@@ -202,8 +212,6 @@ void parseFunc() {
 
 // V_FUNC ::= token_void token_Ocb STATEMENTS token_Ccb
 void parseVoidFunc() {
-    voidFuncType = true;
-
     if (!isTokenKeyword(currentToken, KEYWORD_VOID)) {
         HANDLE_ERROR("Expected 'void' in function definition", SYNTAX_ERROR, currentToken);
     }
@@ -223,7 +231,6 @@ void parseVoidFunc() {
     getNextToken(currentToken);
 
     parseStatements();
-    parseReturn();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
@@ -281,8 +288,6 @@ void parseReturn() {
 
 // PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
 void parseParams() {
-    parsingParameters = true;
-
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         return;
     }
@@ -321,7 +326,6 @@ void parseParams() {
 
 // STATEMENTS ::= STATEMENT STATEMENTS | ε
 void parseStatements() {
-    parsingParameters = false;
     if (currentToken->type == TOKEN_TYPE_RIGHT_CURLY_BR) {
         return;
     }

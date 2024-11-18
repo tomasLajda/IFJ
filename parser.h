@@ -68,8 +68,11 @@ void parseFuncDefs();
  */
 void parseFuncDef();
 
+/**
+ * @brief FUNC_TYPE ::= V_FUNC | FUNC
+ */
+void parseFuncType();
 
-// FUNC TYPE ::= V_FUNC | FUNC
 /**
  * @brief V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
  */
