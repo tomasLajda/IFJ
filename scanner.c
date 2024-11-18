@@ -199,7 +199,11 @@ int getNextToken(Token *token) {
             } else if (current == ':') {
                 token->type = TOKEN_TYPE_COLON;
                 return TOKEN_OK;
+            } else if (current == '|') {
+                token->type = TOKEN_TYPE_OR;
+                return TOKEN_OK;
             }
+
             // STRING
             else if (current == '"') {
                 token->type = TOKEN_TYPE_STRING_VALUE;
