@@ -295,52 +295,45 @@ int generateFuncCall(ASTNode *node) {
     while (currentNode != NULL) {
         // TODO u defvaru pouzit unikatni jmeno?
         ADD_TO_BUFFER("DEFVAR TF@%%arg");
-        ADD_TO_BUFFER(uniqueID);
+        // ADD_TO_BUFFER(uniqueID);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("MOVE TF@%%arg");
-        ADD_TO_BUFFER(uniqueID);
+        // ADD_TO_BUFFER(uniqueID);
         ADD_TO_BUFFER(" ");
 
-        switch (currentNode->exprTree->root->token->type) {
+        TokenType currentType = currentNode->exprTree->root->token->type;
 
-        case TOKEN_TYPE_IDENTIFIER:
-            ADD_TO_BUFFER("LF@%%");
+        if (currentType == TOKEN_TYPE_IDENTIFIER) {
+            ADD_TO_BUFFER("LF@");
             ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.string);
             ADD_TO_BUFFER("\n");
-            break;
-
-        case TOKEN_TYPE_INTEGER_VALUE:
+        } else if (currentType == TOKEN_TYPE_INTEGER_VALUE) {
             ADD_TO_BUFFER("int@");
-            // TODO: int to string
-            // ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.integer);
             int enoughSpaceForInt =
-                (int)((ceil(log10(node->token->attribute.integer)) + 1) * sizeof(char));
+                (int)((ceil(log10(currentNode->exprTree->root->token->attribute.integer)) + 1) *
+                      sizeof(char));
             char intStr[enoughSpaceForInt];
-            snprintf(intStr, sizeof(intStr), "%d", node->token->attribute.integer);
+            snprintf(intStr, sizeof(intStr), "%d",
+                     currentNode->exprTree->root->token->attribute.integer);
             ADD_TO_BUFFER(intStr);
             ADD_TO_BUFFER("\n");
-            break;
-
-        case TOKEN_TYPE_DOUBLE_VALUE:
+        } else if (currentType == TOKEN_TYPE_DOUBLE_VALUE) {
             ADD_TO_BUFFER("float@");
-            // TODO: float to string
-            // ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.decimal);
             int enoughSpaceForDouble = 64;
             char doubleStr[enoughSpaceForDouble];
-            snprintf(doubleStr, sizeof(doubleStr), "%a", node->token->attribute.decimal);
+            snprintf(doubleStr, sizeof(doubleStr), "%a",
+                     currentNode->exprTree->root->token->attribute.decimal);
             ADD_TO_BUFFER(doubleStr);
             ADD_TO_BUFFER("\n");
-            break;
-
-        default:
-            break;
+        } else {
+            return INTERNAL_ERROR;
         }
-
         currentNode = currentNode->right;
     }
 
-    ADD_TO_BUFFER(node);
     ADD_TO_BUFFER("CALL $");
+    ADD_TO_BUFFER(node->token->attribute.string);
+    return 0;
 }
 
 int generateParam(ASTNode *node) {
