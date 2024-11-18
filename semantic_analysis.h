@@ -84,4 +84,15 @@ bool checkFunctionDefined(SymbolTable *table, const char *key);
  */
 bool checkFunctionDefinitionScope(SymbolTable *table);
 
+/**
+ * @brief Performs semantic analysis on the given input.
+ *
+ * This function serves as a starting point for semantic analysis.
+ * It checks the input for semantic correctness according to the
+ * specified rules and constraints of the language.
+ *
+ * @return int Returns 0 if the analysis is successful, otherwise returns an error code.
+ */
+int semanticAnalysis();
+
 #endif

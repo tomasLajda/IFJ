@@ -8,6 +8,11 @@
 
 #include "semantic_analysis.h"
 
+Stack symbolTableStack;
+Symbol currentSymbol;
+ListData currentParameter;
+DataType currentType;
+
 bool checkDeclaration(SymbolTable *table, const char *key) { return symbolTableSearch(table, key); }
 
 bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType) {
@@ -69,4 +74,16 @@ bool checkReturnType(SymbolTable *table, DataType type) {
 bool checkFunctionDefined(SymbolTable *table, const char *key) {
     Symbol *symbol = symbolTableGetSymbol(table, key);
     return symbol != NULL && symbol->function;
+}
+
+int semanticAnalysis() {
+    SymbolTable *globalTable = malloc(sizeof(SymbolTable));
+    if (globalTable == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+
+    symbolTableInit(globalTable, NULL);
+    symbolTablePush(&symbolTableStack, globalTable);
+
+    return 0;
 }
