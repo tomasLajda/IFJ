@@ -22,7 +22,7 @@ const char* getTokenTypeName(TokenType type) {
         case TOKEN_TYPE_MINUS: return "MINUS";
         case TOKEN_TYPE_MUL: return "MULTIPLY";
         case TOKEN_TYPE_DIV: return "DIVIDE";
-        case TOKEN_TYPE_OR: return "OR";
+        case TOKEN_TYPE_VB: return "VB";
         case TOKEN_TYPE_LEFT_BR: return "LEFT_BRACKET";
         case TOKEN_TYPE_RIGHT_BR: return "RIGHT_BRACKET";
         case TOKEN_TYPE_LEFT_CURLY_BR: return "LEFT_CURLY_BRACE";
@@ -129,7 +129,7 @@ void printTokenInfo(Token* token) {
         case TOKEN_TYPE_MINUS:
         case TOKEN_TYPE_MUL:
         case TOKEN_TYPE_DIV:
-        case TOKEN_TYPE_OR:
+        case TOKEN_TYPE_VB:
             printf("%s\n", getTokenTypeName(token->type));
             break;
 
