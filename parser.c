@@ -251,6 +251,7 @@ void parseType() {
         ASTNode *typeNode = initASTNode();
         typeNode->token = copyToken(currentToken);
         addLeftNode(ast, currenParent, typeNode);
+
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
@@ -263,15 +264,18 @@ void parseType() {
 // V_RETURN ::= token_return token_semicolon | ε
 void parseReturn() {
     if (!isTokenKeyword(currentToken, KEYWORD_RETURN)) {
-        HANDLE_ERROR("Expected 'return' keyword", SYNTAX_ERROR, currentToken);
+        if (!voidFuncType) {
+            HANDLE_ERROR("Expected 'return' keyword", SYNTAX_ERROR, currentToken);
+        }
+        return;
     }
+    
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (voidFuncType) {
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR,
-                         currentToken);
+            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR, currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -330,7 +334,7 @@ void parseStatements() {
         return;
     }
 
-    if (currentToken->type == TOKEN_TYPE_KEYWORD && isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+    if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
         parseReturn();
         if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
             HANDLE_ERROR("Unreachable code after return statement", SYNTAX_ERROR, currentToken);
