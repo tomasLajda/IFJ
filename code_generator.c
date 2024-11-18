@@ -89,7 +89,7 @@ int generateFuncBody(ASTNode *node) {
 
     while (currentNode != NULL) {
         generateParam(currentNode); // DEFVAR pro parametry MOV z TF do LF
-        currentNode = currentNode->left;
+        currentNode = currentNode->right;
     }
 
     // FUNCTION CODE
@@ -109,12 +109,18 @@ int processNode(ASTNode *node) {
     switch (node->token->type) {
     case TOKEN_TYPE_IDENTIFIER:
         // TODO: fix if conditions accoardingly to the ast node structure
-        if (node.isAssignment == true) {
+        if (node->isAssignment == true) {
             // TODO: GENERATE ASSIGNMENT
-        } else if (node.isFunctionCall == true) {
-            // TODO: GENERATE FUNCTION CALL
+            // pro node.left.exprTree rozhodnout jestli je func call nebo expr
+            if (node->left->exprTree->isExpression == true) {
+                generateExpression(node->left->exprTree->root);
+            } else {
+                // gen func call
+                generateFuncCall(node->left->exprTree->root);
+            }
+
         } else {
-            return INTERNAL_ERROR;
+            // TODO: GENERATE FUNCTION CALL
         }
         break;
 
@@ -151,6 +157,7 @@ int processNode(ASTNode *node) {
         }
         break;
 
+    // TODO: odstranit, sam o sobe nikdy nebude
     case TOKEN_TYPE_EXPR:
         // todo: generateExpression(node);
         break;
@@ -266,11 +273,72 @@ int generateExpression(ASTNode *node) {
     return 0;
 }
 
+int generateFuncCall(ASTNode *node) {
+    if (node == NULL) {
+        return INTERNAL_ERROR;
+    }
+    // node - function name
+    ADD_TO_BUFFER("CREATEFRAME\n");
+    ADD_TO_BUFFER("DEFVAR TF@%%retval\n");
+
+    // generate parameters
+    ASTNode *currentNode = node->left;
+    // currentNode - each parameter
+    while (currentNode != NULL) {
+        // TODO u defvaru pouzit unikatni jmeno?
+        ADD_TO_BUFFER("DEFVAR TF@%%arg");
+        ADD_TO_BUFFER(uniqueID);
+        ADD_TO_BUFFER("\n");
+        ADD_TO_BUFFER("MOVE TF@%%arg");
+        ADD_TO_BUFFER(uniqueID);
+        ADD_TO_BUFFER(" ");
+
+        switch (currentNode->exprTree->root->token->type) {
+
+        case TOKEN_TYPE_IDENTIFIER:
+            ADD_TO_BUFFER("LF@%%");
+            ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.string);
+            ADD_TO_BUFFER("\n");
+            break;
+
+        case TOKEN_TYPE_INTEGER_VALUE:
+            ADD_TO_BUFFER("int@");
+            // TODO: int to string
+            ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.integer);
+            ADD_TO_BUFFER("\n");
+            break;
+
+        case TOKEN_TYPE_DOUBLE_VALUE:
+            ADD_TO_BUFFER("float@");
+            // TODO: float to string
+            ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.decimal);
+            ADD_TO_BUFFER("\n");
+            break;
+
+        default:
+            break;
+        }
+
+        currentNode = currentNode->right;
+    }
+
+    ADD_TO_BUFFER(node)
+    ADD_TO_BUFFER("CALL $");
+}
+
 int generateParam(ASTNode *node) {
     if (node == NULL) {
         return INTERNAL_ERROR;
     }
-    // TODO: generovani
+
+    ADD_TO_BUFFER("DEFVAR LF@");
+    // TODO: var name
+    ADD_TO_BUFFER("\n");
+    ADD_TO_BUFFER("MOVE LF@");
+    // TODO: var name
+    ADD_TO_BUFFER(" TF@");
+    // TODO: var name
+    ADD_TO_BUFFER("\n");
     return 0;
 }
 
