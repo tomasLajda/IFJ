@@ -4,7 +4,6 @@
  *
  * @author Tomáš Lajda - xlajdat00
  * @author Matúš Csirik - xcsirim00
- * @author Vojtěch Gajdušek - xgajduv00
  *
  */
 
@@ -20,6 +19,11 @@
  * @brief Function that transforms the token type integer to the corresponding character (string)
  */
 char *TokenTypeToString(TokenType type);
+
+/**
+ * @brief Function that transforms the token keyword integer to the corresponding character (string)
+ */
+char *TokenKeywordToString(Keyword keyword);
 
 /**
  * @brief Function that creates a new token with the given type
@@ -48,12 +52,33 @@ StackElement *createStackElement(Token *token, ASTNode *astNodePtr);
 void freeToken(Token *token);
 
 /**
- * @brief Checks if the given token type is an operator.
- *
- * @param TokenType The token type to check.
- * @return true if the token type is an operator, false otherwise.
+ * @brief Function that checks if the given token is an operator
+ * @return 1 if the token is an operator, 0 otherwise
  */
+int isOperator(Token *token);
 
-bool isTokenTypeOperator(TokenType type);
+/**
+ * @brief Function that checks if the given token is an operand
+ * @return 1 if the token is an operand, 0 otherwise
+ */
+int isOperand(Token *token);
+
+/**
+ * @brief Function that checks if the given token is a parentheses
+ * @return 1 if the token is a parentheses, 0 otherwise
+ */
+int isParentheses(Token *token);
+
+/**
+ * @brief Function that checks if the given token is a delimiter
+ * @return 1 if the token is a delimiter, 0 otherwise
+ */
+int isDelimiter(Token *token);
+
+/**
+ * @brief Function that checks if the given token is a relational operator
+ * @return 1 if the token is a relational operator, 0 otherwise
+ */
+int isRelOperator(Token *token);
 
 #endif // HELPERS_H
