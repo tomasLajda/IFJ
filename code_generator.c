@@ -126,6 +126,11 @@ int processNode(ASTNode *node) {
     case TOKEN_TYPE_KEYWORD:
         if (node->token->attribute.keyword == KEYWORD_IF) {
             // TODO: generate if
+            if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
+                // TODO: nullable if
+            } else {
+                // TODO: normal if
+            }
 
             // ASTNode *conditionNode = node->left;
             // generateExpression(conditionNode); // conditionNode.exprTree.root
@@ -140,6 +145,11 @@ int processNode(ASTNode *node) {
 
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
             // TODO: generate while loop
+            if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
+                // TODO: nullable while
+            } else {
+                // TODO: normal while
+            }
 
             // ASTNode *conditionNode = node->left;
             // ADD_TO_BUFFER("$while_start_lbl_counter\n");
@@ -152,7 +162,6 @@ int processNode(ASTNode *node) {
             // ADD_TO_BUFFER("$while_end_lbl_counter\n");
         } else {
             // TODO: Skip VARDEF and continue with the next node
-            // TODO: nullable if (while?)
         }
         break;
 
@@ -303,14 +312,23 @@ int generateFuncCall(ASTNode *node) {
         case TOKEN_TYPE_INTEGER_VALUE:
             ADD_TO_BUFFER("int@");
             // TODO: int to string
-            ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.integer);
+            // ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.integer);
+            int enoughSpaceForInt =
+                (int)((ceil(log10(node->token->attribute.integer)) + 1) * sizeof(char));
+            char intStr[enoughSpaceForInt];
+            snprintf(intStr, sizeof(intStr), "%d", node->token->attribute.integer);
+            ADD_TO_BUFFER(intStr);
             ADD_TO_BUFFER("\n");
             break;
 
         case TOKEN_TYPE_DOUBLE_VALUE:
             ADD_TO_BUFFER("float@");
             // TODO: float to string
-            ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.decimal);
+            // ADD_TO_BUFFER(currentNode->exprTree->root->token->attribute.decimal);
+            int enoughSpaceForDouble = 64;
+            char doubleStr[enoughSpaceForDouble];
+            snprintf(doubleStr, sizeof(doubleStr), "%a", node->token->attribute.decimal);
+            ADD_TO_BUFFER(doubleStr);
             ADD_TO_BUFFER("\n");
             break;
 
@@ -321,7 +339,7 @@ int generateFuncCall(ASTNode *node) {
         currentNode = currentNode->right;
     }
 
-    ADD_TO_BUFFER(node)
+    ADD_TO_BUFFER(node);
     ADD_TO_BUFFER("CALL $");
 }
 
