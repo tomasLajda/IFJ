@@ -230,13 +230,6 @@ void parseType() {
             isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
             if (currentSymbol.function) {
                 currentParam.type = (DataType)currentToken->attribute.keyword;
-                if (!listIsActive(currentSymbol.params)) {
-                    listInsertFirst(currentSymbol.params, currentParam);
-                    listFirst(currentSymbol.params);
-                } else {
-                    listInsertAfter(currentSymbol.params, currentParam);
-                    listNext(currentSymbol.params);
-                }
             } else {
                 currentSymbol.type = (DataType)currentToken->attribute.keyword;
             }
@@ -305,6 +298,14 @@ void parseParams() {
     getNextToken(currentToken);
 
     parseType();
+
+    if (!listIsActive(currentSymbol.params)) {
+        listInsertFirst(currentSymbol.params, currentParam);
+        listFirst(currentSymbol.params);
+    } else {
+        listInsertAfter(currentSymbol.params, currentParam);
+        listNext(currentSymbol.params);
+    }
 
     if (currentToken->type == TOKEN_TYPE_COMMA) {
         printTokenInfo(currentToken);
