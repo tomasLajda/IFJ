@@ -193,7 +193,7 @@ void symbolTableCopyFunctionParams(SymbolTable *table, List *params);
  * @param function Boolean flag indicating if the symbol represents a function.
  * @param defined Boolean flag indicating if the symbol is defined.
  */
-void symbolSetValues(Symbol *symbol, const char *key, DataType type, bool function, bool defined);
+void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bool defined);
 
 /**
  * @brief Resets the values of a symbol.

@@ -513,7 +513,7 @@ void symbolTableCopyFunctionParams(SymbolTable *table, List *params) {
     }
 }
 
-void symbolSetValues(Symbol *symbol, const char *key, DataType type, bool defined, bool function) {
+void symbolSetValues(Symbol *symbol, char *key, DataType type, bool defined, bool function) {
     symbol->key = key;
     symbol->type = type;
     symbol->defined = defined;
