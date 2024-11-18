@@ -132,9 +132,14 @@ int processNode(ASTNode *node) {
             // pro node.left.exprTree rozhodnout jestli je func call nebo expr
             if (node->left->exprTree->isExpression == true) {
                 generateExpression(node->left->exprTree->root);
+                ADD_TO_BUFFER("POPS LF@");
+                ADD_TO_BUFFER(node->token->attribute.string);
+                ADD_TO_BUFFER("\n");
             } else {
-                // gen func call
                 generateFuncCall(node->left->exprTree->root);
+                ADD_TO_BUFFER("MOVE LF@");
+                ADD_TO_BUFFER(node->token->attribute.string);
+                ADD_TO_BUFFER(" TF@%%retval\n");
             }
 
         } else {
