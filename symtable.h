@@ -22,6 +22,7 @@ typedef struct Symbol {
     bool function;
     bool defined;
     bool constant;
+    bool used;
     List *params;
 } Symbol;
 
@@ -113,6 +114,14 @@ void symbolTableReassign(SymbolTable *table, const char *key, Symbol data);
  * @param key The key of the symbol to set the defined flag for.
  */
 void symbolTableSetDefined(SymbolTable *table, const char *key);
+
+/**
+ * @brief Sets the used flag of a symbol in the symbol table by its key.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key The key of the symbol to set the used flag for.
+ */
+void symbolTableSetUsed(SymbolTable *table, const char *key);
 
 /**
  * @brief Pushes the symbol table onto the stack.

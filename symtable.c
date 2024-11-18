@@ -392,10 +392,30 @@ void symbolTableSetDefined(SymbolTable *table, const char *key) {
     }
 
     if (symbol == NULL) {
-        HANDLE_ERROR("Symbol not found", INTERNAL_ERROR);
+        HANDLE_ERROR("Symbol not found", UNDEFINED_ERROR);
     }
 
     symbol->defined = true;
+}
+
+void symbolTableSetUsed(SymbolTable *table, const char *key) {
+    Symbol *symbol = NULL;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    if (symbol == NULL) {
+        HANDLE_ERROR("Symbol not found", UNDEFINED_ERROR);
+    }
+
+    symbol->used = true;
 }
 
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key) {
