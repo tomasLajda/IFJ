@@ -5,11 +5,12 @@
  * @author Martin Valapka - xvalapm00
  */
 
-// TODO: BUILT-IN FUNCTIONS, AST, OTHERS
+// TODO: BUILT-IN FUNCTIONS, AST, GOBACK FUNCTION
 
 #include "parser.h"
 #include "testing_utils.h"
 #include <string.h>
+#include "helpers.h"
 
 // Token* currentToken = NULL;
 Stack symbolStack;
@@ -21,6 +22,7 @@ AST *ast = NULL;
 ASTNode *mainParent = NULL;
 ASTNode *currenParent = NULL;
 bool voidFuncType = false;
+bool parsingParameters = false;
 bool onlyZeroArgs = false;
 bool onlyOneArg = false;
 bool onlyTwoArgs = false;
@@ -129,10 +131,10 @@ void parseFuncDef() {
         HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
     }
 
-    ast = initAST();
-    ASTNode *funcDefNode = initASTNode();
-    ast->root = funcDefNode;
-    funcDefNode->token = currentToken;
+    ASTNode *pubNode = initASTNode();
+    pubNode->token = copyToken(currentToken);
+    addRightNode(ast, currenParent, pubNode);
+    currenParent = pubNode;
 
     printf("\n");
     displayAST(ast);
@@ -143,6 +145,13 @@ void parseFuncDef() {
     if (!isTokenKeyword(currentToken, KEYWORD_FN)) {
         HANDLE_ERROR("Expected 'fn' in function definition", SYNTAX_ERROR, currentToken);
     }
+
+    ASTNode *fnNode = initASTNode();
+    fnNode->token = copyToken(currentToken);
+    addLeftNode(ast, currenParent, fnNode);
+    currenParent = fnNode;
+    mainParent = fnNode;
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -154,11 +163,9 @@ void parseFuncDef() {
     }
 
     ASTNode *funcIdNode = initASTNode();
-    funcIdNode->token = currentToken;
-    funcIdNode->parent = funcDefNode;
-    addLeftNode(ast, funcDefNode, funcIdNode);
+    funcIdNode->token = copyToken(currentToken);
+    addLeftNode(ast, currenParent, funcIdNode);
     currenParent = funcIdNode;
-    mainParent = funcIdNode;
 
     printf("\n");
     displayAST(ast);
@@ -193,7 +200,7 @@ void parseFuncDef() {
     parseFunc();
 }
 
-// FUNC ::= TYPE token_Ocb STATEMENTS RETURN token_Ccb
+// FUNC ::= TYPE token_Ocb STATEMENTS token_Ccb
 void parseFunc() {
     parseType();
 
@@ -251,8 +258,7 @@ void parseType() {
             voidFuncType = false;
 
             ASTNode *typeNode = initASTNode();
-            typeNode->token = currentToken;
-
+            typeNode->token = copyToken(currentToken);
             addLeftNode(ast, currenParent, typeNode);
 
             printf("\n");
@@ -297,6 +303,8 @@ void parseReturn() {
 
 // PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
 void parseParams() {
+    parsingParameters = true;
+
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         return;
     }
@@ -305,33 +313,15 @@ void parseParams() {
     }
     paramCounter++;
 
-    ASTNode *paramNode = initASTNode();
-    paramNode->token = currentToken;
-    paramNode->parent = currenParent;
+    ASTNode *paramIdNode = initASTNode();
+    paramIdNode->token = copyToken(currentToken);
 
     if (paramCounter == 1) {
-        addLeftNode(ast, currenParent, paramNode);
-        currenParent = paramNode;
+        addLeftNode(ast, currenParent, paramIdNode);
+    } else {
+        addRightNode(ast, currenParent, paramIdNode);
     }
-    else {
-        addRightNode(ast, currenParent, paramNode);
-        currenParent = paramNode;
-    }
-
-    printf("\n");
-    displayAST(ast);
-    printf("\n");
-
-    currentParam.key = currentToken->attribute.string;
-    currentParam.params = NULL;
-    if (currentSymbol.params == NULL) {
-        currentSymbol.params = malloc(sizeof(List));
-        if (currentSymbol.params == NULL) {
-            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
-        }
-
-        listInit(currentSymbol.params);
-    }
+    currenParent = paramIdNode;
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -344,14 +334,6 @@ void parseParams() {
 
     parseType();
 
-    if (!listIsActive(currentSymbol.params)) {
-        listInsertFirst(currentSymbol.params, currentParam);
-        listFirst(currentSymbol.params);
-    } else {
-        listInsertAfter(currentSymbol.params, currentParam);
-        listNext(currentSymbol.params);
-    }
-
     if (currentToken->type == TOKEN_TYPE_COMMA) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -361,6 +343,7 @@ void parseParams() {
 
 // STATEMENTS ::= STATEMENT STATEMENTS | ε
 void parseStatements() {
+    parsingParameters = false;
     if (currentToken->type == TOKEN_TYPE_RIGHT_CURLY_BR) {
         return;
     }
@@ -597,7 +580,7 @@ void parseWhile() {
 
 // NULL_CONDITION ::= token_vb token_id token_vb | ε
 void parseNullCond() {
-    if (currentToken->type != TOKEN_TYPE_OR) {
+    if (currentToken->type != TOKEN_TYPE_VB) {
         return;
     }
     printTokenInfo(currentToken);
@@ -609,7 +592,7 @@ void parseNullCond() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    if (currentToken->type != TOKEN_TYPE_OR) {
+    if (currentToken->type != TOKEN_TYPE_VB) {
         HANDLE_ERROR("Expected '|' after identifier in null condition", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
@@ -797,6 +780,12 @@ void parseArgs() {
 int parse() {
     printf("Parsing started\n");
 
+    ast = initAST();
+    ASTNode *root = initASTNode();
+    ast->root = root;
+    currenParent = root;
+    mainParent = root;
+
     listInit(&functionCalls);
     initStack(&symbolStack);
     SymbolTable *globalTable = malloc(sizeof(SymbolTable));
@@ -813,7 +802,7 @@ int parse() {
         return SYNTAX_ERROR;
     }
 
-    symbolTablePop(&symbolStack);
+    // symbolTablePop(&symbolStack);
     displayAST(ast);
 
     return 0;
