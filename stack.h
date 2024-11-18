@@ -9,6 +9,7 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include "ast.h"
 #include "scanner.h"
 #include <stdbool.h>
 
@@ -16,6 +17,7 @@
  * @brief Structure representing an element in the stack.
  */
 typedef struct StackElement {
+    ASTNode *ASTNodePtr;
     Token *tokenPtr;
     struct StackElement *next;
 } StackElement;
@@ -59,7 +61,7 @@ bool isEmpty(Stack *stack);
 void push(Stack *stack, StackElement *elementPtr);
 
 /**
- * @brief Pops (removes) an element from the stack.
+ * @brief Pops (removes) an element from the stack. Prints an error message if the stack is empty.
  *
  * @param stack Pointer to the stack.
  */

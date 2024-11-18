@@ -127,7 +127,7 @@ void treeDispose(BinaryTreeNodePtr node) {
         treeDispose(node->right);
     }
 
-    if (node->data.function) {
+    if (node->data.params != NULL) {
         listDispose(node->data.params);
     }
 
@@ -333,6 +333,20 @@ void treePrint(BinaryTreeNodePtr node, int level) {
     treePrint(node->left, level + 1);
 }
 
+void treeCheckUsed(BinaryTreeNodePtr node) {
+    if (node == NULL) {
+        return;
+    }
+
+    treeCheckUsed(node->left);
+
+    if (!node->data.used) {
+        HANDLE_ERROR("Variable is declared but not used", UNUSED_VARIABLE_ERROR);
+    }
+
+    treeCheckUsed(node->right);
+}
+
 bool symbolTableSearch(SymbolTable *table, const char *key) {
     bool found = false;
 
@@ -392,10 +406,34 @@ void symbolTableSetDefined(SymbolTable *table, const char *key) {
     }
 
     if (symbol == NULL) {
-        HANDLE_ERROR("Symbol not found", INTERNAL_ERROR);
+        HANDLE_ERROR("Symbol not found", UNDEFINED_ERROR);
+    }
+
+    if (symbol->constant) {
+        HANDLE_ERROR("Cannot redefine constant", REDEFINITION_ERROR);
     }
 
     symbol->defined = true;
+}
+
+void symbolTableSetUsed(SymbolTable *table, const char *key) {
+    Symbol *symbol = NULL;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    if (symbol == NULL) {
+        HANDLE_ERROR("Symbol not found", UNDEFINED_ERROR);
+    }
+
+    symbol->used = true;
 }
 
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key) {
@@ -451,10 +489,52 @@ void symbolTablePop(Stack *stack) {
     }
 
     StackElement *tmp = stack->top;
+
     symbolTableDispose((SymbolTable *)tmp->tokenPtr);
 
-    stack->top = stack->top->next;
+    stack->top = tmp->next;
     free(tmp);
 }
 
 void symbolTablePrint(SymbolTable *table) { treePrint(table->root, 0); }
+
+void symbolTableCopyFunctionParams(SymbolTable *table, List *params) {
+    if (params == NULL) {
+        return;
+    }
+
+    listFirst(params);
+    while (listIsActive(params)) {
+        ListData data;
+        listGetValue(params, &data);
+        Symbol newSymbol;
+        symbolSetValues(&newSymbol, data.key, data.type, false, true);
+        symbolTableInsert(table, newSymbol);
+        listNext(params);
+    }
+}
+
+void symbolSetValues(Symbol *symbol, char *key, DataType type, bool defined, bool function) {
+    symbol->key = key;
+    symbol->type = type;
+    symbol->defined = defined;
+    symbol->function = function;
+}
+
+void symbolResetValues(Symbol *symbol) {
+    symbol->key = NULL;
+    symbol->type = TYPE_VOID;
+    symbol->defined = false;
+    symbol->function = false;
+    symbol->params = NULL;
+}
+
+void symbolTableCheckUsed(SymbolTable *table) {
+    if (table == NULL) {
+        return;
+    }
+
+    if (table->root != NULL) {
+        treeCheckUsed(table->root);
+    }
+}
