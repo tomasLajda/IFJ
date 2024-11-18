@@ -107,14 +107,6 @@ void symbolTableDelete(SymbolTable *table, const char *key);
 void symbolTableReassign(SymbolTable *table, const char *key, Symbol data);
 
 /**
- * @brief Sets the defined flag of a symbol in the symbol table by its key.
- *
- * @param table Pointer to the symbol table.
- * @param key The key of the symbol to set the defined flag for.
- */
-void symbolTableSetDefined(SymbolTable *table, const char *key);
-
-/**
  * @brief Sets the used flag of a symbol in the symbol table by its key.
  *
  * @param table Pointer to the symbol table.
@@ -184,15 +176,17 @@ void symbolTableCopyFunctionParams(SymbolTable *table, List *params);
  * @brief Sets the values of a symbol.
  *
  * This function initializes a symbol with the provided key, data type,
- * function flag, and defined flag.
+ * function flag, constant flag, and used flag.
  *
  * @param symbol Pointer to the symbol to be initialized.
  * @param key The key associated with the symbol.
  * @param type The data type of the symbol.
  * @param function Boolean flag indicating if the symbol represents a function.
- * @param defined Boolean flag indicating if the symbol is defined.
+ * @param constant Boolean flag indicating if the symbol is a constant.
+ * @param used Boolean flag indicating if the symbol has been used.
  */
-void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bool defined);
+void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bool constant,
+                     bool used);
 
 /**
  * @brief Resets the values of a symbol.
