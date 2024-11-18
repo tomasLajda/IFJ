@@ -406,12 +406,21 @@ void parseVarDef() {
         HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR,
                      currentToken);
     }
+
+    currentSymbol.constant = isTokenKeyword(currentToken, KEYWORD_CONST);
+    currentSymbol.type = TYPE_ANY;
+    currentSymbol.defined = false;
+    currentSymbol.function = false;
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected variable identifier", SYNTAX_ERROR, currentToken);
     }
+
+    currentSymbol.key = currentToken->attribute.string;
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
