@@ -211,6 +211,7 @@ void parseFunc() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
+    symbolTableCheckUsed(symbolTableTop(&symbolStack));
     symbolTablePop(&symbolStack);
 }
 
@@ -229,7 +230,7 @@ void parseType() {
             isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
             if (currentSymbol.function) {
                 currentParam.type = (DataType)currentToken->attribute.keyword;
-                if (listIsActive(currentSymbol.params)) {
+                if (!listIsActive(currentSymbol.params)) {
                     listInsertFirst(currentSymbol.params, currentParam);
                     listFirst(currentSymbol.params);
                 } else {
@@ -544,6 +545,7 @@ void parseWhile() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
+    symbolTableCheckUsed(symbolTableTop(&symbolStack));
     symbolTablePop(&symbolStack);
 }
 
@@ -613,6 +615,7 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
+    symbolTableCheckUsed(symbolTableTop(&symbolStack));
     symbolTablePop(&symbolStack);
 
     parseElse();
@@ -648,6 +651,7 @@ void parseElse() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
+    symbolTableCheckUsed(symbolTableTop(&symbolStack));
     symbolTablePop(&symbolStack);
 }
 
