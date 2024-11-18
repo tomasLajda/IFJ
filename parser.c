@@ -509,6 +509,13 @@ void parseWhile() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
+    SymbolTable *table = malloc(sizeof(SymbolTable));
+    if (table == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
+    }
+    symbolTableInit(table, symbolTableTop(&symbolStack));
+    symbolTablePush(&symbolStack, table);
+
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after 'while'", SYNTAX_ERROR, currentToken);
     }
@@ -538,6 +545,8 @@ void parseWhile() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    symbolTablePop(&symbolStack);
 }
 
 // NULL_CONDITION ::= token_vb token_id token_vb | ε
@@ -569,6 +578,13 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
+    SymbolTable *table = malloc(sizeof(SymbolTable));
+    if (table == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
+    }
+    symbolTableInit(table, symbolTableTop(&symbolStack));
+    symbolTablePush(&symbolStack, table);
+
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after 'if'", SYNTAX_ERROR, currentToken);
     }
@@ -599,6 +615,8 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
+    symbolTablePop(&symbolStack);
+
     parseElse();
 }
 
@@ -609,6 +627,13 @@ void parseElse() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    SymbolTable *table = malloc(sizeof(SymbolTable));
+    if (table == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
+    }
+    symbolTableInit(table, symbolTableTop(&symbolStack));
+    symbolTablePush(&symbolStack, table);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR,
@@ -624,6 +649,8 @@ void parseElse() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    symbolTablePop(&symbolStack);
 }
 
 // FUNC_CALL ::= token_id token_Orb ARGS token_Crb token_semicolon
