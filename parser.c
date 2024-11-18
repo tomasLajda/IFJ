@@ -13,11 +13,6 @@
 #include "helpers.h"
 
 // Token* currentToken = NULL;
-Stack symbolStack;
-Symbol currentSymbol;
-ListData currentParam;
-List functionCalls;
-
 AST *ast = NULL;
 ASTNode *mainParent = NULL;
 ASTNode *currenParent = NULL;
@@ -87,11 +82,6 @@ void parseProlog() {
     if (!isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR, currentToken);
     }
-
-    SymbolTable *table = symbolTableTop(&symbolStack);
-    symbolSetValues(&currentSymbol, "ifj24", TYPE_VOID, false, true);
-    symbolTableInsert(table, currentSymbol);
-    symbolResetValues(&currentSymbol);
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -171,17 +161,6 @@ void parseFuncDef() {
     displayAST(ast);
     printf("\n");
 
-    if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
-        currentSymbol.key = currentToken->attribute.string;
-    } else {
-        currentSymbol.key = "main";
-    }
-    currentSymbol.function = true;
-    if (checkDeclaration(symbolTableTop(&symbolStack), currentSymbol.key)) {
-        HANDLE_ERROR("Function already declared", REDEFINITION_ERROR,
-                     currentToken); // TODO - correct error code check
-    }
-
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -204,24 +183,11 @@ void parseFuncDef() {
 void parseFunc() {
     parseType();
 
-    currentSymbol.defined = true;
-    symbolTableInsert(symbolTableTop(&symbolStack), currentSymbol);
-
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
-    SymbolTable *newTable = malloc(sizeof(SymbolTable));
-    if (newTable == NULL) {
-        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
-    }
-    symbolTableInit(newTable, symbolTableTop(&symbolStack));
-    symbolTablePush(&symbolStack, newTable);
-    symbolTableSetFunctionKey(newTable, currentSymbol.key);
-    symbolTableCopyFunctionParams(newTable, currentSymbol.params);
-    symbolResetValues(&currentSymbol);
 
     parseStatements();
     // parseReturn();
@@ -231,9 +197,6 @@ void parseFunc() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
-    symbolTableCheckUsed(symbolTableTop(&symbolStack));
-    symbolTablePop(&symbolStack);
 }
 
 // TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 | token_void
@@ -252,12 +215,6 @@ void parseType() {
             isTokenKeyword(currentToken, KEYWORD_I_32_NULL) ||
             isTokenKeyword(currentToken, KEYWORD_F_64_NULL) ||
             isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
-            if (currentSymbol.function) {
-                currentParam.type = (DataType)currentToken->attribute.keyword;
-            } else {
-                currentSymbol.type = (DataType)currentToken->attribute.keyword;
-            }
-
             voidFuncType = false;
 
             ASTNode *typeNode = initASTNode();
@@ -437,12 +394,14 @@ void parseVarDef() {
         HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR,
                      currentToken);
     }
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected variable identifier", SYNTAX_ERROR, currentToken);
     }
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -540,13 +499,6 @@ void parseWhile() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    SymbolTable *table = malloc(sizeof(SymbolTable));
-    if (table == NULL) {
-        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
-    }
-    symbolTableInit(table, symbolTableTop(&symbolStack));
-    symbolTablePush(&symbolStack, table);
-
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after 'while'", SYNTAX_ERROR, currentToken);
     }
@@ -576,9 +528,6 @@ void parseWhile() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
-    symbolTableCheckUsed(symbolTableTop(&symbolStack));
-    symbolTablePop(&symbolStack);
 }
 
 // NULL_CONDITION ::= token_vb token_id token_vb | ε
@@ -610,13 +559,6 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    SymbolTable *table = malloc(sizeof(SymbolTable));
-    if (table == NULL) {
-        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
-    }
-    symbolTableInit(table, symbolTableTop(&symbolStack));
-    symbolTablePush(&symbolStack, table);
-
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after 'if'", SYNTAX_ERROR, currentToken);
     }
@@ -647,9 +589,6 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    symbolTableCheckUsed(symbolTableTop(&symbolStack));
-    symbolTablePop(&symbolStack);
-
     parseElse();
 }
 
@@ -660,13 +599,6 @@ void parseElse() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
-    SymbolTable *table = malloc(sizeof(SymbolTable));
-    if (table == NULL) {
-        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
-    }
-    symbolTableInit(table, symbolTableTop(&symbolStack));
-    symbolTablePush(&symbolStack, table);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR,
@@ -682,9 +614,6 @@ void parseElse() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
-    symbolTableCheckUsed(symbolTableTop(&symbolStack));
-    symbolTablePop(&symbolStack);
 }
 
 // FUNC_CALL ::= token_id token_Orb ARGS token_Crb token_semicolon

@@ -127,7 +127,7 @@ void treeDispose(BinaryTreeNodePtr node) {
         treeDispose(node->right);
     }
 
-    if (node->data.function) {
+    if (node->data.params != NULL) {
         listDispose(node->data.params);
     }
 
@@ -489,9 +489,10 @@ void symbolTablePop(Stack *stack) {
     }
 
     StackElement *tmp = stack->top;
+
     symbolTableDispose((SymbolTable *)tmp->tokenPtr);
 
-    stack->top = stack->top->next;
+    stack->top = tmp->next;
     free(tmp);
 }
 
