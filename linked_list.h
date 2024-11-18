@@ -16,9 +16,13 @@
 #include "enums.h"
 #include "error_codes.h"
 
+typedef struct List List;
+
 typedef struct ListData {
     char *key;
     DataType type;
+    DataType returnType;
+    List *params;
 } ListData;
 
 typedef struct ListElement {

@@ -21,6 +21,8 @@ typedef struct Symbol {
     DataType type;
     bool function;
     bool defined;
+    bool constant;
+    bool used;
     List *params;
 } Symbol;
 
@@ -114,6 +116,14 @@ void symbolTableReassign(SymbolTable *table, const char *key, Symbol data);
 void symbolTableSetDefined(SymbolTable *table, const char *key);
 
 /**
+ * @brief Sets the used flag of a symbol in the symbol table by its key.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key The key of the symbol to set the used flag for.
+ */
+void symbolTableSetUsed(SymbolTable *table, const char *key);
+
+/**
  * @brief Pushes the symbol table onto the stack.
  *
  * @param stack Pointer to the stack.
@@ -183,7 +193,7 @@ void symbolTableCopyFunctionParams(SymbolTable *table, List *params);
  * @param function Boolean flag indicating if the symbol represents a function.
  * @param defined Boolean flag indicating if the symbol is defined.
  */
-void symbolSetValues(Symbol *symbol, const char *key, DataType type, bool function, bool defined);
+void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bool defined);
 
 /**
  * @brief Resets the values of a symbol.
@@ -193,5 +203,16 @@ void symbolSetValues(Symbol *symbol, const char *key, DataType type, bool functi
  * @param symbol Pointer to the symbol to be reset.
  */
 void symbolResetValues(Symbol *symbol);
+
+/**
+ * @brief Checks if all symbols in the symbol table have been used.
+ *
+ * This function iterates through the given symbol table and verifies
+ * whether each symbol has been used. It can be used to ensure that
+ * there are no unused symbols in the table, if there is any unused
+ * variable, it will throw an error.
+ * @param table Pointer to the symbol table to be checked.
+ */
+void symbolTableCheckUsed(SymbolTable *table);
 
 #endif
