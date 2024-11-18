@@ -718,15 +718,6 @@ int parse() {
     currenParent = root;
     mainParent = root;
 
-    listInit(&functionCalls);
-    initStack(&symbolStack);
-    SymbolTable *globalTable = malloc(sizeof(SymbolTable));
-    if (globalTable == NULL) {
-        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR, currentToken);
-    }
-    symbolTableInit(globalTable, NULL);
-    symbolTablePush(&symbolStack, globalTable);
-
     parseProg();
 
     if (currentToken->type != TOKEN_TYPE_EOF) {
@@ -734,7 +725,6 @@ int parse() {
         return SYNTAX_ERROR;
     }
 
-    // symbolTablePop(&symbolStack);
     displayAST(ast);
 
     return 0;
