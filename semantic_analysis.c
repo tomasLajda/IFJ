@@ -8,21 +8,19 @@
 
 #include "semantic_analysis.h"
 
+extern AST *ast;
 Stack symbolTableStack;
 Symbol currentSymbol;
 ListData currentParameter;
 DataType currentType;
+ASTNode *currentNode;
+ASTNode *constructNode;
 
 bool checkDeclaration(SymbolTable *table, const char *key) { return symbolTableSearch(table, key); }
 
 bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType) {
     Symbol *symbol = symbolTableGetSymbol(table, key);
     return symbol != NULL && symbol->type == valueType;
-}
-
-bool checkVariableDefined(SymbolTable *table, const char *key) {
-    Symbol *symbol = symbolTableGetSymbol(table, key);
-    return symbol != NULL && symbol->defined;
 }
 
 bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
@@ -76,6 +74,94 @@ bool checkFunctionDefined(SymbolTable *table, const char *key) {
     return symbol != NULL && symbol->function;
 }
 
+bool isConstruct() {
+    return constructNode->token->type == TOKEN_TYPE_KEYWORD &&
+               constructNode->token->attribute.keyword == KEYWORD_IF ||
+           constructNode->token->attribute.keyword == KEYWORD_PUB ||
+           constructNode->token->attribute.keyword == KEYWORD_WHILE;
+}
+
+void jumpToPreviousConstruct() {
+    while (!isConstruct()) {
+        constructNode = constructNode->parent;
+    }
+}
+
+bool checkBuildInFunction(const char *key) {
+    return key == "readstr" || key == "readi32" || key == "readf64" || key == "write" ||
+           key == "i2f" || key == "f2i" || key == "string" || key == "length" || key == "concat" ||
+           key == "substring" || key == "strcmp" || key == "ord" || key == "chr";
+}
+
+void functionAnalysis() {
+    currentSymbol.function = true;
+    currentSymbol.constant = true;
+    currentSymbol.used = true;
+
+    constructNode = constructNode->left;
+    currentNode = constructNode->right;
+
+    currentSymbol.type = (DataType)currentNode->token->attribute.keyword;
+
+    constructNode = constructNode->left;
+    currentNode = constructNode->left;
+    if (currentNode->token->type == TOKEN_TYPE_KEYWORD &&
+        currentNode->token->attribute.keyword == KEYWORD_MAIN) {
+        currentSymbol.key = "main";
+    } else {
+        currentSymbol.key = currentNode->token->attribute.string;
+    }
+
+    if (checkBuildInFunction(currentSymbol.key)) {
+        HANDLE_ERROR("Cannot redefine build-in function", REDEFINITION_ERROR);
+    }
+
+    if (checkDeclaration(symbolTableStack.top, currentSymbol.key)) {
+        HANDLE_ERROR("Function redefinition", REDEFINITION_ERROR);
+    }
+
+    functionParameterAnalysis();
+    currentNode = constructNode->right;
+
+    if (currentSymbol.key == "main") {
+        if (currentSymbol.type != TYPE_VOID) {
+            HANDLE_ERROR("Main function must return void", PARAMETER_ERROR);
+        }
+        if (currentSymbol.params != NULL) {
+            HANDLE_ERROR("Main function cannot have parameters", PARAMETER_ERROR);
+        }
+    }
+
+    jumpToPreviousConstruct();
+    constructNode = constructNode->right;
+    functionAnalysis();
+}
+
+void functionParameterAnalysis() {
+    if (currentNode == NULL) {
+        return;
+    }
+
+    currentParameter.key = currentNode->token->attribute.string;
+    currentParameter.type = (DataType)currentNode->left->token->attribute.keyword;
+    currentNode = currentNode->right;
+
+    if (currentSymbol.params == NULL) {
+        currentSymbol.params = malloc(sizeof(List));
+        if (currentSymbol.params == NULL) {
+            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+        }
+        listInit(currentSymbol.params);
+        listInsertFirst(currentSymbol.params, currentParameter);
+        listFirst(currentSymbol.params);
+    } else {
+        listInsertAfter(currentSymbol.params, currentParameter);
+        listNext(currentSymbol.params);
+    }
+
+    functionParameterAnalysis();
+}
+
 int semanticAnalysis() {
     SymbolTable *globalTable = malloc(sizeof(SymbolTable));
     if (globalTable == NULL) {
@@ -84,6 +170,21 @@ int semanticAnalysis() {
 
     symbolTableInit(globalTable, NULL);
     symbolTablePush(&symbolTableStack, globalTable);
+
+    symbolSetValues(&currentSymbol, "ifj", TYPE_VOID, false, true, true);
+
+    symbolTableInsert(globalTable, currentSymbol);
+    symbolResetValues(&currentSymbol);
+
+    currentNode = ast->root->right;
+    constructNode = ast->root->right;
+
+    functionAnalysis();
+
+    if (!checkFunctionDefined(globalTable, "main")) {
+        HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
+    }
+    symbolTablePop(&symbolTableStack);
 
     return 0;
 }
