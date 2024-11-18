@@ -357,4 +357,15 @@ int processNode(ASTNode *node);
  */
 int generateParam(ASTNode *node);
 
+/**
+ * @brief Generates the code for a function call.
+ *
+ * This function takes an AST (Abstract Syntax Tree) node representing a function call
+ * and generates the corresponding code for it.
+ *
+ * @param node A pointer to the ASTNode representing the function call.
+ * @return An integer indicating the success or failure of the code generation.
+ */
+int generateFuncCall(ASTNode *node);
+
 #endif

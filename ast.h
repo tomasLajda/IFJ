@@ -23,6 +23,7 @@ typedef struct ASTNode {
     struct ASTNode *parent;
     struct AST *exprTree;
     Token *token;
+    bool isAssignment;
 } ASTNode;
 
 // Structure of AST
