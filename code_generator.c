@@ -329,6 +329,7 @@ int generateFuncCall(ASTNode *node) {
 
     ADD_TO_BUFFER("CALL $");
     ADD_TO_BUFFER(node->token->attribute.string);
+    ADD_TO_BUFFER(" \n");
     return 0;
 }
 
