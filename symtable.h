@@ -21,6 +21,7 @@ typedef struct Symbol {
     DataType type;
     bool function;
     bool defined;
+    bool constant;
     List *params;
 } Symbol;
 
