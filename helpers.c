@@ -78,6 +78,8 @@ char *TokenTypeToString(TokenType type) {
         return "EXPR";
     case TOKEN_TYPE_DOLLA:
         return "$";
+    case TOKEN_TYPE_NULL_COND:
+        return "NULL_COND";
     default:
         return "UNKNOWN_TOKEN_TYPE";
     }

@@ -142,7 +142,10 @@ typedef enum {
 
     // EXPRESSION PARSING
     TOKEN_TYPE_EXPR,
-    TOKEN_TYPE_DOLLA
+    TOKEN_TYPE_DOLLA,
+
+    // CODE GEN
+    TOKEN_TYPE_NULL_COND // Null condition (if or while)
 } TokenType;
 
 typedef enum {
