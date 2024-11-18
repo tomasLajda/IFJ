@@ -239,6 +239,9 @@ void parseFunc() {
 // TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 | token_void
 void parseType() {
     if (isTokenKeyword(currentToken, KEYWORD_VOID)) {
+        if (parsingParameters) {
+            HANDLE_ERROR("Parameter cannot be of type void", PARAMETER_ERROR, currentToken);
+        }
         voidFuncType = true;
         printTokenInfo(currentToken);
         getNextToken(currentToken);
