@@ -149,6 +149,7 @@ class ParserTest(unittest.TestCase):
                 // Main function code
             }
             '''
+        True
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserSuccess(returncode, stdout, stderr)
 
@@ -159,6 +160,7 @@ class ParserTest(unittest.TestCase):
                     // Main function code
                 }
                 '''
+        False
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
 
@@ -170,6 +172,7 @@ class ParserTest(unittest.TestCase):
                 ifj.readstr();
             }
             '''
+        False
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
 
@@ -182,6 +185,7 @@ class ParserTest(unittest.TestCase):
                     var y = "hello";
                 }
                 '''
+        True
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserSuccess(returncode, stdout, stderr)
 
@@ -193,6 +197,7 @@ class ParserTest(unittest.TestCase):
                 x = 42;  // 'x' not declared
             }
             '''
+        False
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
 
@@ -207,6 +212,7 @@ class ParserTest(unittest.TestCase):
                 var result = add(5, 3);
             }
             '''
+        True
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserSuccess(returncode, stdout, stderr)
 
@@ -218,6 +224,7 @@ class ParserTest(unittest.TestCase):
                 var result = add(5);
             }
             '''
+        False
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
 
@@ -232,6 +239,7 @@ class ParserTest(unittest.TestCase):
                 }
             }
             '''
+        True
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserSuccess(returncode, stdout, stderr)
 
@@ -246,6 +254,7 @@ class ParserTest(unittest.TestCase):
                 }
             }
             '''
+        True
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserSuccess(returncode, stdout, stderr)
 
@@ -257,6 +266,7 @@ class ParserTest(unittest.TestCase):
                 var x = 10
             }
             '''
+        False
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
 
@@ -268,6 +278,7 @@ class ParserTest(unittest.TestCase):
                 var x = 10;
             }
             '''
+        False
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
 
@@ -325,6 +336,70 @@ class ParserTest(unittest.TestCase):
                     self.assertParserSuccess(returncode, stdout, stderr)
                 else:
                     self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
+
+    def test_missing_return_statement_in_void(self):
+        """Test parser detects missing return statement in void function"""
+        code = '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                var result = 1;
+            }
+            '''
+        True
+        returncode, stdout, stderr = self.run_parser(code)
+        self.assertParserSuccess(returncode, stdout=stdout, stderr=stderr)
+
+    def test_unreachable_code(self):
+        """Test parser detects unreachable code"""
+        code = '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                return;
+                var x = 10;
+            }
+            '''
+        False
+        returncode, stdout, stderr = self.run_parser(code)
+        self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
+
+    def test_missing_return(self):
+        """Test parser detects missing return statement"""
+        code = '''
+            const ifj = @import("ifj24.zig");
+            pub fn add(a: i32, b: i32) i32 {
+                a + b;
+            }
+            pub fn main() void {
+                var result = add(5, 3);
+            }
+            '''
+        False
+        returncode, stdout, stderr = self.run_parser(code)
+        self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
+
+    def test_invalid_return_in_void(self):
+        """Test parser detects invalid return statement in void function"""
+        code = '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                return 42;
+            }
+            '''
+        False
+        returncode, stdout, stderr = self.run_parser(code)
+        self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
+
+    def test_voluntary_return_in_void(self):
+        """Test parser detects voluntary return in void function"""
+        code = '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                return;
+            }
+            '''
+        True
+        returncode, stdout, stderr = self.run_parser(code)
+        self.assertParserSuccess(returncode, stdout, stderr)
 
 if __name__ == '__main__':
     unittest.main(testRunner=SortedTestRunner(verbosity=2))
