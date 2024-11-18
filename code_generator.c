@@ -88,7 +88,7 @@ int generateFuncBody(ASTNode *node) {
     ASTNode *currentNode = node->left;
 
     while (currentNode != NULL) {
-        createParam(currentNode); // DEFVAR pro parametry MOV z TF do LF
+        generateParam(currentNode); // DEFVAR pro parametry MOV z TF do LF
         currentNode = currentNode->left;
     }
 
@@ -263,6 +263,14 @@ int generateExpression(ASTNode *node) {
         return INTERNAL_ERROR;
     }
 
+    return 0;
+}
+
+int generateParam(ASTNode *node) {
+    if (node == NULL) {
+        return INTERNAL_ERROR;
+    }
+    // TODO: generovani
     return 0;
 }
 
