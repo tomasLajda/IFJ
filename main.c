@@ -71,8 +71,13 @@ void printToken(Token *token) {
     case TOKEN_TYPE_ASSIGN:
         printf("Token is an ASSIGNMENT operator.\n");
         break;
-
+    case TOKEN_TYPE_VB:
+        printf("Token is a VERTICAL BAR ('|').\n");
+        break;
         // Add cases for other token types as needed
+    case TOKEN_TYPE_EOF:
+        printf("Token is EOF.\n");
+        break;
 
     default:
         printf("Token has no attribute or unrecognized type.\n");
@@ -414,7 +419,7 @@ void test_getNextToken() {
         var ct : []u8 = ifj.string(\"svete\");\
         ct = build(a, ct);\
         ifj.write(ct);\
-    }");
+    } |");
     rewind(testFile);
     sourceFile = testFile;
 
