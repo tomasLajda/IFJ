@@ -20,7 +20,6 @@ typedef struct Symbol {
     char *key;
     DataType type;
     bool function;
-    bool defined;
     bool constant;
     bool used;
     List *params;
