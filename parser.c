@@ -15,7 +15,6 @@
 Stack symbolStack;
 Symbol currentSymbol;
 ListData currentParam;
-bool isFuncDef = false;
 
 AST *ast = NULL;
 ASTNode *currentParent = NULL;
@@ -146,7 +145,6 @@ void parseFuncDef() {
                      currentToken);
     }
 
-    isFuncDef = true;
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         currentSymbol.key = currentToken->attribute.string;
     } else {
@@ -171,8 +169,6 @@ void parseFuncDef() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
     parseParams();
-
-    isFuncDef = false;
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' in function definition", SYNTAX_ERROR, currentToken);
@@ -230,7 +226,7 @@ void parseType() {
             isTokenKeyword(currentToken, KEYWORD_I_32_NULL) ||
             isTokenKeyword(currentToken, KEYWORD_F_64_NULL) ||
             isTokenKeyword(currentToken, KEYWORD_U_8_ARRAY_NULL)) {
-            if (isFuncDef) {
+            if (currentSymbol.function) {
                 currentParam.type = (DataType)currentToken->attribute.keyword;
                 if (listIsActive(currentSymbol.params)) {
                     listInsertFirst(currentSymbol.params, currentParam);
@@ -357,7 +353,7 @@ void parseStatement() {
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_DOT) {
-                HANDLE_ERROR("Unexpected token in built-in functin", SYNTAX_ERROR, currentToken);
+                HANDLE_ERROR("Unexpected token in built-in function", SYNTAX_ERROR, currentToken);
             }
             printTokenInfo(currentToken);
             getNextToken(currentToken);
