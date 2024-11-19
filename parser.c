@@ -321,11 +321,11 @@ void parseReturn() {
         exprNode->exprTree = exprTree;
         addRightNode(ast, currenParent, exprNode);
 
-        goBack(currenParent);
-
         printf("\n");
         displayAST(ast);
         printf("\n");
+
+        goBack(currenParent);
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
@@ -384,7 +384,6 @@ void parseStatements() {
     }
 
     if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
-        
         ASTNode *returnNode = initASTNode();
         returnNode->token = copyToken(currentToken);
         addRightNode(ast, currenParent, returnNode);
@@ -482,12 +481,27 @@ void parseVarDef() {
                      currentToken);
     }
 
+    ASTNode *varTypeNode = initASTNode();
+    varTypeNode->token = copyToken(currentToken);
+    addRightNode(ast, currenParent, varTypeNode);
+    currenParent = varTypeNode;
+    mainParent = varTypeNode;
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected variable identifier", SYNTAX_ERROR, currentToken);
     }
+
+    ASTNode *varIdNode = initASTNode();
+    varIdNode->token = copyToken(currentToken);
+    addLeftNode(ast, currenParent, varIdNode);
+    currenParent = varIdNode;
+
+    printf("\n");
+    displayAST(ast);
+    printf("\n");
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -511,18 +525,28 @@ void parseVarDef() {
         getNextToken(currentToken);
 
         if (!isTokenBuiltInFunction(currentToken)) {
-            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected built-in function after '.'", UNDEFINED_ERROR, currentToken);
         }
 
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseFuncCall();
     } else {
-        parseExpression(ast, currentToken);
+        AST *exprTree = initAST();
+        parseExpression(exprTree, currentToken);
+        exprTree->isExpression = true;
+        ASTNode *exprNode = initASTNode();
+        exprNode->exprTree = exprTree;
+        addRightNode(ast, currenParent, exprNode);
+        
+        displayASTNode(currenParent, 0, true);
+
+        printf("\n");
+        displayAST(ast);
+        printf("\n");
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR,
-                         currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
