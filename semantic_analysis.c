@@ -214,6 +214,28 @@ void statementAnalysis(ASTNode *node) {
     statementAnalysis(node->right);
 }
 
+void functionBodyAnalysis(ASTNode *node) {
+    if (node == NULL) {
+        return;
+    }
+
+    SymbolTable *table = malloc(sizeof(SymbolTable));
+    if (table == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    symbolTableInit(table, symbolTableTop(&symbolTableStack));
+    symbolTablePush(&symbolTableStack, table);
+
+    node = node->left;
+    returnType = (DataType)node->right->token->attribute.keyword;
+
+    node = node->left;
+    statementAnalysis(node->right);
+
+    symbolTableCheckUsed(table);
+    symbolTablePop(&symbolTableStack);
+}
+
 int semanticAnalysis() {
     SymbolTable *globalTable = malloc(sizeof(SymbolTable));
     if (globalTable == NULL) {
