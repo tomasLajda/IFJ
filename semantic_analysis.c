@@ -685,5 +685,4 @@ void semanticAnalysis() {
     statementAnalysis(ast->root->right);
 
     symbolTablePop(&symbolTableStack);
-    return 0;
 }
