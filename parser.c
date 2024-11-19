@@ -313,7 +313,8 @@ void parseReturn() {
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } else {
+    } 
+    else {
         AST *exprTree = initAST();
         parseExpression(exprTree, currentToken);
         exprTree->isExpression = true;
@@ -328,6 +329,7 @@ void parseReturn() {
         goBack(currenParent);
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            printTokenInfo(currentToken);
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
         }
         printTokenInfo(currentToken);
@@ -477,8 +479,7 @@ void parseStatement() {
 void parseVarDef() {
     if (!isTokenKeyword(currentToken, KEYWORD_VAR) &&
         !isTokenKeyword(currentToken, KEYWORD_CONST)) {
-        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR,
-                     currentToken);
+        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR, currentToken);
     }
 
     ASTNode *varTypeNode = initASTNode();
@@ -531,25 +532,33 @@ void parseVarDef() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseFuncCall();
-    } else {
+    } 
+    else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+        parseFuncCall();
+    }
+    else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
         parseExpression(exprTree, currentToken);
         exprTree->isExpression = true;
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
         addRightNode(ast, currenParent, exprNode);
-        
-        displayASTNode(currenParent, 0, true);
 
         printf("\n");
         displayAST(ast);
         printf("\n");
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            printTokenInfo(currentToken);
             HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
+    } 
+    else {
+        HANDLE_ERROR("Unexpected token in variable definition", SYNTAX_ERROR, currentToken);
     }
 }
 
@@ -591,12 +600,33 @@ void parseVarAss() {
         getNextToken(currentToken);
         parseFuncCall();
         return;
-    } else {
-        parseExpression(ast, currentToken);
     }
+    else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+        parseFuncCall();
+    }
+    else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+        AST *exprTree = initAST();
+        parseExpression(exprTree, currentToken);
+        exprTree->isExpression = true;
+        ASTNode *exprNode = initASTNode();
+        exprNode->exprTree = exprTree;
+        addRightNode(ast, currenParent, exprNode);
 
-    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-        HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR, currentToken);
+        printf("\n");
+        displayAST(ast);
+        printf("\n");
+
+        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            printTokenInfo(currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
+        }
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+    } 
+    else {
+        HANDLE_ERROR("Unexpected token in variable definition", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -615,7 +645,7 @@ void parseWhile() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
+    
     parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
@@ -802,7 +832,8 @@ void parseArgs() {
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } else {
+    } 
+    else {
         parseExpression(ast, currentToken);
     }
 
