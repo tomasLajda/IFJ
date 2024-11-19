@@ -13,7 +13,7 @@
 
 typedef struct Operand {
     DataType type;
-    bool variable;
+    bool compileTime;
 } Operand;
 
 /**
