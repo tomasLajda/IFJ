@@ -145,6 +145,19 @@ bool checkBuildInFunction(const char *key) {
            strcmp(key, "strcmp") == 0 || strcmp(key, "ord") == 0 || strcmp(key, "chr") == 0;
 }
 
+DataType convertNullableType(DataType type) {
+    switch (type) {
+    case TYPE_I_32_NULL:
+        return TYPE_I_32;
+    case TYPE_F_64_NULL:
+        return TYPE_F_64;
+    case TYPE_U_8_ARRAY_NULL:
+        return TYPE_U_8_ARRAY;
+    default:
+        return type;
+    }
+}
+
 void functionParameterAnalysis() {
     if (currentNode == NULL) {
         return;
@@ -294,6 +307,14 @@ void ifAnalysis(ASTNode *node) {
     // TODO add null set variable
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_NULL_COND) {
+        if (!checkDeclaration(symbolTableTop(&symbolTableStack),
+                              node->right->token->attribute.string)) {
+            HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
+        }
+        symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
+                        true, true);
+        currentSymbol.compileTime = false;
+
         nullCond = true;
         node = node->left;
     }
@@ -308,9 +329,24 @@ void ifAnalysis(ASTNode *node) {
         if (type == TYPE_NULL || !isNullableType(type)) {
             HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
         }
+
+        currentSymbol.type = convertNullableType(type);
+        symbolTableInsert(table, currentSymbol);
+        symbolResetValues(&currentSymbol);
     }
 
     statementAnalysis(node->left);
+
+    symbolTableCheckUsed(table);
+    symbolTablePop(&symbolTableStack);
+
+    table = malloc(sizeof(SymbolTable));
+    if (table == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    symbolTableInit(table, symbolTableTop(&symbolTableStack));
+    symbolTablePush(&symbolTableStack, table);
+
     statementAnalysis(node->right);
 
     symbolTableCheckUsed(table);
@@ -327,9 +363,16 @@ void whileAnalysis(ASTNode *node) {
 
     node = node->left;
 
-    // TODO add null set variable
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_NULL_COND) {
+        if (!checkDeclaration(symbolTableTop(&symbolTableStack),
+                              node->right->token->attribute.string)) {
+            HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
+        }
+        symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
+                        true, true);
+        currentSymbol.compileTime = false;
+
         nullCond = true;
         node = node->left;
     }
@@ -344,6 +387,10 @@ void whileAnalysis(ASTNode *node) {
         if (type == TYPE_NULL || !isNullableType(type)) {
             HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
         }
+
+        currentSymbol.type = convertNullableType(type);
+        symbolTableInsert(table, currentSymbol);
+        symbolResetValues(&currentSymbol);
     }
 
     statementAnalysis(node->left);
