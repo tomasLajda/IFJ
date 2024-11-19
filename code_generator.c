@@ -166,7 +166,25 @@ int processNode(ASTNode *node) {
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
                 // TODO: nullable if
                 labelCounter++;
+                ADD_TO_BUFFER("DEFVAR LF@\n");
+                ADD_TO_BUFFER(node->left->right->token->attribute.string);
                 ASTNode *conditionNode = node->left->left;
+                generateExpression(conditionNode->exprTree->root);
+                // expression result is on top of the data stack
+                ADD_TO_BUFFER("PUSHS nil@nil\n");
+                ADD_TO_BUFFER("JUMPIFEQS ");
+                addLabelToBuffer("NULL_if", "false");
+                ADD_TO_BUFFER("MOVE LF@");
+                ADD_TO_BUFFER(node->left->right->token->attribute.string);
+                ADD_TO_BUFFER(" LF@");
+                // todo: kontrola
+                ADD_TO_BUFFER(conditionNode->exprTree->root->token->attribute.string);
+                processNode(conditionNode->left); // true
+                ADD_TO_BUFFER("JUMP ");
+                addLabelToBuffer("NULL_if", "end");
+                addLabelToBuffer("NULL_if", "false");
+                processNode(conditionNode->right); // false
+                addLabelToBuffer("NULL_if", "end");
 
             } else {
                 // normal if
@@ -174,7 +192,7 @@ int processNode(ASTNode *node) {
                 ASTNode *conditionNode = node->left;
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
-                ADD_TO_BUFFER("PUSHS bool@false");
+                ADD_TO_BUFFER("PUSHS bool@false\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
                 addLabelToBuffer("if", "false");
                 processNode(conditionNode->left); // true
@@ -197,7 +215,7 @@ int processNode(ASTNode *node) {
                 addLabelToBuffer("while", "start");
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
-                ADD_TO_BUFFER("PUSHS bool@false");
+                ADD_TO_BUFFER("PUSHS bool@false\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
                 addLabelToBuffer("while", "end");
                 processNode(conditionNode->left); // while body
