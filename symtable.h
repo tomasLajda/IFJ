@@ -47,12 +47,6 @@ typedef struct SymbolTable {
  * @param table Pointer to the symbol table to be initialized.
  * @param previousTable Pointer to the previous symbol table.
  */
-/**
- * @brief Initializes the symbol table.
- *
- * @param table Pointer to the symbol table to be initialized.
- * @param previousTable Pointer to the previous symbol table.
- */
 void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
 
 /**
