@@ -24,6 +24,11 @@ bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType
     return symbol != NULL && symbol->type == valueType;
 }
 
+DataType getVariableType(SymbolTable *table, const char *key) {
+    Symbol *symbol = symbolTableGetSymbol(table, key);
+    return symbol->type;
+}
+
 bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
                             unsigned parameterIndex) {
     Symbol *symbol = symbolTableGetSymbol(table, key);
@@ -189,15 +194,12 @@ void statementAnalysis(ASTNode *node) {
         break;
 
     case KEYWORD_CONST:
-
-        break;
-
-    case KEYWORD_VAR:
-
+    KEYWORD_VAR:
+        variableDefinitionAnalysis(node);
         break;
 
     case KEYWORD_UNDERSCORE:
-
+        variableAssignmentAnalysis(node);
         break;
 
     case KEYWORD_RETURN:
@@ -206,7 +208,7 @@ void statementAnalysis(ASTNode *node) {
 
     default:
         if (node->isAssignment) {
-
+            variableAssignmentAnalysis(node);
         } else {
         }
         break;
@@ -278,6 +280,51 @@ void whileAnalysis(ASTNode *node) {
 
     symbolTableCheckUsed(table);
     symbolTablePop(&symbolTableStack);
+}
+
+void variableDefinitionAnalysis(ASTNode *node) {
+    if (node->token->attribute.keyword == KEYWORD_CONST) {
+        currentSymbol.constant = true;
+    } else {
+        currentSymbol.constant = false;
+    }
+
+    node = node->left;
+    currentSymbol.key = node->token->attribute.string;
+    // TODO check type properly when we have to infer it
+    if (node->left != NULL) {
+        currentSymbol.type = (DataType)node->left->token->attribute.keyword;
+    } else {
+        currentSymbol.type = TYPE_ANY;
+    }
+
+    if (checkDeclaration(symbolTableTop(&symbolTableStack), currentSymbol.key)) {
+        HANDLE_ERROR("Variable redefinition", REDEFINITION_ERROR);
+    }
+
+    node = node->right;
+
+    // TODO add ast analysis
+
+    symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
+    symbolResetValues(&currentSymbol);
+}
+
+void variableAssignmentAnalysis(ASTNode *node) {
+    DataType valueType = TYPE_ANY;
+
+    if (node->token->type != TOKEN_TYPE_KEYWORD) {
+        if (!checkDeclaration(symbolTableTop(&symbolTableStack), node->token->attribute.string)) {
+            HANDLE_ERROR("Variable not defined", UNDEFINED_ERROR);
+        }
+
+        valueType =
+            getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
+    }
+
+    node = node->left;
+
+    // TODO add ast analysis
 }
 
 int semanticAnalysis() {
