@@ -11,6 +11,11 @@
 
 #include "symtable.h"
 
+typedef struct Operand {
+    DataType type;
+    bool variable;
+} Operand;
+
 /**
  * @brief Check if a symbol is declared in the symbol table.
  *

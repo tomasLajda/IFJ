@@ -354,6 +354,48 @@ void functionCallAnalysis(ASTNode *node) {
     }
 }
 
+Operand determineNextOperand(Operand left, Operand right) {
+    Operand result;
+
+    return result;
+}
+
+Operand expressionAnalysis(ASTNode *node) {
+    if (node == NULL) {
+        HANDLE_ERROR("Expression is NULL", INTERNAL_ERROR);
+    }
+
+    if (node->left == NULL && node->right == NULL) {
+        if (node->token->type == TOKEN_TYPE_IDENTIFIER) {
+            if (!checkDeclaration(symbolTableTop(&symbolTableStack),
+                                  node->token->attribute.string)) {
+                HANDLE_ERROR("Variable not defined", UNDEFINED_ERROR);
+            }
+
+            return (Operand){.type = getVariableType(symbolTableTop(&symbolTableStack),
+                                                     node->token->attribute.string),
+                             .variable = true};
+        }
+
+        if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
+            return (Operand){.type = TYPE_I_32, .variable = false};
+        }
+
+        if (node->token->type == TOKEN_TYPE_DOUBLE_VALUE) {
+            return (Operand){.type = TYPE_F_64, .variable = false};
+        }
+
+        if (node->token->type == TOKEN_TYPE_STRING_VALUE) {
+            return (Operand){.type = TYPE_U_8_ARRAY, .variable = false};
+        }
+    }
+
+    Operand leftType = expressionAnalysis(node->left);
+    Operand rightType = expressionAnalysis(node->right);
+
+    return determineNextOperand(leftType, rightType);
+}
+
 int semanticAnalysis() {
     SymbolTable *globalTable = malloc(sizeof(SymbolTable));
     if (globalTable == NULL) {
@@ -375,7 +417,7 @@ int semanticAnalysis() {
     currentNode = ast->root->right;
     constructNode = ast->root->right;
 
-    // Functions are in the global scope
+    // Adds functions to the global scope
     functionAnalysis();
 
     if (!checkFunctionDefined(globalTable, "main")) {
