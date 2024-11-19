@@ -43,42 +43,6 @@ IFJ project
     "LABEL $IFJ24_write\n"                                                                         \
     "PUSHFRAME\n"                                                                                  \
     "DEFVAR LF@type\n"                                                                             \
-    "DEFVAR LF@value\n"                                                                            \
-    "MOVE LF@value TF@0\n"                                                                         \
-    "TYPE LF@type LF@value\n"                                                                      \
-    "JUMPIFEQ $write_int LF@type string@int\n"                                                     \
-    "JUMPIFEQ $write_float LF@type string@float\n"                                                 \
-    "JUMPIFEQ $write_string LF@type string@string\n"                                               \
-    "JUMPIFEQ $write_bool LF@type string@bool\n"                                                   \
-    "JUMPIFEQ $write_null LF@type string@nil\n"                                                    \
-    "LABEL $write_int\n"                                                                           \
-    "WRITE LF@value\n"                                                                             \
-    "JUMP $write_end\n"                                                                            \
-    "LABEL $write_float\n"                                                                         \
-    "WRITE LF@value\n"                                                                             \
-    "JUMP $write_end\n"                                                                            \
-    "LABEL $write_string\n"                                                                        \
-    "WRITE LF@value\n"                                                                             \
-    "JUMP $write_end\n"                                                                            \
-    "LABEL $write_bool\n"                                                                          \
-    "JUMPIFEQ $write_bool_true LF@value bool@true\n"                                               \
-    "WRITE string@false\n"                                                                         \
-    "JUMP $write_end\n"                                                                            \
-    "LABEL $write_bool_true\n"                                                                     \
-    "WRITE string@true\n"                                                                          \
-    "JUMP $write_end\n"                                                                            \
-    "LABEL $write_null\n"                                                                          \
-    "WRITE string@null\n"                                                                          \
-    "JUMP $write_end\n"                                                                            \
-    "LABEL $write_end\n"                                                                           \
-    "POPFRAME\n"                                                                                   \
-    "RETURN\n"
-
-#define BUILT_IN_FUNCTION_WRITE                                                                    \
-    "# Built-in function write\n"                                                                  \
-    "LABEL $IFJ24_write\n"                                                                         \
-    "PUSHFRAME\n"                                                                                  \
-    "DEFVAR LF@type\n"                                                                             \
     "TYPE LF@type LF@value\n"                                                                      \
     "JUMPIFEQ $write_int LF@type string@int\n"                                                     \
     "JUMPIFEQ $write_float LF@type string@float\n"                                                 \
