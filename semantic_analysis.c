@@ -13,7 +13,7 @@ extern AST *ast;
 Stack symbolTableStack;
 Symbol currentSymbol;
 ListData currentParameter;
-DataType currentType;
+DataType returnType;
 ASTNode *currentNode;
 ASTNode *constructNode;
 
@@ -170,6 +170,50 @@ void functionAnalysis() {
     functionAnalysis();
 }
 
+void statementAnalysis(ASTNode *node) {
+    if (node == NULL) {
+        return;
+    }
+
+    switch (node->token->attribute.keyword) {
+    case KEYWORD_PUB:
+        functionBodyAnalysis(node);
+        break;
+
+    case KEYWORD_IF:
+        break;
+
+    case KEYWORD_WHILE:
+
+        break;
+
+    case KEYWORD_CONST:
+
+        break;
+
+    case KEYWORD_VAR:
+
+        break;
+
+    case KEYWORD_UNDERSCORE:
+
+        break;
+
+    case KEYWORD_RETURN:
+
+        break;
+
+    default:
+        if (node->isAssignment) {
+
+        } else {
+        }
+        break;
+    }
+
+    statementAnalysis(node->right);
+}
+
 int semanticAnalysis() {
     SymbolTable *globalTable = malloc(sizeof(SymbolTable));
     if (globalTable == NULL) {
@@ -191,12 +235,15 @@ int semanticAnalysis() {
     currentNode = ast->root->right;
     constructNode = ast->root->right;
 
+    // Functions are in the global scope
     functionAnalysis();
 
     if (!checkFunctionDefined(globalTable, "main")) {
         HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
     }
-    symbolTablePop(&symbolTableStack);
 
+    statementAnalysis(ast->root->right);
+
+    symbolTablePop(&symbolTableStack);
     return 0;
 }
