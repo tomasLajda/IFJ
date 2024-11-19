@@ -248,6 +248,35 @@ int processNode(ASTNode *node) {
                 generateFuncCall(node);
             }
 
+        } else if (node->token->attribute.keyword == KEYWORD_RETURN) {
+            generateExpression(node->exprTree->root);
+            ADD_TO_BUFFER("POPS LF@%%retval\n");
+        } else if (node->token->attribute.keyword == KEYWORD_WRITE) {
+            // TODO: generate built-in ifj.write
+        } else if (node->token->attribute.keyword == KEYWORD_READSTR) {
+            // TODO: generate built-in ifj.readstr
+        } else if (node->token->attribute.keyword == KEYWORD_READI32) {
+            // TODO: generate built-in ifj.readi32
+        } else if (node->token->attribute.keyword == KEYWORD_READF64) {
+            // TODO: generate built-in ifj.readf64
+        } else if (node->token->attribute.keyword == KEYWORD_STRING) {
+            // TODO: generate built-in ifj.string
+        } else if (node->token->attribute.keyword == KEYWORD_LENGTH) {
+            // TODO: generate built-in ifj.length
+        } else if (node->token->attribute.keyword == KEYWORD_CONCAT) {
+            // TODO: generate built-in ifj.concat
+        } else if (node->token->attribute.keyword == KEYWORD_SUBSTRING) {
+            // TODO: generate built-in ifj.substring
+        } else if (node->token->attribute.keyword == KEYWORD_STRCMP) {
+            // TODO: generate built-in ifj.strcmp
+        } else if (node->token->attribute.keyword == KEYWORD_ORD) {
+            // TODO: generate built-in ifj.ord
+        } else if (node->token->attribute.keyword == KEYWORD_CHR) {
+            // TODO: generate built-in ifj.chr
+        } else if (node->token->attribute.keyword == KEYWORD_I2F) {
+            // TODO: generate built-in ifj.i2f
+        } else if (node->token->attribute.keyword == KEYWORD_F2I) {
+            // TODO: generate built-in ifj.f2i
         } else {
             // TODO: Skip VARDEF and continue with the next node
         }
