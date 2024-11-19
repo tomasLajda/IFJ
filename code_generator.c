@@ -17,7 +17,17 @@ int labelCounter = 0;
 int expressionCounter = 0;
 int tempVarCounter = 0;
 
-addFloatToBuffer(float value) {
+void addLabelToBuffer(const char *labelType, const char *suffix) {
+    // Static buffer for label
+    char label[100]; // enough space for label
+
+    // Construct label name in the format $<labelType>_<suffix>_<labelCounter>
+    snprintf(label, sizeof(label), "$%s_%s_%d\n", labelType, suffix, labelCounter);
+
+    ADD_TO_BUFFER(label);
+}
+
+void addFloatToBuffer(float value) {
     ADD_TO_BUFFER("float@");
     int enoughSpaceForDouble = 64;
     char doubleStr[enoughSpaceForDouble];
@@ -26,7 +36,7 @@ addFloatToBuffer(float value) {
     ADD_TO_BUFFER(" \n");
 }
 
-addIntToBuffer(int value) {
+void addIntToBuffer(int value) {
     ADD_TO_BUFFER("int@");
     int enoughSpaceForInt = (int)((ceil(log10(value)) + 1) * sizeof(char));
     char intStr[enoughSpaceForInt];
