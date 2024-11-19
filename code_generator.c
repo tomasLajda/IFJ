@@ -169,23 +169,20 @@ int processNode(ASTNode *node) {
                 ASTNode *conditionNode = node->left->left;
 
             } else {
-                // TODO: normal if
+                // normal if
                 labelCounter++;
                 ASTNode *conditionNode = node->left;
                 generateExpression(conditionNode->exprTree->root);
-                // na datovem zasobniku je vysledek vyrazu
+                // expression result is on top of the data stack
                 ADD_TO_BUFFER("PUSHS bool@false");
                 ADD_TO_BUFFER("JUMPIFEQS ");
                 addLabelToBuffer("if", "false");
-                // ADD_TO_BUFFER("\n");
                 processNode(conditionNode->left); // true
                 ADD_TO_BUFFER("JUMP ");
                 addLabelToBuffer("if", "end");
-                // ADD_TO_BUFFER("\n");
                 addLabelToBuffer("if", "false");
                 processNode(conditionNode->right); // false
                 addLabelToBuffer("if", "end");
-                // ADD_TO_BUFFER("\n");
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
