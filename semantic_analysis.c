@@ -9,7 +9,7 @@
 #include "semantic_analysis.h"
 #include "ast.h"
 
-extern AST *ast;
+extern AST ast;
 Stack symbolTableStack;
 Symbol currentSymbol;
 ListData currentParameter;
@@ -32,6 +32,11 @@ DataType getVariableType(SymbolTable *table, const char *key) {
 bool checkVariableConstant(SymbolTable *table, const char *key) {
     Symbol *symbol = symbolTableGetSymbol(table, key);
     return symbol != NULL && symbol->constant;
+}
+
+bool checkVariableCompileTime(SymbolTable *table, const char *key) {
+    Symbol *symbol = symbolTableGetSymbol(table, key);
+    return symbol != NULL && symbol->compileTime;
 }
 
 bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
@@ -139,6 +144,7 @@ void functionAnalysis() {
     currentSymbol.function = true;
     currentSymbol.constant = true;
     currentSymbol.used = true;
+    currentSymbol.compileTime = false;
 
     constructNode = constructNode->left;
     currentNode = constructNode->right;
@@ -199,7 +205,7 @@ void statementAnalysis(ASTNode *node) {
         break;
 
     case KEYWORD_CONST:
-    KEYWORD_VAR:
+    case KEYWORD_VAR:
         variableDefinitionAnalysis(node);
         break;
 
@@ -364,10 +370,78 @@ void functionCallAnalysis(ASTNode *node) {
     }
 }
 
-Operand determineNextOperand(Operand left, Operand right) {
-    Operand result;
+bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
 
-    return result;
+bool isEqualOperator(TokenType operator) {
+    return operator== TOKEN_TYPE_EQ || operator== TOKEN_TYPE_NEQ;
+}
+
+bool isRelationalOperator(TokenType operator) {
+    return operator== TOKEN_TYPE_LTH || operator== TOKEN_TYPE_LEQ || operator==
+        TOKEN_TYPE_GTH || operator== TOKEN_TYPE_GEQ || operator== TOKEN_TYPE_EQ || operator==
+        TOKEN_TYPE_NEQ;
+}
+
+Operand determineNextOperand(Operand left, Operand right, TokenType operator) {
+    Operand result;
+    result.compileTime = left.compileTime && right.compileTime;
+
+    switch (left.type) {
+    case TYPE_I_32:
+        if (right.type == TYPE_I_32) {
+            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_I_32;
+            return result;
+        }
+
+        if (right.type == TYPE_F_64 && !left.compileTime) {
+            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
+            return result;
+        }
+        break;
+
+    case TYPE_F_64:
+        if (right.type == TYPE_F_64) {
+            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
+            return result;
+        }
+
+        if (right.type == TYPE_I_32 && !right.compileTime) {
+            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
+            return result;
+        }
+        break;
+
+    case TYPE_I_32_NULL:
+    case TYPE_F_64_NULL:
+    case TYPE_U_8_ARRAY_NULL:
+        if (right.type == TYPE_NULL && isEqualOperator(operator)) {
+            result.type = TYPE_BOOL;
+            return result;
+        }
+        break;
+
+    case TYPE_BOOL:
+        if (right.type == TYPE_BOOL && isEqualOperator(operator)) {
+            result.type = TYPE_BOOL;
+            return result;
+        }
+        break;
+
+    case TYPE_NULL:
+        if ((right.type == TYPE_NULL || right.type == TYPE_I_32_NULL ||
+             right.type == TYPE_F_64_NULL || right.type == TYPE_U_8_ARRAY_NULL) &&
+            isEqualOperator(operator)) {
+            result.type = TYPE_NULL;
+            return result;
+        }
+        break;
+
+    default:
+        HANDLE_ERROR("Invalid type", INTERNAL_ERROR);
+        break;
+    }
+
+    HANDLE_ERROR("Incompatible types", TYPE_COMPATIBILITY_ERROR);
 }
 
 Operand expressionAnalysis(ASTNode *node) {
@@ -384,26 +458,36 @@ Operand expressionAnalysis(ASTNode *node) {
 
             return (Operand){.type = getVariableType(symbolTableTop(&symbolTableStack),
                                                      node->token->attribute.string),
-                             .variable = true};
+                             .compileTime = checkVariableCompileTime(
+                                 symbolTableTop(&symbolTableStack), node->token->attribute.string)};
         }
 
         if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
-            return (Operand){.type = TYPE_I_32, .variable = false};
+            return (Operand){.type = TYPE_I_32, .compileTime = true};
         }
 
         if (node->token->type == TOKEN_TYPE_DOUBLE_VALUE) {
-            return (Operand){.type = TYPE_F_64, .variable = false};
+            return (Operand){.type = TYPE_F_64, .compileTime = true};
         }
 
         if (node->token->type == TOKEN_TYPE_STRING_VALUE) {
-            return (Operand){.type = TYPE_U_8_ARRAY, .variable = false};
+            return (Operand){.type = TYPE_U_8_ARRAY, .compileTime = true};
         }
+
+        if (node->token->type == TOKEN_TYPE_KEYWORD &&
+            node->token->attribute.keyword == KEYWORD_NULL) {
+            return (Operand){.type = TYPE_NULL, .compileTime = true};
+        }
+
+        HANDLE_ERROR("Invalid token type", INTERNAL_ERROR);
     }
 
     Operand leftType = expressionAnalysis(node->left);
     Operand rightType = expressionAnalysis(node->right);
 
-    return determineNextOperand(leftType, rightType);
+    TokenType operator= node->token->type;
+
+    return determineNextOperand(leftType, rightType, operator);
 }
 
 int semanticAnalysis() {
@@ -420,12 +504,12 @@ int semanticAnalysis() {
     symbolTableInsert(globalTable, currentSymbol);
     symbolResetValues(&currentSymbol);
 
-    if (ast == NULL) {
+    if (ast.root == NULL) {
         HANDLE_ERROR("AST is NULL", INTERNAL_ERROR);
     }
 
-    currentNode = ast->root->right;
-    constructNode = ast->root->right;
+    currentNode = ast.root->right;
+    constructNode = ast.root->right;
 
     // Adds functions to the global scope
     functionAnalysis();
@@ -434,7 +518,7 @@ int semanticAnalysis() {
         HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
     }
 
-    statementAnalysis(ast->root->right);
+    statementAnalysis(ast.root->right);
 
     symbolTablePop(&symbolTableStack);
     return 0;
