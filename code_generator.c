@@ -53,14 +53,17 @@ int generateCode(FILE *outputFile, AST *ast) {
 
     // Traverse all nodes to the right of the root - functions and generate code for them
     ASTNode *currentNode = ast->root;
+    // currentnode - pub
+    // currentnode->left - fn
+    // currentnode->left->left - function name
     while (currentNode != NULL) {
-        if (currentNode->left->token->attribute.string == "main") {
+        if (currentNode->left->left->token->attribute.string == "main") {
             mainStart();
-            generateFuncBody(currentNode->left);
+            generateFuncBody(currentNode->left->left);
             mainEnd();
         } else {
             functionStart(currentNode->left->token->attribute.string);
-            generateFuncBody(currentNode->left);
+            generateFuncBody(currentNode->left->left);
             functionEnd(currentNode->left->token->attribute.string);
         }
 
@@ -106,7 +109,7 @@ int generateFuncBody(ASTNode *node) {
     ASTNode *currentNode = node->left;
     int paramID = 0;
     while (currentNode != NULL) {
-        generateParam(currentNode, paramID); // DEFVAR pro parametry MOV z TF do LF
+        generateParam(currentNode, paramID);
         currentNode = currentNode->right;
         paramID++;
     }
@@ -184,6 +187,12 @@ int processNode(ASTNode *node) {
             // processNode(conditionNode.left); // while body
             // ADD_TO_BUFFER("JUMP $while_start_lbl_counter\n");
             // ADD_TO_BUFFER("$while_end_lbl_counter\n");
+        } else if (node->token->attribute.keyword == KEYWORD_UNDERSCORE) {
+            // generate function call otherwise do nothing
+            if (node->isAssignment == false) {
+                generateFuncCall(node);
+            }
+
         } else {
             // TODO: Skip VARDEF and continue with the next node
         }
@@ -304,17 +313,20 @@ int generateFuncCall(ASTNode *node) {
     ADD_TO_BUFFER("CREATEFRAME\n");
     ADD_TO_BUFFER("DEFVAR TF@%%retval\n");
 
+    int paramID = 0;
     // generate parameters
     ASTNode *currentNode = node->left;
     // currentNode - each parameter
     while (currentNode != NULL) {
         // TODO u defvaru pouzit unikatni jmeno?
         ADD_TO_BUFFER("DEFVAR TF@%%arg");
-        // ADD_TO_BUFFER(uniqueID);
+        addIntToBuffer(paramID);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("MOVE TF@%%arg");
-        // ADD_TO_BUFFER(uniqueID);
+        addIntToBuffer(paramID);
         ADD_TO_BUFFER(" ");
+
+        paramID++;
 
         TokenType currentType = currentNode->exprTree->root->token->type;
 
@@ -349,8 +361,8 @@ int generateParam(ASTNode *node, int paramID) {
     ADD_TO_BUFFER("\n");
     ADD_TO_BUFFER("MOVE LF@");
     ADD_TO_BUFFER(paramName);
-    ADD_TO_BUFFER(" LF@");
-    // ADD_TO_BUFFER(argID);
+    ADD_TO_BUFFER(" LF@%%arg");
+    addIntToBuffer(paramID);
     ADD_TO_BUFFER("\n");
     return 0;
 }
