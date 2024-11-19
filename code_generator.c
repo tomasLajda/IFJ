@@ -252,13 +252,26 @@ int processNode(ASTNode *node) {
             generateExpression(node->exprTree->root);
             ADD_TO_BUFFER("POPS LF@%%retval\n");
         } else if (node->token->attribute.keyword == KEYWORD_WRITE) {
-            // TODO: generate built-in ifj.write
+            ADD_TO_BUFFER("CREATEFRAME\n");
+            ADD_TO_BUFFER("DEFVAR TF@value\n");
+            generateExpression(node->left);
+            ADD_TO_BUFFER("POPS TF@value\n");
+            ADD_TO_BUFFER("CALL $IFJ24_write\n");
         } else if (node->token->attribute.keyword == KEYWORD_READSTR) {
-            // TODO: generate built-in ifj.readstr
+            ADD_TO_BUFFER("CREATEFRAME\n");
+            ADD_TO_BUFFER("DEFVAR TF@type\n");
+            ADD_TO_BUFFER("MOVE TF@type string@string\n");
+            ADD_TO_BUFFER("CALL $IFJ24_read\n");
         } else if (node->token->attribute.keyword == KEYWORD_READI32) {
-            // TODO: generate built-in ifj.readi32
+            ADD_TO_BUFFER("CREATEFRAME\n");
+            ADD_TO_BUFFER("DEFVAR TF@type\n");
+            ADD_TO_BUFFER("MOVE TF@type string@int\n");
+            ADD_TO_BUFFER("CALL $IFJ24_read\n");
         } else if (node->token->attribute.keyword == KEYWORD_READF64) {
-            // TODO: generate built-in ifj.readf64
+            ADD_TO_BUFFER("CREATEFRAME\n");
+            ADD_TO_BUFFER("DEFVAR TF@type\n");
+            ADD_TO_BUFFER("MOVE TF@type string@float\n");
+            ADD_TO_BUFFER("CALL $IFJ24_read\n");
         } else if (node->token->attribute.keyword == KEYWORD_STRING) {
             // TODO: generate built-in ifj.string
         } else if (node->token->attribute.keyword == KEYWORD_LENGTH) {
