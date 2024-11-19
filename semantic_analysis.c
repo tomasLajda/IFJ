@@ -203,7 +203,7 @@ void statementAnalysis(ASTNode *node) {
         break;
 
     case KEYWORD_RETURN:
-
+        returnAnalysis(node);
         break;
 
     default:
@@ -325,6 +325,16 @@ void variableAssignmentAnalysis(ASTNode *node) {
     node = node->left;
 
     // TODO add ast analysis
+}
+
+void returnAnalysis(ASTNode *node) {
+    if (node->exprTree == NULL) {
+        if (returnType != TYPE_VOID) {
+            HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
+        }
+    } else {
+        // TODO add ast analysis
+    }
 }
 
 int semanticAnalysis() {
