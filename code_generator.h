@@ -354,4 +354,11 @@ void addFloatToBuffer(double num);
  */
 void addLabelToBuffer(const char *labelType, const char *suffix);
 
+/**
+ * @brief Generates code for a built-in function call.
+ *
+ * @param node A pointer to the AST node representing the built-in function call.
+ */
+void builtInFuncCall(ASTNode *node);
+
 #endif
