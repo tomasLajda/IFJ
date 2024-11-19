@@ -181,10 +181,11 @@ void statementAnalysis(ASTNode *node) {
         break;
 
     case KEYWORD_IF:
+        ifAnalysis(node);
         break;
 
     case KEYWORD_WHILE:
-
+        whileAnalysis(node);
         break;
 
     case KEYWORD_CONST:
@@ -215,10 +216,6 @@ void statementAnalysis(ASTNode *node) {
 }
 
 void functionBodyAnalysis(ASTNode *node) {
-    if (node == NULL) {
-        return;
-    }
-
     SymbolTable *table = malloc(sizeof(SymbolTable));
     if (table == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
@@ -237,10 +234,6 @@ void functionBodyAnalysis(ASTNode *node) {
 }
 
 void ifAnalysis(ASTNode *node) {
-    if (node == NULL) {
-        return;
-    }
-
     SymbolTable *table = malloc(sizeof(SymbolTable));
     if (table == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
@@ -250,6 +243,7 @@ void ifAnalysis(ASTNode *node) {
 
     node = node->left;
 
+    // TODO add null set variable
     if (node->token->type == TOKEN_TYPE_KEYWORD && node->token->attribute.keyword == KEYWORD_NULL) {
         node = node->left;
     }
@@ -258,6 +252,29 @@ void ifAnalysis(ASTNode *node) {
 
     statementAnalysis(node->left);
     statementAnalysis(node->right);
+
+    symbolTableCheckUsed(table);
+    symbolTablePop(&symbolTableStack);
+}
+
+void whileAnalysis(ASTNode *node) {
+    SymbolTable *table = malloc(sizeof(SymbolTable));
+    if (table == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    symbolTableInit(table, symbolTableTop(&symbolTableStack));
+    symbolTablePush(&symbolTableStack, table);
+
+    node = node->left;
+
+    // TODO add null set variable
+    if (node->token->type == TOKEN_TYPE_KEYWORD && node->token->attribute.keyword == KEYWORD_NULL) {
+        node = node->left;
+    }
+
+    // TODO add ast analysis
+
+    statementAnalysis(node->left);
 
     symbolTableCheckUsed(table);
     symbolTablePop(&symbolTableStack);
