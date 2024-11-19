@@ -5,7 +5,7 @@
  * @author Martin Valapka - xvalapm00
  */
 
-// TODO: BUILT-IN FUNCTIONS, AST, GOBACK FUNCTION
+// TODO: BUILT-IN FUNCTIONS, AST, _ = ifj.write("string"), FUNCCALL to AST
 
 #include "parser.h"
 #include "testing_utils.h"
@@ -38,6 +38,7 @@ void goBack(ASTNode *startNode) {
              isTokenKeyword(currentNode->token, KEYWORD_PUB))) {
             currenParent = currentNode;
             mainParent = currentNode;
+            break;
         }
         ASTNode *parentNode = currentNode->parent;
         currentNode = parentNode;
@@ -645,7 +646,7 @@ void parseWhile() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-    
+
     parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
