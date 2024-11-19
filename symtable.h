@@ -22,6 +22,7 @@ typedef struct Symbol {
     bool function;
     bool constant;
     bool used;
+    bool compileTime;
     List *params;
 } Symbol;
 
