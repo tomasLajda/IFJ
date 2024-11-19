@@ -27,7 +27,7 @@ void addLabelToBuffer(const char *labelType, const char *suffix) {
     ADD_TO_BUFFER(label);
 }
 
-void addFloatToBuffer(float value) {
+void addFloatToBuffer(double value) {
     ADD_TO_BUFFER("float@");
     int enoughSpaceForDouble = 64;
     char doubleStr[enoughSpaceForDouble];
@@ -166,8 +166,9 @@ int processNode(ASTNode *node) {
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
                 // TODO: nullable if
                 labelCounter++;
-                ADD_TO_BUFFER("DEFVAR LF@\n");
+                ADD_TO_BUFFER("DEFVAR LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
+                ADD_TO_BUFFER("\n");
                 ASTNode *conditionNode = node->left->left;
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
@@ -208,6 +209,20 @@ int processNode(ASTNode *node) {
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
                 // TODO: nullable while
                 labelCounter++;
+                ADD_TO_BUFFER("DEFVAR LF@");
+                ADD_TO_BUFFER(node->left->right->token->attribute.string);
+                ADD_TO_BUFFER("\n");
+                ASTNode *conditionNode = node->left->left;
+                addLabelToBuffer("NULL_while", "start");
+                generateExpression(conditionNode->exprTree->root);
+                // expression result is on top of the data stack
+                ADD_TO_BUFFER("PUSHS nil@nil\n");
+                ADD_TO_BUFFER("JUMPIFEQS ");
+                addLabelToBuffer("NULL_while", "end");
+                processNode(conditionNode->left); // while body
+                ADD_TO_BUFFER("JUMP ");
+                addLabelToBuffer("NULL_while", "start");
+                addLabelToBuffer("NULL_while", "end");
             } else {
                 // normal while
                 labelCounter++;
