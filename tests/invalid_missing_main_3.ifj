@@ -1,0 +1,7 @@
+const ifj = @import("ifj24.zig");
+
+// No main function defined
+pub fn someFunction() void {
+    ifj.write("This program is invalid.\n");
+}
+// Error: Missing main function (Error 3)

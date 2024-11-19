@@ -1,0 +1,19 @@
+const ifj = @import("ifj24.zig");
+
+pub fn decrement(n: i32, m: i32) i32 {
+    return n - m;
+}
+
+pub fn factorial(n: i32) i32 {
+    if (n < 2) {
+        return 1;
+    }
+    return n * factorial(decrement(n, 1));
+}
+
+pub fn main() void {
+    const n: i32 = 5;
+    const result: i32 = factorial(n);
+    ifj.write("Faktorial: "); ifj.write(result); ifj.write("\n");
+}
+// Error function in expression (Error 2)

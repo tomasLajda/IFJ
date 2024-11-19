@@ -1,0 +1,7 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void {
+    var x: i32 = 10;
+    x = "string"; // Invalid assignment, type mismatch
+}
+// Error: Type mismatch in assignment (Error 7)

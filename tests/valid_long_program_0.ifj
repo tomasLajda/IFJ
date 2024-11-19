@@ -1,0 +1,38 @@
+const ifj = @import("ifj24.zig");
+
+pub fn power(base: i32, exponent: i32) i32 {
+    var result: i32 = 1;
+    var exp: i32 = exponent;
+
+    while (exp > 0) {
+        result = result * base;
+        exp = exp - 1;
+    }
+
+    return result;
+}
+
+pub fn reverseString(str: []u8) []u8 {
+    var reversed: []u8 = ifj.string("");
+    var i: i32 = ifj.length(str) - 1;
+
+    while (i >= 0) {
+        const char = ifj.substring(str, i, i + 1);
+        reversed = ifj.concat(reversed, char);
+        i = i - 1;
+    }
+
+    return reversed;
+}
+
+pub fn main() void {
+    const base: i32 = 3;
+    const exponent: i32 = 4;
+    const powResult = power(base, exponent);
+    ifj.write("3^4 = "); ifj.write(powResult); ifj.write("\n");
+
+    const original = ifj.string("Hello, World!");
+    const reversed = reverseString(original);
+    ifj.write("Original: "); ifj.write(original); ifj.write("\n");
+    ifj.write("Reversed: "); ifj.write(reversed); ifj.write("\n");
+}

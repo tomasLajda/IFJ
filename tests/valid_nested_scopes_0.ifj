@@ -1,0 +1,24 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void { 
+    var i: i32 = 1;
+
+    while (i <= 5) {
+        ifj.write("Outer loop iteration: "); ifj.write(i); ifj.write("\n");
+        var j: i32 = 1;
+
+        while (j <= 3) {
+            if (j % 2 == 0) {
+                ifj.write("  Inner loop (even): "); ifj.write(j); ifj.write("\n");
+            } else {
+                ifj.write("  Inner loop (odd): "); ifj.write(j); ifj.write("\n");
+            }
+            j = j + 1;
+        }
+
+        if (i == 3) {
+            ifj.write("Special condition met at i = 3\n");
+        }
+        i = i + 1;
+    }
+}

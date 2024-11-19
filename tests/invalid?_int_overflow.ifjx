@@ -1,0 +1,7 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void {
+    const bigValue: i32 = 2147483647; // Max value for i32
+    const overflow: i32 = bigValue + 1; // Causes overflow
+}
+// Error: Runtime integer overflow
