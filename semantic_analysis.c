@@ -9,7 +9,7 @@
 #include "semantic_analysis.h"
 #include "ast.h"
 
-extern AST ast;
+extern AST *ast;
 Stack symbolTableStack;
 Symbol currentSymbol;
 ListData currentParameter;
@@ -109,6 +109,23 @@ bool checkBuildInFunction(const char *key) {
            strcmp(key, "f2i") == 0 || strcmp(key, "string") == 0 || strcmp(key, "length") == 0 ||
            strcmp(key, "concat") == 0 || strcmp(key, "substring") == 0 ||
            strcmp(key, "strcmp") == 0 || strcmp(key, "ord") == 0 || strcmp(key, "chr") == 0;
+}
+
+bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
+
+bool isEqualOperator(TokenType operator) {
+    return operator== TOKEN_TYPE_EQ || operator== TOKEN_TYPE_NEQ;
+}
+
+bool isRelationalOperator(TokenType operator) {
+    return operator== TOKEN_TYPE_LTH || operator== TOKEN_TYPE_LEQ || operator==
+        TOKEN_TYPE_GTH || operator== TOKEN_TYPE_GEQ || operator== TOKEN_TYPE_EQ || operator==
+        TOKEN_TYPE_NEQ;
+}
+
+bool isNullableType(DataType type) {
+    return type == TYPE_I_32_NULL || type == TYPE_F_64_NULL || type == TYPE_U_8_ARRAY_NULL ||
+           type == TYPE_NULL;
 }
 
 void functionParameterAnalysis() {
@@ -350,7 +367,14 @@ void returnAnalysis(ASTNode *node) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
     } else {
-        // TODO add ast analysis
+        if (returnType == TYPE_VOID) {
+            HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
+        }
+
+        DataType type = expressionAnalysis(node->exprTree->root).type;
+        if (type != returnType && (type == TYPE_NULL && !isNullableType(returnType))) {
+            HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
+        }
     }
 }
 
@@ -368,18 +392,6 @@ void functionCallAnalysis(ASTNode *node) {
         node = node->right;
         parameterIndex++;
     }
-}
-
-bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
-
-bool isEqualOperator(TokenType operator) {
-    return operator== TOKEN_TYPE_EQ || operator== TOKEN_TYPE_NEQ;
-}
-
-bool isRelationalOperator(TokenType operator) {
-    return operator== TOKEN_TYPE_LTH || operator== TOKEN_TYPE_LEQ || operator==
-        TOKEN_TYPE_GTH || operator== TOKEN_TYPE_GEQ || operator== TOKEN_TYPE_EQ || operator==
-        TOKEN_TYPE_NEQ;
 }
 
 Operand determineNextOperand(Operand left, Operand right, TokenType operator) {
@@ -504,12 +516,12 @@ int semanticAnalysis() {
     symbolTableInsert(globalTable, currentSymbol);
     symbolResetValues(&currentSymbol);
 
-    if (ast.root == NULL) {
+    if (ast->root->right == NULL) {
         HANDLE_ERROR("AST is NULL", INTERNAL_ERROR);
     }
 
-    currentNode = ast.root->right;
-    constructNode = ast.root->right;
+    currentNode = ast->root->right;
+    constructNode = ast->root->right;
 
     // Adds functions to the global scope
     functionAnalysis();
@@ -518,7 +530,7 @@ int semanticAnalysis() {
         HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
     }
 
-    statementAnalysis(ast.root->right);
+    statementAnalysis(ast->root->right);
 
     symbolTablePop(&symbolTableStack);
     return 0;
