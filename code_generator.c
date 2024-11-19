@@ -458,7 +458,12 @@ void builtInFuncCall(ASTNode *node) {
     } else if (node->token->attribute.keyword == KEYWORD_STRING) {
         // TODO: generate built-in ifj.string
     } else if (node->token->attribute.keyword == KEYWORD_LENGTH) {
-        // TODO: generate built-in ifj.length
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@s\n");
+        ADD_TO_BUFFER("MOVE TF@s LF@");
+        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER("\n");
+        ADD_TO_BUFFER("CALL $IFJ24_length\n");
     } else if (node->token->attribute.keyword == KEYWORD_CONCAT) {
         // TODO: generate built-in ifj.concat
     } else if (node->token->attribute.keyword == KEYWORD_SUBSTRING) {
