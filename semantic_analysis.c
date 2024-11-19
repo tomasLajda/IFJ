@@ -29,6 +29,11 @@ DataType getVariableType(SymbolTable *table, const char *key) {
     return symbol->type;
 }
 
+bool checkVariableConstant(SymbolTable *table, const char *key) {
+    Symbol *symbol = symbolTableGetSymbol(table, key);
+    return symbol != NULL && symbol->constant;
+}
+
 bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
                             unsigned parameterIndex) {
     Symbol *symbol = symbolTableGetSymbol(table, key);
@@ -317,6 +322,11 @@ void variableAssignmentAnalysis(ASTNode *node) {
     if (node->token->type != TOKEN_TYPE_KEYWORD) {
         if (!checkDeclaration(symbolTableTop(&symbolTableStack), node->token->attribute.string)) {
             HANDLE_ERROR("Variable not defined", UNDEFINED_ERROR);
+        }
+
+        if (checkVariableConstant(symbolTableTop(&symbolTableStack),
+                                  node->token->attribute.string)) {
+            HANDLE_ERROR("Cannot assign to constant", REDEFINITION_ERROR);
         }
 
         valueType =
