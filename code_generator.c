@@ -445,18 +445,22 @@ void builtInFuncCall(ASTNode *node) {
         ADD_TO_BUFFER("DEFVAR TF@type\n");
         ADD_TO_BUFFER("MOVE TF@type string@string\n");
         ADD_TO_BUFFER("CALL $IFJ24_read\n");
+
     } else if (node->token->attribute.keyword == KEYWORD_READI32) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@type\n");
         ADD_TO_BUFFER("MOVE TF@type string@int\n");
         ADD_TO_BUFFER("CALL $IFJ24_read\n");
+
     } else if (node->token->attribute.keyword == KEYWORD_READF64) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@type\n");
         ADD_TO_BUFFER("MOVE TF@type string@float\n");
         ADD_TO_BUFFER("CALL $IFJ24_read\n");
+
     } else if (node->token->attribute.keyword == KEYWORD_STRING) {
         // TODO: generate built-in ifj.string
+
     } else if (node->token->attribute.keyword == KEYWORD_LENGTH) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@s\n");
@@ -464,6 +468,7 @@ void builtInFuncCall(ASTNode *node) {
         ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("CALL $IFJ24_length\n");
+
     } else if (node->token->attribute.keyword == KEYWORD_CONCAT) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@s1\n");
@@ -475,8 +480,26 @@ void builtInFuncCall(ASTNode *node) {
         ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.string);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("CALL $IFJ24_concat\n");
+
     } else if (node->token->attribute.keyword == KEYWORD_SUBSTRING) {
-        // TODO: generate built-in ifj.substring
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@s\n");
+        ADD_TO_BUFFER("MOVE TF@s LF@");
+        // s is first parameter
+        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER("\n");
+        ADD_TO_BUFFER("DEFVAR TF@i\n");
+        ADD_TO_BUFFER("MOVE TF@i LF@");
+        // i (start index) is second parameter
+        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER("\n");
+        ADD_TO_BUFFER("DEFVAR TF@j\n");
+        ADD_TO_BUFFER("MOVE TF@j LF@");
+        // j (index after last char) is third parameter
+        ADD_TO_BUFFER(node->left->right->right->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER("\n");
+        ADD_TO_BUFFER("CALL $IFJ24_substring\n");
+
     } else if (node->token->attribute.keyword == KEYWORD_STRCMP) {
         // TODO: generate built-in ifj.strcmp
     } else if (node->token->attribute.keyword == KEYWORD_ORD) {
