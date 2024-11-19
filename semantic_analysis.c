@@ -17,6 +17,38 @@ DataType returnType;
 ASTNode *currentNode;
 ASTNode *constructNode;
 
+bool isDoubleInteger(double number);
+bool isEqualOperator(TokenType operator);
+bool isRelationalOperator(TokenType operator);
+bool isNullableType(DataType type);
+bool checkDeclaration(SymbolTable *table, const char *key);
+bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType);
+DataType getVariableType(SymbolTable *table, const char *key);
+bool checkVariableConstant(SymbolTable *table, const char *key);
+bool checkVariableCompileTime(SymbolTable *table, const char *key);
+bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
+                            unsigned parameterIndex);
+unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
+bool checkReturnType(SymbolTable *table, DataType type);
+bool checkFunctionDefined(SymbolTable *table, const char *key);
+bool isConstruct();
+void jumpToPreviousConstruct();
+bool checkBuildInFunction(const char *key);
+DataType convertNullableType(DataType type);
+void functionParameterAnalysis();
+void functionAnalysis();
+void statementAnalysis(ASTNode *node);
+void functionBodyAnalysis(ASTNode *node);
+void ifAnalysis(ASTNode *node);
+void whileAnalysis(ASTNode *node);
+void variableDefinitionAnalysis(ASTNode *node);
+void variableAssignmentAnalysis(ASTNode *node);
+void returnAnalysis(ASTNode *node);
+void functionCallAnalysis(ASTNode *node);
+Operand determineNextOperand(Operand left, Operand right, TokenType operator);
+Operand expressionAnalysis(ASTNode *node);
+void semanticAnalysis();
+
 bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
 
 bool isEqualOperator(TokenType operator) {
@@ -655,6 +687,10 @@ Operand expressionAnalysis(ASTNode *node) {
 }
 
 void semanticAnalysis() {
+    if (ast == NULL) {
+        HANDLE_ERROR("AST is NULL", INTERNAL_ERROR);
+    }
+
     SymbolTable *globalTable = malloc(sizeof(SymbolTable));
     if (globalTable == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
