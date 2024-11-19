@@ -191,8 +191,19 @@ int processNode(ASTNode *node) {
                 // TODO: nullable while
                 labelCounter++;
             } else {
-                // TODO: normal while
+                // normal while
                 labelCounter++;
+                ASTNode *conditionNode = node->left;
+                addLabelToBuffer("while", "start");
+                generateExpression(conditionNode->exprTree->root);
+                // expression result is on top of the data stack
+                ADD_TO_BUFFER("PUSHS bool@false");
+                ADD_TO_BUFFER("JUMPIFEQS ");
+                addLabelToBuffer("while", "end");
+                processNode(conditionNode->left); // while body
+                ADD_TO_BUFFER("JUMP ");
+                addLabelToBuffer("while", "start");
+                addLabelToBuffer("while", "end");
             }
 
             // ASTNode *conditionNode = node->left;
