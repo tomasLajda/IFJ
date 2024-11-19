@@ -141,8 +141,6 @@ int processNode(ASTNode *node) {
     switch (node->token->type) {
     case TOKEN_TYPE_IDENTIFIER:
         if (node->isAssignment == true) {
-            // TODO: GENERATE ASSIGNMENT
-            // pro node.left.exprTree rozhodnout jestli je func call nebo expr
             if (node->left->exprTree->isExpression == true) {
                 generateExpression(node->left->exprTree->root);
                 ADD_TO_BUFFER("POPS LF@");
@@ -162,9 +160,8 @@ int processNode(ASTNode *node) {
 
     case TOKEN_TYPE_KEYWORD:
         if (node->token->attribute.keyword == KEYWORD_IF) {
-            // TODO: generate if
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
-                // TODO: nullable if
+                // nullable if
                 labelCounter++;
                 ADD_TO_BUFFER("DEFVAR LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
@@ -178,7 +175,6 @@ int processNode(ASTNode *node) {
                 ADD_TO_BUFFER("MOVE LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
                 ADD_TO_BUFFER(" LF@");
-                // todo: kontrola
                 ADD_TO_BUFFER(conditionNode->exprTree->root->token->attribute.string);
                 processNode(conditionNode->left); // true
                 ADD_TO_BUFFER("JUMP ");
@@ -205,9 +201,8 @@ int processNode(ASTNode *node) {
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
-            // TODO: generate while loop
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
-                // TODO: nullable while
+                // nullable while
                 labelCounter++;
                 ADD_TO_BUFFER("DEFVAR LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
@@ -239,15 +234,6 @@ int processNode(ASTNode *node) {
                 addLabelToBuffer("while", "end");
             }
 
-            // ASTNode *conditionNode = node->left;
-            // ADD_TO_BUFFER("$while_start_lbl_counter\n");
-            // generateExpression(conditionNode); // conditionNode.exprTree.root
-            // defvar LF@condition
-            // pops LF@condition  ( vysledek vyrazu ze zasobniku)
-            // ADD_TO_BUFFER("JUMPIFEQ $while_end_lbl_counter LF@condition bool@false\n");
-            // processNode(conditionNode.left); // while body
-            // ADD_TO_BUFFER("JUMP $while_start_lbl_counter\n");
-            // ADD_TO_BUFFER("$while_end_lbl_counter\n");
         } else if (node->token->attribute.keyword == KEYWORD_UNDERSCORE) {
             // generate function call otherwise do nothing
             if (node->isAssignment == false) {
