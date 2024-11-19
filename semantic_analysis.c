@@ -288,6 +288,8 @@ void functionBodyAnalysis(ASTNode *node) {
     returnType = (DataType)node->right->token->attribute.keyword;
 
     node = node->left;
+    symbolTableCopyFunctionParams(
+        table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
     statementAnalysis(node->right);
 
     symbolTableCheckUsed(table);
