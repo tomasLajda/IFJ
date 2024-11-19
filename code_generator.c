@@ -155,27 +155,37 @@ int processNode(ASTNode *node) {
             // TODO: generate if
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
                 // TODO: nullable if
+                labelCounter++;
+                ASTNode *conditionNode = node->left->left;
+
             } else {
                 // TODO: normal if
+                labelCounter++;
+                ASTNode *conditionNode = node->left;
+                generateExpression(conditionNode->exprTree->root);
+                // na datovem zasobniku je vysledek vyrazu
+                ADD_TO_BUFFER("PUSHS bool@false");
+                ADD_TO_BUFFER("JUMPIFEQS ");
+                addLabelToBuffer("if", "false");
+                // ADD_TO_BUFFER("\n");
+                processNode(conditionNode->left); // true
+                ADD_TO_BUFFER("JUMP ");
+                addLabelToBuffer("if", "end");
+                // ADD_TO_BUFFER("\n");
+                addLabelToBuffer("if", "false");
+                processNode(conditionNode->right); // false
+                addLabelToBuffer("if", "end");
+                // ADD_TO_BUFFER("\n");
             }
-
-            // ASTNode *conditionNode = node->left;
-            // generateExpression(conditionNode); // conditionNode.exprTree.root
-            // defvar LF@condition
-            // pops LF@condition  ( vysledek vyrazu ze zasobniku)
-            // ADD_TO_BUFFER("JUMPIFEQ $if_false_lbl_counter LF@condition bool@false\n");
-            // processNode(conditionNode.left); // true
-            // ADD_TO_BUFFER("JUMP $if_end_lbl_counter\n");
-            // ADD_TO_BUFFER("$if_false_lbl_counter\n");
-            // processNode(conditionNode.right); // false
-            // ADD_TO_BUFFER("$if_end_lbl_counter\n");
 
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
             // TODO: generate while loop
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
                 // TODO: nullable while
+                labelCounter++;
             } else {
                 // TODO: normal while
+                labelCounter++;
             }
 
             // ASTNode *conditionNode = node->left;
