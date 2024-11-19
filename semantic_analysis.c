@@ -17,6 +17,23 @@ DataType returnType;
 ASTNode *currentNode;
 ASTNode *constructNode;
 
+bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
+
+bool isEqualOperator(TokenType operator) {
+    return operator== TOKEN_TYPE_EQ || operator== TOKEN_TYPE_NEQ;
+}
+
+bool isRelationalOperator(TokenType operator) {
+    return operator== TOKEN_TYPE_LTH || operator== TOKEN_TYPE_LEQ || operator==
+        TOKEN_TYPE_GTH || operator== TOKEN_TYPE_GEQ || operator== TOKEN_TYPE_EQ || operator==
+        TOKEN_TYPE_NEQ;
+}
+
+bool isNullableType(DataType type) {
+    return type == TYPE_I_32_NULL || type == TYPE_F_64_NULL || type == TYPE_U_8_ARRAY_NULL ||
+           type == TYPE_NULL;
+}
+
 bool checkDeclaration(SymbolTable *table, const char *key) { return symbolTableSearch(table, key); }
 
 bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType) {
@@ -44,13 +61,13 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
     Symbol *symbol = symbolTableGetSymbol(table, key);
 
     if (symbol == NULL || !symbol->function) {
-        return false;
+        HANDLE_ERROR("Symbol is not a function or doesn't exist", UNDEFINED_ERROR);
     }
 
     listFirst(symbol->params);
     while (parameterIndex > 0) {
         if (!listIsActive(symbol->params)) {
-            return false;
+            HANDLE_ERROR("Too many parameters", PARAMETER_ERROR);
         }
 
         listNext(symbol->params);
@@ -58,13 +75,30 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
     }
 
     if (!listIsActive(symbol->params)) {
-        return false;
+        HANDLE_ERROR("Too many parameters", PARAMETER_ERROR);
     }
 
     ListData data;
     listGetValue(symbol->params, &data);
 
-    return data.type == type;
+    return data.type == type || (data.type == TYPE_NULL && isNullableType(type));
+}
+
+unsigned getFunctionParameterCount(SymbolTable *table, const char *key) {
+    Symbol *symbol = symbolTableGetSymbol(table, key);
+
+    if (symbol == NULL || !symbol->function) {
+        HANDLE_ERROR("Symbol is not a function or doesn't exist", UNDEFINED_ERROR);
+    }
+
+    unsigned count = 0;
+    listFirst(symbol->params);
+    while (listIsActive(symbol->params)) {
+        count++;
+        listNext(symbol->params);
+    }
+
+    return count;
 }
 
 bool checkReturnType(SymbolTable *table, DataType type) {
@@ -109,23 +143,6 @@ bool checkBuildInFunction(const char *key) {
            strcmp(key, "f2i") == 0 || strcmp(key, "string") == 0 || strcmp(key, "length") == 0 ||
            strcmp(key, "concat") == 0 || strcmp(key, "substring") == 0 ||
            strcmp(key, "strcmp") == 0 || strcmp(key, "ord") == 0 || strcmp(key, "chr") == 0;
-}
-
-bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
-
-bool isEqualOperator(TokenType operator) {
-    return operator== TOKEN_TYPE_EQ || operator== TOKEN_TYPE_NEQ;
-}
-
-bool isRelationalOperator(TokenType operator) {
-    return operator== TOKEN_TYPE_LTH || operator== TOKEN_TYPE_LEQ || operator==
-        TOKEN_TYPE_GTH || operator== TOKEN_TYPE_GEQ || operator== TOKEN_TYPE_EQ || operator==
-        TOKEN_TYPE_NEQ;
-}
-
-bool isNullableType(DataType type) {
-    return type == TYPE_I_32_NULL || type == TYPE_F_64_NULL || type == TYPE_U_8_ARRAY_NULL ||
-           type == TYPE_NULL;
 }
 
 void functionParameterAnalysis() {
@@ -383,14 +400,24 @@ void functionCallAnalysis(ASTNode *node) {
         HANDLE_ERROR("Function not defined", UNDEFINED_ERROR);
     }
 
+    unsigned parameterCount =
+        getFunctionParameterCount(symbolTableTop(&symbolTableStack), node->token->attribute.string);
     unsigned parameterIndex = 0;
 
     node = node->left;
     while (node != NULL) {
-        // TODO add ast analysis
+        DataType type = expressionAnalysis(node->exprTree->root).type;
+        if (!checkFunctionParameter(symbolTableTop(&symbolTableStack),
+                                    node->token->attribute.string, type, parameterIndex)) {
+            HANDLE_ERROR("Invalid function parameter", PARAMETER_ERROR);
+        }
 
         node = node->right;
         parameterIndex++;
+    }
+
+    if (parameterCount != parameterIndex) {
+        HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
     }
 }
 
