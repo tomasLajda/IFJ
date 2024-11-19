@@ -257,39 +257,6 @@ int processNode(ASTNode *node) {
             generateExpression(node->left);
             ADD_TO_BUFFER("POPS TF@value\n");
             ADD_TO_BUFFER("CALL $IFJ24_write\n");
-        } else if (node->token->attribute.keyword == KEYWORD_READSTR) {
-            ADD_TO_BUFFER("CREATEFRAME\n");
-            ADD_TO_BUFFER("DEFVAR TF@type\n");
-            ADD_TO_BUFFER("MOVE TF@type string@string\n");
-            ADD_TO_BUFFER("CALL $IFJ24_read\n");
-        } else if (node->token->attribute.keyword == KEYWORD_READI32) {
-            ADD_TO_BUFFER("CREATEFRAME\n");
-            ADD_TO_BUFFER("DEFVAR TF@type\n");
-            ADD_TO_BUFFER("MOVE TF@type string@int\n");
-            ADD_TO_BUFFER("CALL $IFJ24_read\n");
-        } else if (node->token->attribute.keyword == KEYWORD_READF64) {
-            ADD_TO_BUFFER("CREATEFRAME\n");
-            ADD_TO_BUFFER("DEFVAR TF@type\n");
-            ADD_TO_BUFFER("MOVE TF@type string@float\n");
-            ADD_TO_BUFFER("CALL $IFJ24_read\n");
-        } else if (node->token->attribute.keyword == KEYWORD_STRING) {
-            // TODO: generate built-in ifj.string
-        } else if (node->token->attribute.keyword == KEYWORD_LENGTH) {
-            // TODO: generate built-in ifj.length
-        } else if (node->token->attribute.keyword == KEYWORD_CONCAT) {
-            // TODO: generate built-in ifj.concat
-        } else if (node->token->attribute.keyword == KEYWORD_SUBSTRING) {
-            // TODO: generate built-in ifj.substring
-        } else if (node->token->attribute.keyword == KEYWORD_STRCMP) {
-            // TODO: generate built-in ifj.strcmp
-        } else if (node->token->attribute.keyword == KEYWORD_ORD) {
-            // TODO: generate built-in ifj.ord
-        } else if (node->token->attribute.keyword == KEYWORD_CHR) {
-            // TODO: generate built-in ifj.chr
-        } else if (node->token->attribute.keyword == KEYWORD_I2F) {
-            // TODO: generate built-in ifj.i2f
-        } else if (node->token->attribute.keyword == KEYWORD_F2I) {
-            // TODO: generate built-in ifj.f2i
         } else {
             // TODO: Skip VARDEF and continue with the next node
         }
@@ -408,6 +375,12 @@ int generateFuncCall(ASTNode *node) {
     if (node == NULL) {
         return INTERNAL_ERROR;
     }
+
+    if (node->token->type == TOKEN_TYPE_KEYWORD) {
+        builtInFuncCall(node);
+        return 0;
+    }
+
     // node - function name
     ADD_TO_BUFFER("CREATEFRAME\n");
     ADD_TO_BUFFER("DEFVAR TF@%%retval\n");
@@ -464,6 +437,43 @@ int generateParam(ASTNode *node, int paramID) {
     addIntToBuffer(paramID);
     ADD_TO_BUFFER("\n");
     return 0;
+}
+
+void builtInFuncCall(ASTNode *node) {
+    if (node->token->attribute.keyword == KEYWORD_READSTR) {
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@type\n");
+        ADD_TO_BUFFER("MOVE TF@type string@string\n");
+        ADD_TO_BUFFER("CALL $IFJ24_read\n");
+    } else if (node->token->attribute.keyword == KEYWORD_READI32) {
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@type\n");
+        ADD_TO_BUFFER("MOVE TF@type string@int\n");
+        ADD_TO_BUFFER("CALL $IFJ24_read\n");
+    } else if (node->token->attribute.keyword == KEYWORD_READF64) {
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@type\n");
+        ADD_TO_BUFFER("MOVE TF@type string@float\n");
+        ADD_TO_BUFFER("CALL $IFJ24_read\n");
+    } else if (node->token->attribute.keyword == KEYWORD_STRING) {
+        // TODO: generate built-in ifj.string
+    } else if (node->token->attribute.keyword == KEYWORD_LENGTH) {
+        // TODO: generate built-in ifj.length
+    } else if (node->token->attribute.keyword == KEYWORD_CONCAT) {
+        // TODO: generate built-in ifj.concat
+    } else if (node->token->attribute.keyword == KEYWORD_SUBSTRING) {
+        // TODO: generate built-in ifj.substring
+    } else if (node->token->attribute.keyword == KEYWORD_STRCMP) {
+        // TODO: generate built-in ifj.strcmp
+    } else if (node->token->attribute.keyword == KEYWORD_ORD) {
+        // TODO: generate built-in ifj.ord
+    } else if (node->token->attribute.keyword == KEYWORD_CHR) {
+        // TODO: generate built-in ifj.chr
+    } else if (node->token->attribute.keyword == KEYWORD_I2F) {
+        // TODO: generate built-in ifj.i2f
+    } else if (node->token->attribute.keyword == KEYWORD_F2I) {
+        // TODO: generate built-in ifj.f2i
+    }
 }
 
 void codeGeneratorFlush(FILE *outputFile) { fputs(codeBuffer.string, outputFile); }
