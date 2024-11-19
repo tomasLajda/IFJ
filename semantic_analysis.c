@@ -292,11 +292,23 @@ void ifAnalysis(ASTNode *node) {
     node = node->left;
 
     // TODO add null set variable
-    if (node->token->type == TOKEN_TYPE_KEYWORD && node->token->attribute.keyword == KEYWORD_NULL) {
+    bool nullCond = false;
+    if (node->token->type == TOKEN_TYPE_NULL_COND) {
+        nullCond = true;
         node = node->left;
     }
 
     // TODO add ast analysis
+    DataType type = expressionAnalysis(node->exprTree->root).type;
+    if (!nullCond) {
+        if (type != TYPE_BOOL) {
+            HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
+        }
+    } else {
+        if (type == TYPE_NULL || !isNullableType(type)) {
+            HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
+        }
+    }
 
     statementAnalysis(node->left);
     statementAnalysis(node->right);
@@ -316,11 +328,23 @@ void whileAnalysis(ASTNode *node) {
     node = node->left;
 
     // TODO add null set variable
-    if (node->token->type == TOKEN_TYPE_KEYWORD && node->token->attribute.keyword == KEYWORD_NULL) {
+    bool nullCond = false;
+    if (node->token->type == TOKEN_TYPE_NULL_COND) {
+        nullCond = true;
         node = node->left;
     }
 
     // TODO add ast analysis
+    DataType type = expressionAnalysis(node->exprTree->root).type;
+    if (!nullCond) {
+        if (type != TYPE_BOOL) {
+            HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
+        }
+    } else {
+        if (type == TYPE_NULL || !isNullableType(type)) {
+            HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
+        }
+    }
 
     statementAnalysis(node->left);
 
