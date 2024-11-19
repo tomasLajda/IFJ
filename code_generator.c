@@ -538,7 +538,13 @@ void builtInFuncCall(ASTNode *node) {
         ADD_TO_BUFFER("CALL $IFJ24_chr\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_I2F) {
-        // TODO: generate built-in ifj.i2f
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@input\n");
+        ADD_TO_BUFFER("MOVE TF@input LF@");
+        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.integer);
+        ADD_TO_BUFFER("\n");
+        ADD_TO_BUFFER("CALL $IFJ24_i2f\n");
+
     } else if (node->token->attribute.keyword == KEYWORD_F2I) {
         // TODO: generate built-in ifj.f2i
     }
