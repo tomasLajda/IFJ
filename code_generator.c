@@ -491,12 +491,12 @@ void builtInFuncCall(ASTNode *node) {
         ADD_TO_BUFFER("DEFVAR TF@i\n");
         ADD_TO_BUFFER("MOVE TF@i LF@");
         // i (start index) is second parameter
-        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.integer);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("DEFVAR TF@j\n");
         ADD_TO_BUFFER("MOVE TF@j LF@");
         // j (index after last char) is third parameter
-        ADD_TO_BUFFER(node->left->right->right->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER(node->left->right->right->exprTree->root->token->attribute.integer);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("CALL $IFJ24_substring\n");
 
@@ -524,7 +524,7 @@ void builtInFuncCall(ASTNode *node) {
         ADD_TO_BUFFER("DEFVAR TF@i\n");
         ADD_TO_BUFFER("MOVE TF@i LF@");
         // i is second parameter
-        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.integer);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("CALL $IFJ24_ord\n");
 
@@ -533,7 +533,7 @@ void builtInFuncCall(ASTNode *node) {
         ADD_TO_BUFFER("DEFVAR TF@i\n");
         ADD_TO_BUFFER("MOVE TF@i LF@");
         // i is first parameter
-        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.integer);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("CALL $IFJ24_chr\n");
 
