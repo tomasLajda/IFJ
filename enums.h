@@ -63,6 +63,7 @@ typedef enum {
     TYPE_U_8_ARRAY,
     TYPE_U_8_ARRAY_NULL,
     TYPE_VOID,
+    TYPE_NULL,
     TYPE_ANY,
     TYPE_BOOL
 } DataType;
