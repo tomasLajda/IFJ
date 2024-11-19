@@ -310,12 +310,14 @@ int generateExpression(ASTNode *node) {
         // PUSHS int@value
         ADD_TO_BUFFER("PUSHS ");
         addIntToBuffer(node->token->attribute.integer);
+        ADD_TO_BUFFER(" \n");
 
     } else if (currentTokenType == TOKEN_TYPE_DOUBLE_VALUE) {
         // Push double value onto the data stack
         // PUSHS float@value
         ADD_TO_BUFFER("PUSHS ");
         addFloatToBuffer(node->token->attribute.decimal);
+        ADD_TO_BUFFER(" \n");
 
     } else if (isTokenTypeOperator(currentTokenType)) {
         if (currentTokenType == TOKEN_TYPE_PLUS) {
