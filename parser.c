@@ -236,6 +236,16 @@ void parseVoidFunc() {
         HANDLE_ERROR("Expected 'void' in function definition", SYNTAX_ERROR, currentToken);
     }
 
+    ASTNode *voidReturnTypeNode = initASTNode();
+    voidReturnTypeNode->token = copyToken(currentToken);
+    addRightNode(ast, mainParent, voidReturnTypeNode);
+    mainParent = mainParent->left;
+    currenParent = mainParent;
+
+    printf("\n");
+    displayAST(ast);
+    printf("\n");
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -304,7 +314,18 @@ void parseReturn() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
-        parseExpression(ast, currentToken);
+        AST *exprTree = initAST();
+        parseExpression(exprTree, currentToken);
+        exprTree->isExpression = true;
+        ASTNode *exprNode = initASTNode();
+        exprNode->exprTree = exprTree;
+        addRightNode(ast, currenParent, exprNode);
+
+        goBack(currenParent);
+
+        printf("\n");
+        displayAST(ast);
+        printf("\n");
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
@@ -363,7 +384,18 @@ void parseStatements() {
     }
 
     if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+        
+        ASTNode *returnNode = initASTNode();
+        returnNode->token = copyToken(currentToken);
+        addRightNode(ast, currenParent, returnNode);
+        currenParent = returnNode;
+
+        printf("\n");
+        displayAST(ast);
+        printf("\n");
+
         parseReturn();
+
         if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
             HANDLE_ERROR("Unreachable code after return statement", SYNTAX_ERROR, currentToken);
         }
