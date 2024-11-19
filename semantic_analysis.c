@@ -210,6 +210,7 @@ void statementAnalysis(ASTNode *node) {
         if (node->isAssignment) {
             variableAssignmentAnalysis(node);
         } else {
+            functionCallAnalysis(node);
         }
         break;
     }
@@ -334,6 +335,22 @@ void returnAnalysis(ASTNode *node) {
         }
     } else {
         // TODO add ast analysis
+    }
+}
+
+void functionCallAnalysis(ASTNode *node) {
+    if (!checkFunctionDefined(symbolTableTop(&symbolTableStack), node->token->attribute.string)) {
+        HANDLE_ERROR("Function not defined", UNDEFINED_ERROR);
+    }
+
+    unsigned parameterIndex = 0;
+
+    node = node->left;
+    while (node != NULL) {
+        // TODO add ast analysis
+
+        node = node->right;
+        parameterIndex++;
     }
 }
 
