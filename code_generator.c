@@ -179,8 +179,10 @@ int processNode(ASTNode *node) {
                 processNode(conditionNode->left); // true
                 ADD_TO_BUFFER("JUMP ");
                 addLabelToBuffer("NULL_if", "end");
+                ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("NULL_if", "false");
                 processNode(conditionNode->right); // false
+                ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("NULL_if", "end");
 
             } else {
@@ -195,8 +197,10 @@ int processNode(ASTNode *node) {
                 processNode(conditionNode->left); // true
                 ADD_TO_BUFFER("JUMP ");
                 addLabelToBuffer("if", "end");
+                ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("if", "false");
                 processNode(conditionNode->right); // false
+                ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("if", "end");
             }
 
@@ -208,6 +212,7 @@ int processNode(ASTNode *node) {
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
                 ADD_TO_BUFFER("\n");
                 ASTNode *conditionNode = node->left->left;
+                ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("NULL_while", "start");
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
@@ -217,11 +222,13 @@ int processNode(ASTNode *node) {
                 processNode(conditionNode->left); // while body
                 ADD_TO_BUFFER("JUMP ");
                 addLabelToBuffer("NULL_while", "start");
+                ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("NULL_while", "end");
             } else {
                 // normal while
                 labelCounter++;
                 ASTNode *conditionNode = node->left;
+                ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("while", "start");
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
@@ -231,6 +238,7 @@ int processNode(ASTNode *node) {
                 processNode(conditionNode->left); // while body
                 ADD_TO_BUFFER("JUMP ");
                 addLabelToBuffer("while", "start");
+                ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("while", "end");
             }
 
