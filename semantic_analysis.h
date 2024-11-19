@@ -96,8 +96,7 @@ bool checkFunctionDefinitionScope(SymbolTable *table);
  * It checks the input for semantic correctness according to the
  * specified rules and constraints of the language.
  *
- * @return int Returns 0 if the analysis is successful, otherwise returns an error code.
  */
-int semanticAnalysis();
+void semanticAnalysis();
 
 #endif
