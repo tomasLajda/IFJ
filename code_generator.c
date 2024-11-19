@@ -464,89 +464,81 @@ void builtInFuncCall(ASTNode *node) {
     } else if (node->token->attribute.keyword == KEYWORD_LENGTH) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@s\n");
-        ADD_TO_BUFFER("MOVE TF@s LF@");
-        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@s\n");
         ADD_TO_BUFFER("CALL $IFJ24_length\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_CONCAT) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@s1\n");
-        ADD_TO_BUFFER("MOVE TF@s1 LF@");
-        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@s1\n");
         ADD_TO_BUFFER("DEFVAR TF@s2\n");
-        ADD_TO_BUFFER("MOVE TF@s2 LF@");
-        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.string);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->right->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@s2\n");
         ADD_TO_BUFFER("CALL $IFJ24_concat\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_SUBSTRING) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@s\n");
-        ADD_TO_BUFFER("MOVE TF@s LF@");
         // s is first parameter
-        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@s\n");
         ADD_TO_BUFFER("DEFVAR TF@i\n");
-        ADD_TO_BUFFER("MOVE TF@i LF@");
         // i (start index) is second parameter
-        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.integer);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->right->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@i\n");
         ADD_TO_BUFFER("DEFVAR TF@j\n");
-        ADD_TO_BUFFER("MOVE TF@j LF@");
         // j (index after last char) is third parameter
-        ADD_TO_BUFFER(node->left->right->right->exprTree->root->token->attribute.integer);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->right->right->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@j\n");
         ADD_TO_BUFFER("CALL $IFJ24_substring\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_STRCMP) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@s1\n");
-        ADD_TO_BUFFER("MOVE TF@s1 LF@");
         // s1 is first parameter
-        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@s1\n");
         ADD_TO_BUFFER("DEFVAR TF@s2\n");
-        ADD_TO_BUFFER("MOVE TF@s2 LF@");
         // s2 is second parameter
-        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.string);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->right->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@s2\n");
         ADD_TO_BUFFER("CALL $IFJ24_strcmp\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_ORD) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@s\n");
-        ADD_TO_BUFFER("MOVE TF@s LF@");
         // s is first parameter
-        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@s\n");
         ADD_TO_BUFFER("DEFVAR TF@i\n");
-        ADD_TO_BUFFER("MOVE TF@i LF@");
         // i is second parameter
-        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.integer);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->right->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@i\n");
         ADD_TO_BUFFER("CALL $IFJ24_ord\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_CHR) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@i\n");
-        ADD_TO_BUFFER("MOVE TF@i LF@");
         // i is first parameter
-        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.integer);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@i\n");
         ADD_TO_BUFFER("CALL $IFJ24_chr\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_I2F) {
         ADD_TO_BUFFER("CREATEFRAME\n");
         ADD_TO_BUFFER("DEFVAR TF@input\n");
-        ADD_TO_BUFFER("MOVE TF@input LF@");
-        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.integer);
-        ADD_TO_BUFFER("\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@input\n");
         ADD_TO_BUFFER("CALL $IFJ24_i2f\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_F2I) {
-        // TODO: generate built-in ifj.f2i
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@input\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@input\n");
+        ADD_TO_BUFFER("CALL $IFJ24_f2i\n");
     }
 }
 
