@@ -19,6 +19,13 @@ extern Token *currentToken;
 extern AST *ast;
 
 /**
+ * @brief Goes back in the AST to the last node that is a WHILE, IF or PUB KEYWORD and sets it as the current and main parent
+ *
+ * @param startNode The node to start from
+ */
+void goBack(ASTNode *startNode);
+
+/**
  * @brief Checks if the current token is a keyword
  *
  * @param keyword The keyword to check

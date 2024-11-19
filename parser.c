@@ -25,6 +25,25 @@ bool parsingReturnType = false;
 unsigned int argCounter = 0;
 unsigned int paramCounter = 0;
 
+void goBack(ASTNode *startNode) {
+    ASTNode *currentNode = startNode;
+    while (currentNode != NULL) {
+
+        printf("I am in node: ");
+        displayASTNode(currentNode, 0, true);
+        printf("\n");
+
+        if ((isTokenKeyword(currentNode->token, KEYWORD_IF) ||
+             isTokenKeyword(currentNode->token, KEYWORD_WHILE) ||
+             isTokenKeyword(currentNode->token, KEYWORD_PUB))) {
+            currenParent = currentNode;
+            mainParent = currentNode;
+        }
+        ASTNode *parentNode = currentNode->parent;
+        currentNode = parentNode;
+    }
+}
+
 bool isTokenKeyword(Token *token, Keyword keyword) {
     return (token->type == TOKEN_TYPE_KEYWORD && token->attribute.keyword == keyword);
 }
@@ -253,7 +272,8 @@ void parseType() {
             ASTNode *returnTypeNode = initASTNode();
             returnTypeNode->token = copyToken(currentToken);
             addRightNode(ast, mainParent, returnTypeNode);
-            // TODO: mainParent and currentParent to funcIdNode
+            mainParent = mainParent->left;
+            currenParent = mainParent;
         }
 
         printTokenInfo(currentToken);
@@ -359,6 +379,7 @@ void parseStatement() {
     onlyOneArg = false;
     onlyTwoArgs = false;
     onlyThreeArgs = false;
+    parsingReturnType = false;
     argCounter = 0;
 
     switch (currentToken->type) {
