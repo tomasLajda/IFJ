@@ -501,7 +501,19 @@ void builtInFuncCall(ASTNode *node) {
         ADD_TO_BUFFER("CALL $IFJ24_substring\n");
 
     } else if (node->token->attribute.keyword == KEYWORD_STRCMP) {
-        // TODO: generate built-in ifj.strcmp
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@s1\n");
+        ADD_TO_BUFFER("MOVE TF@s1 LF@");
+        // s1 is first parameter
+        ADD_TO_BUFFER(node->left->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER("\n");
+        ADD_TO_BUFFER("DEFVAR TF@s2\n");
+        ADD_TO_BUFFER("MOVE TF@s2 LF@");
+        // s2 is second parameter
+        ADD_TO_BUFFER(node->left->right->exprTree->root->token->attribute.string);
+        ADD_TO_BUFFER("\n");
+        ADD_TO_BUFFER("CALL $IFJ24_strcmp\n");
+
     } else if (node->token->attribute.keyword == KEYWORD_ORD) {
         // TODO: generate built-in ifj.ord
     } else if (node->token->attribute.keyword == KEYWORD_CHR) {
