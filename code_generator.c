@@ -353,7 +353,7 @@ int generateExpression(ASTNode *node) {
         addFloatToBuffer(node->token->attribute.decimal);
         ADD_TO_BUFFER(" \n");
 
-    } else if (isTokenTypeOperator(currentTokenType)) {
+    } else if (isOperator(node->token)) {
         if (currentTokenType == TOKEN_TYPE_PLUS) {
             ADD_TO_BUFFER("ADDS\n");
         } else if (currentTokenType == TOKEN_TYPE_MINUS) {
