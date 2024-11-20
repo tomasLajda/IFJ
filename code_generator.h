@@ -138,8 +138,8 @@ IFJ project
     "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
     "LT LF@condition LF@end_index int@0\n"                                                         \
     "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
-    "GE LF@condition LF@start_index LF@len\n"                                                      \
-    "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
+    "LT LF@condition LF@start_index LF@len\n"                                                      \
+    "JUMPIFNEQ $substring_error LF@condition bool@true\n"                                          \
     "GT LF@condition LF@end_index LF@len\n"                                                        \
     "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
     "LT LF@condition LF@end_index LF@start_index\n"                                                \
