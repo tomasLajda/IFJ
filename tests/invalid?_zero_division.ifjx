@@ -1,0 +1,8 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void {
+    const a: i32 = 10;
+    const b: i32 = 0;
+    const c: i32 = a / b; // Division by zero
+}
+// Error: Division by zero

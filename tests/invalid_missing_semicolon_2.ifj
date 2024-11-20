@@ -1,0 +1,6 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void {
+    ifj.write("Syntax Error!") // Missing semicolon here
+}
+// Error: Syntactic error (Error 2)

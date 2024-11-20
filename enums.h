@@ -130,7 +130,7 @@ typedef enum {
     TOKEN_TYPE_MUL,    // Multiplication *
     TOKEN_TYPE_DIV,    // Division /
 
-    TOKEN_TYPE_OR,             // Or |
+    TOKEN_TYPE_VB,             // Vertical bracket |
     TOKEN_TYPE_LEFT_BR,        // Left bracket (
     TOKEN_TYPE_RIGHT_BR,       // Right bracket )
     TOKEN_TYPE_LEFT_CURLY_BR,  // Left curly bracket {
@@ -142,7 +142,10 @@ typedef enum {
 
     // EXPRESSION PARSING
     TOKEN_TYPE_EXPR,
-    TOKEN_TYPE_DOLLA
+    TOKEN_TYPE_DOLLA,
+
+    // CODE GEN
+    TOKEN_TYPE_NULL_COND // Null condition (if or while)
 } TokenType;
 
 typedef enum {

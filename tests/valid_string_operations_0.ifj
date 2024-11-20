@@ -1,0 +1,15 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void {
+    const str1 = ifj.string("This is a test");
+    const str2 = ifj.string(", extended with more text.");
+    const combined = ifj.concat(str1, str2);
+
+    ifj.write("Combined string: "); ifj.write(combined); ifj.write("\n");
+
+    const length = ifj.length(combined);
+    ifj.write("Length: "); ifj.write(length); ifj.write("\n");
+
+    const substring = ifj.substring(combined, 10, 20);
+    ifj.write("Substring: "); ifj.write(substring); ifj.write("\n");
+}

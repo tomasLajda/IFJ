@@ -1,0 +1,6 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void {
+    const str = ifj.string(123); // Invalid parameter type (expected string literal)
+}
+// Error: Invalid function parameters (Error 4)

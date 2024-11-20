@@ -1,0 +1,6 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void {
+    const unusedVar: i32 = 10; // Declared but unused
+}
+// Error: Unused variable (Error 9)
