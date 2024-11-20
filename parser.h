@@ -34,13 +34,6 @@ void initTokenBuffer();
 void freeTokenBuffer();
 
 /**
- * @brief Adds the token to the buffer
- * 
- * @param token Token to be added
- */
-void addTokenToBuffer(Token *token);
-
-/**
  * @brief Goes back in the AST to the last node that is a WHILE, IF or PUB KEYWORD and sets it as the current and main parent
  *
  * @param startNode The node to start from

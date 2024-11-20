@@ -45,19 +45,6 @@ void freeTokenBuffer() {
     }
 }
 
-void addTokenToBuffer(Token *token) {
-    if (tokenBuffer.first == NULL) {
-        tokenBuffer.first = token;
-    } 
-    else if (tokenBuffer.second == NULL) {
-        tokenBuffer.second = token;
-    } 
-    else {
-        printf("Token buffer is full\n");
-        return;
-    }
-}
-
 void goBack(ASTNode *startNode) {
     ASTNode *currentNode = startNode;
     while (currentNode != NULL) {
@@ -351,22 +338,86 @@ void parseReturn() {
     } 
     else {
         AST *exprTree = initAST();
-        //parseExpression(exprTree, currentToken);
-        exprTree->isExpression = true;
-        ASTNode *exprNode = initASTNode();
-        exprNode->exprTree = exprTree;
-        addRightNode(ast, currenParent, exprNode);
+        Token *delimiter = malloc(sizeof(Token));
 
-        printf("\n");
-        displayAST(ast);
-        printf("\n");
+        if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
+            tokenBuffer.first = copyToken(currentToken);
 
-        goBack(currenParent);
+            printf("Current token: ");
+            printTokenInfo(currentToken);
 
-        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            parseExpression(exprTree, tokenBuffer.first, NULL, delimiter);
+            exprTree->isExpression = true;
+            ASTNode *exprNode = initASTNode();
+            exprNode->exprTree = exprTree;
+            addRightNode(ast, currenParent, exprNode);
+
+            printf("Delimeter token: ");
+            printTokenInfo(delimiter);
+
+            printf("\n");
+            displayAST(ast);
+            printf("\n");
+
+            goBack(currenParent);
+        }
+        else if (TOKEN_TYPE_IDENTIFIER) {
+            initTokenBuffer();
+            printTokenInfo(currentToken);
+
+            parseExpression(exprTree, NULL, NULL, delimiter);
+            exprTree->isExpression = true;
+            ASTNode *exprNode = initASTNode();
+            exprNode->exprTree = exprTree;
+            addRightNode(ast, currenParent, exprNode);
+
+            printf("Delimeter token: ");
+            printTokenInfo(delimiter);
+
+            printf("\n");
+            displayAST(ast);
+            printf("\n");
+
+            goBack(currenParent);
+
+        }
+        else {
+            printf("Delimeter token: ");
+            printTokenInfo(delimiter);
+
+            printf("\nCurrent token: ");
+            printTokenInfo(currentToken);
+
+            parseExpression(exprTree, NULL, NULL, delimiter);
+            exprTree->isExpression = true;
+            ASTNode *exprNode = initASTNode();
+            exprNode->exprTree = exprTree;
+            addRightNode(ast, currenParent, exprNode);
+
+            printf("\n");
+            displayAST(ast);
+            printf("\n");
+
+            goBack(currenParent);
+        }
+
+        if (delimiter->type == TOKEN_TYPE_RIGHT_BR) {
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
+
+            if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+                printTokenInfo(currentToken);
+                HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
+            }
+        }
+
+        else if (delimiter->type != TOKEN_TYPE_SEMICOLON) {
             printTokenInfo(currentToken);
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
         }
+        free(delimiter);
+        delimiter = NULL;
+
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     }
@@ -933,6 +984,7 @@ void parseArgs() {
 int parse() {
     printf("Parsing started\n");
 
+    initTokenBuffer();
     ast = initAST();
     ASTNode *root = initASTNode();
     ast->root = root;
@@ -947,6 +999,7 @@ int parse() {
     }
 
     displayAST(ast);
+    //freeTokenBuffer();
 
     return 0;
 }
