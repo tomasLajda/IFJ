@@ -21,6 +21,11 @@
 char *TokenTypeToString(TokenType type);
 
 /**
+ * @brief Function that transforms the token keyword integer to the corresponding character (string)
+ */
+char *TokenKeywordToString(Keyword keyword);
+
+/**
  * @brief Function that creates a new token with the given type
  */
 Token *createToken(TokenType type);

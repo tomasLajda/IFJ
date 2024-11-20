@@ -57,8 +57,8 @@ char *TokenTypeToString(TokenType type) {
         return "*";
     case TOKEN_TYPE_DIV:
         return "/";
-    case TOKEN_TYPE_OR:
-        return "OR";
+    case TOKEN_TYPE_VB:
+        return "|";
     case TOKEN_TYPE_LEFT_BR:
         return "(";
     case TOKEN_TYPE_RIGHT_BR:
@@ -234,4 +234,79 @@ int isRelOperator(Token *token) {
            token->type == TOKEN_TYPE_LEQ || // <=
            token->type == TOKEN_TYPE_GTH || // >
            token->type == TOKEN_TYPE_GEQ;   // >=
+}
+/**
+ * @brief Function that transforms the token keyword integer to the corresponding character (string)
+ */
+char *TokenKeywordToString(Keyword keyword) {
+    switch (keyword) {
+    case KEYWORD_I_32:
+        return "i32";
+    case KEYWORD_I_32_NULL:
+        return "i32_null";
+    case KEYWORD_F_64:
+        return "f64";
+    case KEYWORD_F_64_NULL:
+        return "f64_null";
+    case KEYWORD_U_8_ARRAY:
+        return "u8_array";
+    case KEYWORD_U_8_ARRAY_NULL:
+        return "u8_array_null";
+    case KEYWORD_VOID:
+        return "void";
+    case KEYWORD_NULL:
+        return "null";
+    case KEYWORD_IF:
+        return "if";
+    case KEYWORD_ELSE:
+        return "else";
+    case KEYWORD_WHILE:
+        return "while";
+    case KEYWORD_PUB:
+        return "pub";
+    case KEYWORD_FN:
+        return "fn";
+    case KEYWORD_RETURN:
+        return "return";
+    case KEYWORD_VAR:
+        return "var";
+    case KEYWORD_CONST:
+        return "const";
+    case KEYWORD_UNDERSCORE:
+        return "_";
+    case KEYWORD_MAIN:
+        return "main";
+    case KEYWORD_IMPORT:
+        return "import";
+    case KEYWORD_IFJ:
+        return "ifj";
+    case KEYWORD_STRING:
+        return "string";
+    case KEYWORD_LENGTH:
+        return "length";
+    case KEYWORD_CONCAT:
+        return "concat";
+    case KEYWORD_SUBSTRING:
+        return "substring";
+    case KEYWORD_STRCMP:
+        return "strcmp";
+    case KEYWORD_ORD:
+        return "ord";
+    case KEYWORD_CHR:
+        return "chr";
+    case KEYWORD_WRITE:
+        return "write";
+    case KEYWORD_READSTR:
+        return "readstr";
+    case KEYWORD_READI32:
+        return "readi32";
+    case KEYWORD_READF64:
+        return "readf64";
+    case KEYWORD_I2F:
+        return "i2f";
+    case KEYWORD_F2I:
+        return "f2i";
+    default:
+        return "UNKNOWN_KEYWORD";
+    }
 }
