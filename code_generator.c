@@ -64,15 +64,21 @@ int generateCode(FILE *outputFile, AST *ast) {
     // currentnode - pub
     // currentnode->left - fn
     // currentnode->left->left - function name
+
+    printf("Function: %s\n", TokenKeywordToString(currentNode->token->attribute.keyword));
     while (currentNode != NULL) {
-        if (strcmp(currentNode->left->left->token->attribute.string, "main") == 0) {
-            mainStart();
-            generateFuncBody(currentNode->left->left);
-            mainEnd();
+        printf("Function name: %s\n", currentNode->left->left->token->attribute.string);
+        if (currentNode->left->left->token->type == TOKEN_TYPE_KEYWORD) {
+            if (strcmp(TokenKeywordToString(currentNode->left->left->token->attribute.keyword),
+                       "main") == 0) {
+                mainStart();
+                generateFuncBody(currentNode->left->left);
+                mainEnd();
+            }
         } else {
-            functionStart(currentNode->left->token->attribute.string);
+            functionStart(currentNode->left->left->token->attribute.string);
             generateFuncBody(currentNode->left->left);
-            functionEnd(currentNode->left->token->attribute.string);
+            functionEnd(currentNode->left->left->token->attribute.string);
         }
 
         currentNode = currentNode->right;
@@ -303,6 +309,7 @@ int mainEnd() {
 
 int functionStart(char *functionName) {
     ADD_TO_BUFFER("# Start of function ");
+    // token.atribute.string = function name
     ADD_TO_BUFFER(functionName);
     ADD_TO_BUFFER(":\n");
     ADD_TO_BUFFER("LABEL $");
