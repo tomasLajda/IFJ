@@ -316,6 +316,9 @@ int functionStart(char *functionName) {
 int functionEnd(char *functionName) {
     ADD_TO_BUFFER("POPFRAME\n");
     ADD_TO_BUFFER("RETURN\n");
+    ADD_TO_BUFFER("# End of function ");
+    ADD_TO_BUFFER(functionName);
+    ADD_TO_BUFFER("\n");
     return 0;
 }
 
