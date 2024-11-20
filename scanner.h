@@ -63,16 +63,4 @@ int handleIdentifierOrKeyword(DynamicString *string, Token *token);
  */
 int checkTypeValid(DynamicString *string, Token *token);
 
-/**
- * @brief Resets the getc count to allow for controlled roll back of tokens. Works as a checkpoint -
- * saves the current position in program. Use ungetcCharCount() to move back to this position.
- */
-void resetCharCount();
-
-/**
- * @brief Ungets the characters from the input stream to get tokens again. Works as a rollback to
- * checkpoint - moves back to the position in program set by resetCharCount().
- */
-void ungetcCharCount();
-
 #endif
