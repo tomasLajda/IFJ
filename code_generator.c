@@ -65,9 +65,7 @@ int generateCode(FILE *outputFile, AST *ast) {
     // currentnode->left - fn
     // currentnode->left->left - function name
 
-    printf("Function: %s\n", TokenKeywordToString(currentNode->token->attribute.keyword));
     while (currentNode != NULL) {
-        printf("Function name: %s\n", currentNode->left->left->token->attribute.string);
         if (currentNode->left->left->token->type == TOKEN_TYPE_KEYWORD) {
             if (strcmp(TokenKeywordToString(currentNode->left->left->token->attribute.keyword),
                        "main") == 0) {

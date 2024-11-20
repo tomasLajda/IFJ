@@ -87,15 +87,18 @@ int isRelOperator(Token *token);
  *
  *
  * @param type Type of the ASTNode structure
- * 1 - discard call
- * 2 - function call
- * 3 - function definition
- * 4 - if
- * 5 - null if
- * 6 - while
- * 7 - null while
- * 8 - variable definition
- * 9 - variable assignment
+ *
+ * @note types:
+ * 1 - discard call |
+ * 2 - function call |
+ * 3 - function definition |
+ * 30 - main definition |
+ * 4 - if |
+ * 5 - null if |
+ * 6 - while |
+ * 7 - null while |
+ * 8 - variable definition |
+ * 9 - variable assignment |
  *
  */
 ASTNode *mockASTProgramStructure(int type);
