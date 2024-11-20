@@ -130,7 +130,7 @@ typedef enum {
     TOKEN_TYPE_MUL,    // Multiplication *
     TOKEN_TYPE_DIV,    // Division /
 
-    TOKEN_TYPE_VB,             // Or |
+    TOKEN_TYPE_VB,             // Vertical bracket |
     TOKEN_TYPE_LEFT_BR,        // Left bracket (
     TOKEN_TYPE_RIGHT_BR,       // Right bracket )
     TOKEN_TYPE_LEFT_CURLY_BR,  // Left curly bracket {
@@ -139,6 +139,21 @@ typedef enum {
     TOKEN_TYPE_COLON,          // Colon :
     TOKEN_TYPE_SEMICOLON,      // Semicolon ;
     TOKEN_TYPE_DOT,            // Dot .
+
+    // EXPRESSION PARSING
+    TOKEN_TYPE_EXPR,
+    TOKEN_TYPE_DOLLA,
+
+    // CODE GEN
+    TOKEN_TYPE_NULL_COND // Null condition (if or while)
 } TokenType;
+
+typedef enum {
+    SCOPE_GLOBAL = 0,
+    SCOPE_FUNCTION = KEYWORD_FN,
+    SCOPE_WHILE = KEYWORD_WHILE,
+    SCOPE_IF = KEYWORD_IF,
+    SCOPE_ELSE = KEYWORD_ELSE
+} ScopeType;
 
 #endif

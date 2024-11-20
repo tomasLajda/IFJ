@@ -21,7 +21,7 @@ int freeAndReturn(DynamicString *string, int errorCode) {
 
 int checkTypeValid(DynamicString *string, Token *token) {
     // TODO: DELETE DEBUG
-    printf("STRING: %s\n", dynamicStringToCString(string));
+    // printf("STRING: %s\n", dynamicStringToCString(string));
 
     if (dynamicStringCompare(string, "?i32")) {
         token->type = TOKEN_TYPE_KEYWORD;
@@ -499,10 +499,11 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
-                if (checkTypeValid(&buffer, token) == TOKEN_OK)
+                if (checkTypeValid(&buffer, token) == TOKEN_OK) {
                     return freeAndReturn(&buffer, TOKEN_OK);
-                else
+                } else {
                     return freeAndReturn(&buffer, LEXICAL_ERROR);
+                }
             }
             break;
 
