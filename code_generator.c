@@ -47,11 +47,6 @@ void addIntToBuffer(int value) {
     ADD_TO_BUFFER(" \n");
 }
 
-// TODO: function for generating unique labels
-
-// TODO : function for generating unique temporary variables? mozna nebude potreba - diky pouziti
-// datoveho zasobniku pro expressions
-
 int generateCode(FILE *outputFile, AST *ast) {
     if (ast == NULL) {
         return INTERNAL_ERROR;
@@ -283,11 +278,6 @@ void processNode(ASTNode *node) {
             }
         } else {
         }
-        break;
-
-    // TODO: odstranit, sam o sobe nikdy nebude
-    case TOKEN_TYPE_EXPR:
-        // todo: generateExpression(node);
         break;
 
     default:
