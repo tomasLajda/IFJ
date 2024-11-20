@@ -189,10 +189,15 @@ IFJ project
     "DEFVAR LF@%%retval\n"                                                                         \
     "DEFVAR LF@len\n"                                                                              \
     "STRLEN LF@len LF@s\n"                                                                         \
-    "LT LF@%%retval LF@i LF@len\n"                                                                 \
-    "JUMPIFNEQ $ord_error LF@%%retval bool@true\n"                                                 \
-    "GETCHAR LF@%%retval LF@s LF@i\n"                                                              \
-    "CHAR2INT LF@%%retval LF@%%retval\n"                                                           \
+    "JUMPIFEQ LF@len int@0"                                                                        \
+    "DEFVAR LF@condition"                                                                          \
+    "GT LF@condition LF@i LF@len\n"                                                                \
+    "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
+    "EQ LF@condition LF@i LF@len"                                                                  \
+    "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
+    "LT LF@condition LF@i int@0"                                                                   \
+    "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
+    "STRI2INT LF@%%retval LF@s LF@i\n"                                                             \
     "JUMP $ord_end\n"                                                                              \
     "LABEL $ord_error\n"                                                                           \
     "MOVE LF@%%retval int@0\n"                                                                     \
