@@ -301,7 +301,11 @@ void statementAnalysis(ASTNode *node) {
         if (node->isAssignment) {
             variableAssignmentAnalysis(node);
         } else {
-            functionCallAnalysis(node);
+            Operand expressionAnalysis = functionCallAnalysis(node);
+
+            if (expressionAnalysis.type != TYPE_VOID) {
+                HANDLE_ERROR("Expression result not used", UNUSED_VARIABLE_ERROR);
+            }
         }
         break;
     }
