@@ -285,10 +285,8 @@ int functionEnd(char *functionName);
 
 /**
  * @brief Generates the built-in IFJ functions.
- *
- * @return int Returns 0 on success, or a non-zero error code on failure.
  */
-int generateBuiltInFunctions();
+void generateBuiltInFunctions();
 
 /**
  * @brief Processes a function declaration node in the abstract syntax tree (AST).
@@ -297,9 +295,8 @@ int generateBuiltInFunctions();
  * traverses the entire subtree, and generates the function body.
  *
  * @param node A pointer to the AST node representing the function declaration to be processed.
- * @return int Returns 0 on success, or a non-zero error code on failure.
  */
-int generateFuncBody(ASTNode *node);
+void generateFuncBody(ASTNode *node);
 
 /**
  * @brief Processes an AST node representing a command in IFJ24.
@@ -308,9 +305,8 @@ int generateFuncBody(ASTNode *node);
  * (e.g., if, while, assignment, etc.) represented by the given AST node.
  *
  * @param node Pointer to the AST node to be processed.
- * @return An integer indicating the success or failure of the processing.
  */
-int processNode(ASTNode *node);
+void processNode(ASTNode *node);
 
 /**
  * @brief Generates code for a parameter node in the abstract syntax tree (AST).

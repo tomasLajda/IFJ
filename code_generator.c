@@ -97,7 +97,7 @@ int generateCodeHeader() {
     return 0;
 }
 
-int generateBuiltInFunctions() {
+void generateBuiltInFunctions() {
     ADD_TO_BUFFER("# Built-in functions\n");
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_READ);
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_WRITE);
@@ -110,7 +110,7 @@ int generateBuiltInFunctions() {
     ADD_TO_BUFFER("# End of Built-in functions\n");
 }
 
-int generateFuncBody(ASTNode *node) {
+void generateFuncBody(ASTNode *node) {
 
     // TODO: pridat list se vsemi promennymi do parametru funkce
     // TODO: DEFVAR pro vsechny promenne z listu
@@ -134,9 +134,10 @@ int generateFuncBody(ASTNode *node) {
     }
 }
 
-int processNode(ASTNode *node) {
+void processNode(ASTNode *node) {
     if (node == NULL) {
         return INTERNAL_ERROR;
+        // todo: handle error
     }
 
     switch (node->token->type) {
