@@ -371,6 +371,30 @@ ASTNode *mockASTProgramStructure(int type) {
         return root;
         break;
 
+    // Main function definition
+    case 30:
+
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_PUB;
+
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->token->attribute.keyword = KEYWORD_FN;
+
+        // RETURN TYPE
+        root->left->right = initASTNode();
+        root->left->right->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->right->token->attribute.keyword = KEYWORD_VOID;
+
+        root->left->left = initASTNode();
+        root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->left->token->attribute.keyword = KEYWORD_MAIN;
+
+        root->left->left->left = NULL; // No arguments
+
+        return root;
+        break;
+
     // Function definition
     case 3:
 
