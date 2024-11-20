@@ -42,7 +42,7 @@ void whileAnalysis(ASTNode *node);
 void variableDefinitionAnalysis(ASTNode *node);
 void variableAssignmentAnalysis(ASTNode *node);
 void returnAnalysis(ASTNode *node);
-void functionCallAnalysis(ASTNode *node);
+Operand functionCallAnalysis(ASTNode *node);
 Operand determineNextOperand(Operand left, Operand right, TokenType operator);
 Operand expressionAnalysis(ASTNode *node);
 void semanticAnalysis();
@@ -463,36 +463,24 @@ void variableDefinitionAnalysis(ASTNode *node) {
 
     node = node->right;
 
-    // TODO review tomorrow
-    if (node->exprTree->isExpression) {
-        Operand expressionResult = expressionAnalysis(node->exprTree->root);
-        if (currentSymbol.type != TYPE_ANY && currentSymbol.type != expressionResult.type &&
-            (expressionResult.type != TYPE_NULL || !isNullableType(currentSymbol.type))) {
-            HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
-        }
+    Operand expressionResult = node->exprTree->isExpression
+                                   ? expressionAnalysis(node->exprTree->root)
+                                   : functionCallAnalysis(node->exprTree->root);
 
-        if (currentSymbol.type == TYPE_ANY && expressionResult.type == TYPE_NULL) {
-            HANDLE_ERROR("Cannot infer variable type", TYPE_INFERENCE_ERROR);
-        }
-
-        currentSymbol.type = expressionResult.type;
-        if (currentSymbol.constant) {
-            currentSymbol.compileTime = expressionResult.compileTime;
-        }
-    } else {
-        functionCallAnalysis(node->exprTree->root);
-        if (currentSymbol.type != TYPE_ANY) {
-            if (!checkAssignmentType(symbolTableTop(&symbolTableStack), currentSymbol.key,
-                                     currentSymbol.type)) {
-                HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
-            }
-        }
-
-        if (checkAssignmentType(symbolTableTop(&symbolTableStack), currentSymbol.key, TYPE_VOID)) {
-            HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
-        }
-        currentSymbol.type = getVariableType(symbolTableTop(&symbolTableStack), currentSymbol.key);
+    if (currentSymbol.type != TYPE_ANY && currentSymbol.type != expressionResult.type &&
+        (expressionResult.type != TYPE_NULL || !isNullableType(currentSymbol.type))) {
+        HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
     }
+
+    if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
+        HANDLE_ERROR("Cannot assign compile time string to variable", TYPE_INFERENCE_ERROR);
+    }
+
+    if ((currentSymbol.type == TYPE_ANY && expressionResult.type == TYPE_NULL)) {
+        HANDLE_ERROR("Cannot infer variable type", TYPE_INFERENCE_ERROR);
+    }
+
+    currentSymbol.type = expressionResult.type;
 
     symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
     symbolResetValues(&currentSymbol);
@@ -518,27 +506,17 @@ void variableAssignmentAnalysis(ASTNode *node) {
 
     node = node->left;
 
-    // TODO review tomorrow
-    if (node->exprTree->isExpression) {
-        Operand expressionResult = expressionAnalysis(node->exprTree->root);
-        if (valueType != TYPE_ANY && valueType != expressionResult.type &&
-            (expressionResult.type != TYPE_NULL || !isNullableType(valueType))) {
-            HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
-        }
+    Operand expressionResult = node->exprTree->isExpression
+                                   ? expressionAnalysis(node->exprTree->root)
+                                   : functionCallAnalysis(node->exprTree->root);
 
-        currentSymbol.type = expressionResult.type;
-        if (currentSymbol.constant) {
-            currentSymbol.compileTime = expressionResult.compileTime;
-        }
-    } else {
-        functionCallAnalysis(node->exprTree->root);
-        if (currentSymbol.type != TYPE_ANY) {
-            if (!checkAssignmentType(symbolTableTop(&symbolTableStack), currentSymbol.key,
-                                     currentSymbol.type)) {
-                HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
-            }
-        }
-        currentSymbol.type = getVariableType(symbolTableTop(&symbolTableStack), currentSymbol.key);
+    if (valueType != TYPE_ANY && valueType != expressionResult.type &&
+        (expressionResult.type != TYPE_NULL || !isNullableType(valueType))) {
+        HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
+    }
+
+    if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
+        HANDLE_ERROR("Cannot assign compile time string to variable", TYPE_INFERENCE_ERROR);
     }
 }
 
@@ -561,10 +539,9 @@ void returnAnalysis(ASTNode *node) {
     }
 }
 
-void functionCallAnalysis(ASTNode *node) {
+Operand functionCallAnalysis(ASTNode *node) {
     if (node->token->type == TOKEN_TYPE_KEYWORD) {
-        buildInFunctionAnalysis(node);
-        return;
+        return buildInFunctionAnalysis(node);
     }
 
     if (!checkFunctionDefined(symbolTableTop(&symbolTableStack), node->token->attribute.string)) {
@@ -590,6 +567,9 @@ void functionCallAnalysis(ASTNode *node) {
     if (parameterCount != parameterIndex) {
         HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
     }
+
+    return (Operand){.type = getReturnType(symbolTableTop(&symbolTableStack)),
+                     .compileTime = false};
 }
 
 Operand buildInFunctionAnalysis(ASTNode *node) {
