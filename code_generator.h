@@ -193,9 +193,9 @@ IFJ project
     "DEFVAR LF@condition\n"                                                                        \
     "GT LF@condition LF@i LF@len\n"                                                                \
     "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
-    "EQ LF@condition LF@i LF@len"                                                                  \
+    "EQ LF@condition LF@i LF@len\n"                                                                \
     "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
-    "LT LF@condition LF@i int@0"                                                                   \
+    "LT LF@condition LF@i int@0\n"                                                                 \
     "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
     "STRI2INT LF@%%retval LF@s LF@i\n"                                                             \
     "JUMP $ord_end\n"                                                                              \
