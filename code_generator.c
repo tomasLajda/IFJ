@@ -67,7 +67,7 @@ int generateCode(FILE *outputFile, AST *ast) {
     // currentnode->left - fn
     // currentnode->left->left - function name
     while (currentNode != NULL) {
-        if (currentNode->left->left->token->attribute.string == "main") {
+        if (strcmp(currentNode->left->left->token->attribute.string, "main") == 0) {
             mainStart();
             generateFuncBody(currentNode->left->left);
             mainEnd();
