@@ -13,6 +13,7 @@ IFJ Project
 #include <stdlib.h>
 
 FILE *sourceFile; // Source file to be used as input for scanner
+int count = 0;
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
@@ -129,6 +130,7 @@ int getNextToken(Token *token) {
     while (true) {
 
         int current = getc(sourceFile);
+        count++;
 
         // TODO: delete debug
         // // DEBUG
@@ -499,10 +501,11 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
-                if (checkTypeValid(&buffer, token) == TOKEN_OK)
+                if (checkTypeValid(&buffer, token) == TOKEN_OK) {
                     return freeAndReturn(&buffer, TOKEN_OK);
-                else
+                } else {
                     return freeAndReturn(&buffer, LEXICAL_ERROR);
+                }
             }
             break;
 
@@ -530,4 +533,14 @@ int getNextToken(Token *token) {
             break;
         }
     }
+}
+
+void resetCharCount() { count = 0; }
+
+void ungetcCharCount() {
+    int c = 0;
+    while (count-- != 0) {
+        ungetc(c, sourceFile);
+    }
+    (void)c;
 }
