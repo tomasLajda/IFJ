@@ -26,12 +26,12 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
                             unsigned parameterIndex);
 unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
 bool checkFunctionDefined(SymbolTable *table, const char *key);
-bool isConstruct();
-void jumpToPreviousConstruct();
+bool isConstruct(ASTNode *node);
+void jumpToPreviousConstruct(ASTNode *node);
 bool checkBuildInFunction(const char *key);
 DataType convertNullableType(DataType type);
-void functionParameterAnalysis();
-void functionAnalysis();
+void functionParameterAnalysis(ASTNode *node);
+void functionAnalysis(ASTNode *node);
 void statementAnalysis(ASTNode *node);
 void functionBodyAnalysis(ASTNode *node);
 void ifAnalysis(ASTNode *node);
