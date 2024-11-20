@@ -582,13 +582,13 @@ void functionCallAnalysis(ASTNode *node) {
 }
 
 void buildInFunctionAnalysis(ASTNode *node) {
-    DataType parameterType[3] = {TYPE_VOID, TYPE_VOID, TYPE_VOID};
+    DataType parameterType[] = {TYPE_VOID, TYPE_VOID, TYPE_VOID, TYPE_VOID};
     DataType returnType = TYPE_VOID;
 
     switch (node->token->attribute.keyword) {
     case KEYWORD_STRING:
-        // 1 param toto budu nervy
-        parameterType[0] = TYPE_U_8_ARRAY_NULL;
+        // 1 param
+        parameterType[0] = TYPE_U_8_ARRAY;
         returnType = TYPE_U_8_ARRAY;
         break;
     case KEYWORD_LENGTH:
@@ -655,6 +655,26 @@ void buildInFunctionAnalysis(ASTNode *node) {
     default:
         HANDLE_ERROR("Function not defined", UNDEFINED_ERROR);
         break;
+    }
+
+    node = node->left;
+    for (int i = 0; i < 4; i++) {
+        if (node == NULL && parameterType[i] == TYPE_VOID) {
+            break;
+        }
+
+        if ((node->exprTree == NULL && parameterType[i] != TYPE_VOID) ||
+            (node->exprTree != NULL && parameterType[i] == TYPE_VOID)) {
+            HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
+        }
+
+        DataType type = expressionAnalysis(node->left->exprTree->root).type;
+        if (type != parameterType[i] &&
+            (type != TYPE_NULL || !isNullableType(parameterType[i]) && type != TYPE_ANY)) {
+            HANDLE_ERROR("Invalid function parameter", PARAMETER_ERROR);
+        }
+
+        node = node->right;
     }
 }
 
