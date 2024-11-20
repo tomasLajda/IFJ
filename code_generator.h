@@ -212,8 +212,11 @@ IFJ project
     "DEFVAR LF@%%retval\n"                                                                         \
     "DEFVAR LF@num\n"                                                                              \
     "MOVE LF@num LF@i\n"                                                                           \
-    "JUMPIFLT $chr_error LF@num int@0\n"                                                           \
-    "JUMPIFGT $chr_error LF@num int@255\n"                                                         \
+    "DEFVAR LF@condition\n"                                                                        \
+    "LT LF@condition LF@num int@0\n"                                                               \
+    "JUMPIFEQ $chr_error LF@condition bool@true\n"                                                 \
+    "GT LF@condition LF@num int@255\n"                                                             \
+    "JUMPIFEQ $chr_error LF@condition bool@true\n"                                                 \
     "INT2CHAR LF@%%retval LF@num\n"                                                                \
     "JUMP $chr_end\n"                                                                              \
     "LABEL $chr_error\n"                                                                           \
