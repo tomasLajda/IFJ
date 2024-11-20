@@ -321,7 +321,9 @@ void functionBodyAnalysis(ASTNode *node) {
     node = node->left;
     symbolTableCopyFunctionParams(
         table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
-    listOfVariables = node->exprTree;
+    AST *newAST = initAST();
+    node->exprTree = newAST;
+    listOfVariables = newAST;
 
     statementAnalysis(node->right);
 
