@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -lm
+CFLAGS = -Wall -Wextra -std=c99
 
 # Source files (dynamically find all .c files)
 SRCS = $(wildcard *.c)
@@ -17,7 +17,7 @@ all: $(EXEC)
 
 # Link all object files into a single executable
 $(EXEC): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ 
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # Clean up build files
 clean:
