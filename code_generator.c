@@ -94,8 +94,8 @@ int generateCode(FILE *outputFile, AST *ast) {
 int generateCodeHeader() {
     ADD_TO_BUFFER("# Header\n");
     ADD_TO_BUFFER(".IFJcode24\n");
-    generateBuiltInFunctions();
     ADD_TO_BUFFER("JUMP $$main\n");
+    generateBuiltInFunctions();
     ADD_TO_BUFFER("# End of Header\n");
     return 0;
 }
