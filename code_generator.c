@@ -40,7 +40,7 @@ void addFloatToBuffer(double value) {
 
 void addIntToBuffer(int value) {
     ADD_TO_BUFFER("int@");
-    int enoughSpaceForInt = (int)((ceil(log10(value)) + 1) * sizeof(char));
+    int enoughSpaceForInt = 12;
     char intStr[enoughSpaceForInt];
     snprintf(intStr, sizeof(intStr), "%d", value);
     ADD_TO_BUFFER(intStr);
