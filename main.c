@@ -12,7 +12,7 @@ FILE *sourceFile;
 
 int main() {
     // Open the source file containing expressions to parse
-    sourceFile = fopen("testCORRECT.txt", "r");
+    sourceFile = fopen("test.txt", "r");
     if (sourceFile == NULL) {
         fprintf(stderr, "Error: Unable to open source file.\n");
         return EXIT_FAILURE;
@@ -83,7 +83,9 @@ int main() {
     // Loop to parse multiple expressions until EOF is reached
     while (currentToken->type != TOKEN_TYPE_EOF) {
         // Parse the current expression and build its AST
-        parseResult = parseExpression(rootNode->exprTree, currentToken);
+        Token *token1 = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        Token *token2 = createToken(TOKEN_TYPE_PLUS);
+        parseResult = parseExpression(rootNode->exprTree, token1, token2, currentToken);
 
         if (parseResult == SYNTAX_ERROR) {
             printf("Syntax error encountered.\n");
