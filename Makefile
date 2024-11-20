@@ -17,24 +17,14 @@ all: $(EXEC)
 
 # Link all object files into a single executable
 $(EXEC): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # Clean up build files
 clean:
-	rm -f $(EXEC) $(OBJS)
+	rm -f $(EXEC) $(OBJS) xcsirim00.zip
 
-# Build specific file for production
-build: $(FILE:.c=.o)
-	$(CC) $(CFLAGS) -o $(EXEC) $(FILE:.c=.o) $(OBJS)
-
-# Build specific file for testing
-build_test: CFLAGS += -DTEST_MODE
-build_test: $(FILE:.c=.o)
-	$(CC) $(CFLAGS) -o $(EXEC) $(FILE:.c=.o) $(OBJS)
+pack: clean #todo: pridat rozsireni ak bude treba
+	zip -r xcsirim00.zip *.c *.h Makefile rozdeleni dokumentace.pdf
 
 .PHONY: all clean build build_test
 
-# make - make all executables
-# make clean - remove all executables and object files
-# make build FILE=yourfile.c - build a specific file for production (change yourfile.c to the file you want to build)
-# make build_test FILE=yourfile.c - build a specific file for testing (change yourfile.c to the file you want to build)

@@ -13,6 +13,15 @@ IFJ project
 #include "dynamic_string.h"
 #include <stdio.h>
 
+#define BUILT_IN_FUNCTION_STRING                                                                   \
+    "# Built-in function string\n"                                                                 \
+    "LABEL $IFJ24_string\n"                                                                        \
+    "PUSHFRAME\n"                                                                                  \
+    "DEFVAR LF@%%retval\n"                                                                         \
+    "MOVE LF@%%retval LF@value\n"                                                                  \
+    "POPFRAME\n"                                                                                   \
+    "RETURN\n"
+
 #define BUILT_IN_FUNCTION_READ                                                                     \
     "# Built-in function read\n"                                                                   \
     "LABEL $IFJ24_read\n"                                                                          \
