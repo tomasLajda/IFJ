@@ -9,6 +9,7 @@ IFJ project
 #include "enums.h"
 #include "error_codes.h"
 #include "helpers.h"
+#include <math.h>
 
 #define ADD_TO_BUFFER(_code) dynamicStringAddString(&codeBuffer, (const char *)(_code))
 
