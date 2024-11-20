@@ -12,10 +12,6 @@
 extern AST *ast;
 Stack symbolTableStack;
 Symbol currentSymbol;
-ListData currentParameter;
-DataType returnType;
-ASTNode *currentNode;
-ASTNode *constructNode;
 
 bool isDoubleInteger(double number);
 bool isEqualOperator(TokenType operator);
@@ -29,7 +25,6 @@ bool checkVariableCompileTime(SymbolTable *table, const char *key);
 bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
                             unsigned parameterIndex);
 unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
-bool checkReturnType(SymbolTable *table, DataType type);
 bool checkFunctionDefined(SymbolTable *table, const char *key);
 bool isConstruct();
 void jumpToPreviousConstruct();
@@ -133,7 +128,7 @@ unsigned getFunctionParameterCount(SymbolTable *table, const char *key) {
     return count;
 }
 
-bool checkReturnType(SymbolTable *table, DataType type) {
+DataType getReturnType(SymbolTable *table) {
     char *functionKey = table->functionKey;
     while (table->previousTable != NULL) {
         if (table->functionKey != NULL) {
@@ -143,12 +138,15 @@ bool checkReturnType(SymbolTable *table, DataType type) {
     }
 
     if (functionKey == NULL) {
-        return false;
+        HANDLE_ERROR("Function key is NULL", INTERNAL_ERROR);
     }
 
     Symbol *symbol = symbolTableGetSymbol(table, functionKey);
+    if (symbol == NULL) {
+        HANDLE_ERROR("Function not found", UNDEFINED_ERROR);
+    }
 
-    return symbol != NULL && symbol->type == type;
+    return symbol->type;
 }
 
 bool checkFunctionDefined(SymbolTable *table, const char *key) {
@@ -156,16 +154,16 @@ bool checkFunctionDefined(SymbolTable *table, const char *key) {
     return symbol != NULL && symbol->function;
 }
 
-bool isConstruct() {
-    return constructNode->token->type == TOKEN_TYPE_KEYWORD &&
-           (constructNode->token->attribute.keyword == KEYWORD_IF ||
-            constructNode->token->attribute.keyword == KEYWORD_PUB ||
-            constructNode->token->attribute.keyword == KEYWORD_WHILE);
+bool isConstruct(ASTNode *node) {
+    return node->token->type == TOKEN_TYPE_KEYWORD &&
+           (node->token->attribute.keyword == KEYWORD_IF ||
+            node->token->attribute.keyword == KEYWORD_PUB ||
+            node->token->attribute.keyword == KEYWORD_WHILE);
 }
 
-void jumpToPreviousConstruct() {
-    while (!isConstruct()) {
-        constructNode = constructNode->parent;
+void jumpToPreviousConstruct(ASTNode *node) {
+    while (!isConstruct(node)) {
+        node = node->parent;
     }
 }
 
@@ -190,13 +188,15 @@ DataType convertNullableType(DataType type) {
     }
 }
 
-void functionParameterAnalysis() {
-    if (currentNode == NULL) {
+void functionParameterAnalysis(ASTNode *node) {
+    if (node == NULL) {
         return;
     }
 
-    currentParameter.key = currentNode->token->attribute.string;
-    currentParameter.type = (DataType)currentNode->left->token->attribute.keyword;
+    ListData currentParameter;
+
+    currentParameter.key = node->token->attribute.string;
+    currentParameter.type = (DataType)node->left->token->attribute.keyword;
 
     if (currentSymbol.params == NULL) {
         currentSymbol.params = malloc(sizeof(List));
@@ -211,27 +211,29 @@ void functionParameterAnalysis() {
         listNext(currentSymbol.params);
     }
 
-    currentNode = currentNode->right;
-    functionParameterAnalysis();
+    node = node->right;
+    functionParameterAnalysis(node);
 }
 
-void functionAnalysis() {
-    if (currentNode == NULL) {
+void functionAnalysis(ASTNode *node) {
+    if (node == NULL) {
         return;
     }
+
+    ASTNode *currentNode = node->left;
 
     currentSymbol.function = true;
     currentSymbol.constant = true;
     currentSymbol.used = true;
     currentSymbol.compileTime = false;
 
-    constructNode = constructNode->left;
-    currentNode = constructNode->right;
+    node = node->left;
+    currentNode = node->right;
 
     currentSymbol.type = (DataType)currentNode->token->attribute.keyword;
 
-    constructNode = constructNode->left;
-    currentNode = constructNode;
+    node = node->left;
+    currentNode = node;
     if (currentNode->token->type == TOKEN_TYPE_KEYWORD &&
         currentNode->token->attribute.keyword == KEYWORD_MAIN) {
         currentSymbol.key = "main";
@@ -239,17 +241,12 @@ void functionAnalysis() {
         currentSymbol.key = currentNode->token->attribute.string;
     }
 
-    if (checkBuildInFunction(currentSymbol.key)) {
-        HANDLE_ERROR("Cannot redefine build-in function", REDEFINITION_ERROR);
-    }
-
     if (checkDeclaration(symbolTableTop(&symbolTableStack), currentSymbol.key)) {
         HANDLE_ERROR("Function redefinition", REDEFINITION_ERROR);
     }
 
-    currentNode = constructNode->left;
-    functionParameterAnalysis();
-    currentNode = constructNode->right;
+    currentNode = node->left;
+    functionParameterAnalysis(currentNode);
 
     if (strcmp(currentSymbol.key, "main") == 0) {
         if (currentSymbol.type != TYPE_VOID) {
@@ -260,9 +257,9 @@ void functionAnalysis() {
         }
     }
 
-    jumpToPreviousConstruct();
-    constructNode = constructNode->right;
-    functionAnalysis();
+    jumpToPreviousConstruct(node);
+    node = node->right;
+    functionAnalysis(node);
 }
 
 void statementAnalysis(ASTNode *node) {
@@ -317,11 +314,10 @@ void functionBodyAnalysis(ASTNode *node) {
     symbolTablePush(&symbolTableStack, table);
 
     node = node->left;
-    returnType = (DataType)node->right->token->attribute.keyword;
-
     node = node->left;
     symbolTableCopyFunctionParams(
         table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
+
     statementAnalysis(node->right);
 
     symbolTableCheckUsed(table);
@@ -535,12 +531,14 @@ void variableAssignmentAnalysis(ASTNode *node) {
 }
 
 void returnAnalysis(ASTNode *node) {
+    DataType returnType = getReturnType(symbolTableTop(&symbolTableStack));
+
     if (node->exprTree == NULL) {
         if (returnType != TYPE_VOID) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
     } else {
-        if (returnType == TYPE_VOID) {
+        if (returnType == TYPE_VOID && node->exprTree->root != NULL) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
 
@@ -708,11 +706,8 @@ void semanticAnalysis() {
         HANDLE_ERROR("AST is NULL", INTERNAL_ERROR);
     }
 
-    currentNode = ast->root->right;
-    constructNode = ast->root->right;
-
     // Adds functions to the global scope
-    functionAnalysis();
+    functionAnalysis(ast->root->right);
     if (!checkFunctionDefined(globalTable, "main")) {
         HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
     }
