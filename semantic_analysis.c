@@ -345,7 +345,6 @@ void ifAnalysis(ASTNode *node) {
 
     node = node->left;
 
-    // TODO add null set variable
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_NULL_COND) {
         if (!checkDeclaration(symbolTableTop(&symbolTableStack),
@@ -360,7 +359,6 @@ void ifAnalysis(ASTNode *node) {
         node = node->left;
     }
 
-    // TODO add ast analysis
     DataType type = expressionAnalysis(node->exprTree->root).type;
     if (!nullCond) {
         if (type != TYPE_BOOL) {
@@ -418,7 +416,6 @@ void whileAnalysis(ASTNode *node) {
         node = node->left;
     }
 
-    // TODO add ast analysis
     DataType type = expressionAnalysis(node->exprTree->root).type;
     if (!nullCond) {
         if (type != TYPE_BOOL) {
