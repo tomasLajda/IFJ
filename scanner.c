@@ -22,7 +22,7 @@ int freeAndReturn(DynamicString *string, int errorCode) {
 
 int checkTypeValid(DynamicString *string, Token *token) {
     // TODO: DELETE DEBUG
-    printf("STRING: %s\n", dynamicStringToCString(string));
+    // printf("STRING: %s\n", dynamicStringToCString(string));
 
     if (dynamicStringCompare(string, "?i32")) {
         token->type = TOKEN_TYPE_KEYWORD;
