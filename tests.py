@@ -401,5 +401,132 @@ class ParserTest(unittest.TestCase):
         returncode, stdout, stderr = self.run_parser(code)
         self.assertParserSuccess(returncode, stdout, stderr)
 
+    def missing_main(self):
+        """Test parser detects missing main function"""
+        code = '''
+            const ifj = @import("ifj24.zig");
+            pub fn add(a: i32, b: i32) i32 {
+                return a + b;
+            }
+            '''
+        False
+        returncode, stdout, stderr = self.run_parser(code)
+        self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
+
+    def test_invalid_variable_definition(self):
+        """Test parser detects invalid variable assignment"""
+        code = '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                const x = 42;
+                a = 10;
+            }
+            '''
+        False
+        returncode, stdout, stderr = self.run_parser(code)
+        self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
+
+def missing_semicolons(self):
+    """Test parser detects missing semicolons"""
+    test_cases = [
+        (
+            '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                const x = 42
+            }
+            ''',
+            "Missing semicolon after variable declaration",
+            False
+        ),
+        (
+            '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                y = ifj.string("AHOJ")
+            }
+            ''',
+            "Missing semicolon after variable assignment with builtin function",
+            False
+        ),
+        (
+            '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                x = x + 1
+                return;
+            }
+            ''',
+            "Missing semicolon after an expression in variable assignment",
+            False
+        ),
+        (
+            '''
+            const ifj = @import("ifj24.zig");
+            pub fn helper() void {
+                return;
+            }
+
+            pub fn main() void {
+                helper()
+            }
+            ''',
+            "Missing semicolon after function call",
+            False
+        ),
+        (
+            '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                return
+            }
+            ''',
+            "Missing semicolon after return statement",
+            False
+        ),
+        (
+            '''
+            const ifj = @import("ifj24.zig")
+            pub fn main() void {
+                return 0;
+            }
+            ''',
+            "Missing semicolon after import statement",
+            False
+        ),
+        (
+            '''
+            const ifj = @import("ifj24.zig");
+            pub fn main() void {
+                if (1==1) {
+                    var z = 5
+                }
+            }
+            ''',
+            "Missing semicolon after variable declaration inside if statement",
+            False
+        ),
+        (
+            '''
+            const ifj = @import("ifj24.zig");
+            pub fn helper() void {
+                return;
+            }
+            pub fn main() void {
+                helper()
+            }
+            ''',
+            "Missing semicolon in function call",
+            False
+        )
+    ]
+    for code, description, should_pass in test_cases:
+        with self.subTest(description=description):
+            returncode, stdout, stderr = self.run_parser(code)
+            if should_pass:
+                self.assertParserSuccess(returncode, stdout=stdout, stderr=stderr)
+            else:
+                self.assertParserFailure(returncode, stdout=stdout, stderr=stderr)
+
 if __name__ == '__main__':
     unittest.main(testRunner=SortedTestRunner(verbosity=2))

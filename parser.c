@@ -605,7 +605,12 @@ void parseVarDef() {
             AST *exprTree = initAST();
             ASTNode *exprNode = initASTNode();
             exprTree->root = exprNode;
-            parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
+            printf("PRED EX: \n");
+            printTokenInfo(currentToken);
+            printTokenInfo(tokenBuffer.first);
+            printTokenInfo(tokenBuffer.second);
+            int result = parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
+            printf("%d\n", result);
             printf("PO EX ");
             printTokenInfo(currentToken);
             currenParent->exprTree = exprTree;
@@ -956,10 +961,6 @@ void parseDiscardCall() {
         printTokenInfo(currentToken);
 
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
-        parseFuncCall();
-        parseFuncCall();
-        parseFuncCall();
-        parseFuncCall();
             parseFuncCall();
         } else {
             AST *exprTree = initAST();

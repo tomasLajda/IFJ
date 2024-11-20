@@ -253,40 +253,45 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
 
     // Begin filling
     getNextToken(token);
-    while (isOperand(token) || isOperator(token) || isParentheses(token)) {
-        // Track parentheses balance
-        if (token->type == TOKEN_TYPE_LEFT_BR) {
-            openingParentheses++;
-        } else if (token->type == TOKEN_TYPE_RIGHT_BR) {
-            closingParentheses++;
-        }
-        if (closingParentheses > openingParentheses) {
-            break;
-        }
-        if (isRelOperator(token)) {
-            relationOperators++;
-        }
-        if (relationOperators > 1) {
-            break;
-        }
-        // Copy the token for the stack element
-        Token *tempToken = copyToken(token);
-        if (tempToken == NULL) {
-            freeToken(token);
-            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
-        }
+    if (token->type == TOKEN_TYPE_EOF) {
+        token = copyToken(top(&tempStack)->tokenPtr);
+        pop(&tempStack);
+    } else {
+        while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+            // Track parentheses balance
+            if (token->type == TOKEN_TYPE_LEFT_BR) {
+                openingParentheses++;
+            } else if (token->type == TOKEN_TYPE_RIGHT_BR) {
+                closingParentheses++;
+            }
+            if (closingParentheses > openingParentheses) {
+                break;
+            }
+            if (isRelOperator(token)) {
+                relationOperators++;
+            }
+            if (relationOperators > 1) {
+                break;
+            }
+            // Copy the token for the stack element
+            Token *tempToken = copyToken(token);
+            if (tempToken == NULL) {
+                freeToken(token);
+                HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+            }
 
-        ASTNode *astNode = initASTNode();
-        astNode->token = copyToken(token);
-        // Create a stack element and push it onto the temporary stack
-        StackElement *newElement = createStackElement(tempToken, astNode);
-        if (newElement == NULL) {
-            freeToken(tempToken);
-            freeToken(token);
-            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+            ASTNode *astNode = initASTNode();
+            astNode->token = copyToken(token);
+            // Create a stack element and push it onto the temporary stack
+            StackElement *newElement = createStackElement(tempToken, astNode);
+            if (newElement == NULL) {
+                freeToken(tempToken);
+                freeToken(token);
+                HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+            }
+            push(&tempStack, newElement);
+            getNextToken(token);
         }
-        push(&tempStack, newElement);
-        getNextToken(token);
     }
 
     // Assign the delimiter token and check if its valid
@@ -377,6 +382,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(stack);
         return SYNTAX_ERROR; // Indicate syntax error
     }
+
     // Initialize the current input element
     StackElement *currentInputElement = top(input);
     if (isEmpty(input)) {
