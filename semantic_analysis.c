@@ -46,7 +46,7 @@ void functionCallAnalysis(ASTNode *node);
 Operand determineNextOperand(Operand left, Operand right, TokenType operator);
 Operand expressionAnalysis(ASTNode *node);
 void semanticAnalysis();
-void buildInFunctionAnalysis(ASTNode *node);
+Operand buildInFunctionAnalysis(ASTNode *node);
 
 bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
 
@@ -592,7 +592,7 @@ void functionCallAnalysis(ASTNode *node) {
     }
 }
 
-void buildInFunctionAnalysis(ASTNode *node) {
+Operand buildInFunctionAnalysis(ASTNode *node) {
     DataType parameterType[] = {TYPE_VOID, TYPE_VOID, TYPE_VOID, TYPE_VOID};
     DataType returnType = TYPE_VOID;
 
@@ -680,13 +680,15 @@ void buildInFunctionAnalysis(ASTNode *node) {
         }
 
         DataType type = expressionAnalysis(node->left->exprTree->root).type;
-        if (type != parameterType[i] &&
-            (type != TYPE_NULL || !isNullableType(parameterType[i]) && type != TYPE_ANY)) {
+        if (type != parameterType[i] && (type != TYPE_NULL || !isNullableType(parameterType[i])) &&
+            parameterType[i] != TYPE_ANY) {
             HANDLE_ERROR("Invalid function parameter", PARAMETER_ERROR);
         }
 
         node = node->right;
     }
+
+    return (Operand){.type = returnType, .compileTime = false};
 }
 
 Operand determineNextOperand(Operand left, Operand right, TokenType operator) {
