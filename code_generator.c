@@ -84,7 +84,7 @@ int generateCode(FILE *outputFile, AST *ast) {
         currentNode = currentNode->right;
     }
 
-    ADD_TO_BUFFER("$$END\n");
+    ADD_TO_BUFFER("LABEL $$END\n");
     codeGeneratorFlush(outputFile);
 
     dynamicStringFree(&codeBuffer);
