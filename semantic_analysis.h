@@ -64,7 +64,7 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
  * @param type Expected return type.
  * @return true if the return statement is valid, false otherwise.
  */
-bool checkReturnType(SymbolTable *table, DataType type);
+DataType getReturnType(SymbolTable *table);
 
 /**
  * @brief Checks if a function is defined in the symbol table.
