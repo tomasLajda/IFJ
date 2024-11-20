@@ -475,7 +475,7 @@ void variableDefinitionAnalysis(ASTNode *node) {
     }
 
     if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
-        HANDLE_ERROR("Cannot assign compile time string to variable", TYPE_INFERENCE_ERROR);
+        HANDLE_ERROR("Cannot assign compile time string to variable", TYPE_COMPATIBILITY_ERROR);
     }
 
     if ((currentSymbol.type == TYPE_ANY && expressionResult.type == TYPE_NULL)) {
@@ -518,7 +518,7 @@ void variableAssignmentAnalysis(ASTNode *node) {
     }
 
     if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
-        HANDLE_ERROR("Cannot assign compile time string to variable", TYPE_INFERENCE_ERROR);
+        HANDLE_ERROR("Cannot assign compile time string to variable", TYPE_COMPATIBILITY_ERROR);
     }
 }
 
@@ -534,9 +534,14 @@ void returnAnalysis(ASTNode *node) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
 
-        DataType type = expressionAnalysis(node->exprTree->root).type;
-        if (type != returnType && (type != TYPE_NULL || !isNullableType(returnType))) {
+        Operand expressionResult = expressionAnalysis(node->exprTree->root);
+        if (expressionResult.type != returnType &&
+            (expressionResult.type != TYPE_NULL || !isNullableType(returnType))) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
+        }
+
+        if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
+            HANDLE_ERROR("Cannot return compile time string", RETURN_EXPRESSION_ERROR);
         }
     }
 }
@@ -556,10 +561,15 @@ Operand functionCallAnalysis(ASTNode *node) {
 
     node = node->left;
     while (node != NULL) {
-        DataType type = expressionAnalysis(node->exprTree->root).type;
+        Operand expressionResult = expressionAnalysis(node->exprTree->root);
         if (!checkFunctionParameter(symbolTableTop(&symbolTableStack),
-                                    node->token->attribute.string, type, parameterIndex)) {
+                                    node->token->attribute.string, expressionResult.type,
+                                    parameterIndex)) {
             HANDLE_ERROR("Invalid function parameter", PARAMETER_ERROR);
+        }
+
+        if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
+            HANDLE_ERROR("Cannot assign compile time string to parameter", PARAMETER_ERROR);
         }
 
         node = node->right;
@@ -577,8 +587,9 @@ Operand functionCallAnalysis(ASTNode *node) {
 Operand buildInFunctionAnalysis(ASTNode *node) {
     DataType parameterType[] = {TYPE_VOID, TYPE_VOID, TYPE_VOID, TYPE_VOID};
     DataType returnType = TYPE_VOID;
+    Keyword key = node->token->attribute.keyword;
 
-    switch (node->token->attribute.keyword) {
+    switch (key) {
     case KEYWORD_STRING:
         // 1 param
         parameterType[0] = TYPE_U_8_ARRAY;
@@ -661,10 +672,16 @@ Operand buildInFunctionAnalysis(ASTNode *node) {
             HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
         }
 
-        DataType type = expressionAnalysis(node->left->exprTree->root).type;
-        if (type != parameterType[i] && (type != TYPE_NULL || !isNullableType(parameterType[i])) &&
+        Operand expressionResult = expressionAnalysis(node->left->exprTree->root);
+        if (expressionResult.type != parameterType[i] &&
+            (expressionResult.type != TYPE_NULL || !isNullableType(parameterType[i])) &&
             parameterType[i] != TYPE_ANY) {
             HANDLE_ERROR("Invalid function parameter", PARAMETER_ERROR);
+        }
+
+        if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime &&
+            key != KEYWORD_STRING) {
+            HANDLE_ERROR("Cannot assign compile time string to parameter", PARAMETER_ERROR);
         }
 
         node = node->right;
