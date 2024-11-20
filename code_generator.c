@@ -257,8 +257,22 @@ int processNode(ASTNode *node) {
             generateExpression(node->left);
             ADD_TO_BUFFER("POPS TF@value\n");
             ADD_TO_BUFFER("CALL $IFJ24_write\n");
+        } else if (node->token->attribute.keyword == KEYWORD_VAR ||
+                   node->token->attribute.keyword == KEYWORD_CONST) {
+            // skip VARDEF and continue with the assignement
+            ASTNode *idNode = node->left;
+            if (idNode->right->exprTree->isExpression == true) {
+                generateExpression(idNode->right->exprTree->root);
+                ADD_TO_BUFFER("POPS LF@");
+                ADD_TO_BUFFER(idNode->token->attribute.string);
+                ADD_TO_BUFFER("\n");
+            } else {
+                generateFuncCall(idNode->right->exprTree->root);
+                ADD_TO_BUFFER("MOVE LF@");
+                ADD_TO_BUFFER(idNode->token->attribute.string);
+                ADD_TO_BUFFER(" TF@%%retval\n");
+            }
         } else {
-            // TODO: Skip VARDEF and continue with the next node
         }
         break;
 
