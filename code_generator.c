@@ -560,6 +560,13 @@ void builtInFuncCall(ASTNode *node) {
         generateExpression(node->left->exprTree->root);
         ADD_TO_BUFFER("POPS TF@input\n");
         ADD_TO_BUFFER("CALL $IFJ24_f2i\n");
+
+    } else if (node->token->attribute.keyword == KEYWORD_STRING) {
+        ADD_TO_BUFFER("CREATEFRAME\n");
+        ADD_TO_BUFFER("DEFVAR TF@value\n");
+        generateExpression(node->left->exprTree->root);
+        ADD_TO_BUFFER("POPS TF@value\n");
+        ADD_TO_BUFFER("CALL $IFJ24_string\n");
     }
 }
 
