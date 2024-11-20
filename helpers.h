@@ -81,4 +81,23 @@ int isDelimiter(Token *token);
  */
 int isRelOperator(Token *token);
 
+/**
+ * @brief Function that returns a pointer to the appropriate ASTNode structure based on the given
+ * type
+ *
+ *
+ * @param type Type of the ASTNode structure
+ * 1 - discard call
+ * 2 - function call
+ * 3 - function definition
+ * 4 - if
+ * 5 - null if
+ * 6 - while
+ * 7 - null while
+ * 8 - variable definition
+ * 9 - variable assignment
+ *
+ */
+ASTNode *mockASTProgramStructure(int type);
+
 #endif // HELPERS_H
