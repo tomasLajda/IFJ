@@ -502,6 +502,7 @@ void variableAssignmentAnalysis(ASTNode *node) {
                                   node->token->attribute.string)) {
             HANDLE_ERROR("Cannot assign to constant", REDEFINITION_ERROR);
         }
+        symbolTableSetUsed(symbolTableTop(&symbolTableStack), node->token->attribute.string);
 
         valueType =
             getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
@@ -649,7 +650,6 @@ Operand expressionAnalysis(ASTNode *node) {
                                   node->token->attribute.string)) {
                 HANDLE_ERROR("Variable not defined", UNDEFINED_ERROR);
             }
-
             symbolTableSetUsed(symbolTableTop(&symbolTableStack), node->token->attribute.string);
 
             return (Operand){.type = getVariableType(symbolTableTop(&symbolTableStack),
@@ -713,7 +713,6 @@ void semanticAnalysis() {
 
     // Adds functions to the global scope
     functionAnalysis();
-
     if (!checkFunctionDefined(globalTable, "main")) {
         HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
     }
