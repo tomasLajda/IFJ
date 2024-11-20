@@ -237,61 +237,69 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
     int openingParentheses = 0;
     int closingParentheses = 0;
     int relationOperators = 0;
+    int providedTokens = 0;
 
     if (firstToken != NULL) {
         ASTNode *astNode1 = initASTNode();
         astNode1->token = copyToken(firstToken);
         StackElement *newElement1 = createStackElement(firstToken, astNode1);
         push(&tempStack, newElement1);
+        providedTokens++;
     }
     if (secondToken != NULL) {
         ASTNode *astNode2 = initASTNode();
         astNode2->token = copyToken(secondToken);
         StackElement *newElement2 = createStackElement(secondToken, astNode2);
         push(&tempStack, newElement2);
+        providedTokens++;
     }
 
     // Begin filling
-    getNextToken(token);
-    if (token->type == TOKEN_TYPE_EOF) {
-        token = copyToken(top(&tempStack)->tokenPtr);
-        pop(&tempStack);
-    } else {
-        while (isOperand(token) || isOperator(token) || isParentheses(token)) {
-            // Track parentheses balance
-            if (token->type == TOKEN_TYPE_LEFT_BR) {
-                openingParentheses++;
-            } else if (token->type == TOKEN_TYPE_RIGHT_BR) {
-                closingParentheses++;
-            }
-            if (closingParentheses > openingParentheses) {
-                break;
-            }
-            if (isRelOperator(token)) {
-                relationOperators++;
-            }
-            if (relationOperators > 1) {
-                break;
-            }
-            // Copy the token for the stack element
-            Token *tempToken = copyToken(token);
-            if (tempToken == NULL) {
-                freeToken(token);
-                HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
-            }
-
+    if (providedTokens == 2) {
+        if (isOperand(firstToken) && isDelimiter(secondToken)) {
             ASTNode *astNode = initASTNode();
-            astNode->token = copyToken(token);
-            // Create a stack element and push it onto the temporary stack
-            StackElement *newElement = createStackElement(tempToken, astNode);
-            if (newElement == NULL) {
-                freeToken(tempToken);
-                freeToken(token);
-                HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
-            }
-            push(&tempStack, newElement);
-            getNextToken(token);
+            astNode->token = copyToken(firstToken);
+            push(stack, createStackElement(firstToken, astNode));
+            Token *delim = copyToken(secondToken);
+            *delimiterToken = *delim;
+            return stack;
         }
+    }
+    while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+        getNextToken(token);
+        // Track parentheses balance
+        if (token->type == TOKEN_TYPE_LEFT_BR) {
+            openingParentheses++;
+        } else if (token->type == TOKEN_TYPE_RIGHT_BR) {
+            closingParentheses++;
+        }
+        if (closingParentheses > openingParentheses) {
+            break;
+        }
+        if (isRelOperator(token)) {
+            relationOperators++;
+        }
+        if (relationOperators > 1) {
+            break;
+        }
+        // Copy the token for the stack element
+        Token *tempToken = copyToken(token);
+        if (tempToken == NULL) {
+            freeToken(token);
+            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+        }
+
+        ASTNode *astNode = initASTNode();
+        astNode->token = copyToken(token);
+        // Create a stack element and push it onto the temporary stack
+        StackElement *newElement = createStackElement(tempToken, astNode);
+        if (newElement == NULL) {
+            freeToken(tempToken);
+            freeToken(token);
+            HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
+        }
+        push(&tempStack, newElement);
+        getNextToken(token);
     }
 
     // Assign the delimiter token and check if its valid
@@ -460,6 +468,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
             free(input);
             cleanupStack(stack);
             free(stack);
+
             return SYNTAX_ERROR;      // Syntax error
         } else if (!isEmpty(input)) { // Shift
             Token *currentToken = createToken(currentInputElement->tokenPtr->type);
