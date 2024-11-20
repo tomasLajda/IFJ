@@ -457,7 +457,10 @@ int generateParam(ASTNode *node, int paramID) {
     ADD_TO_BUFFER("MOVE LF@");
     ADD_TO_BUFFER(paramName);
     ADD_TO_BUFFER(" LF@%%arg");
-    addIntToBuffer(paramID);
+    int enoughSpaceForInt = 12;
+    char intStr[enoughSpaceForInt];
+    snprintf(intStr, sizeof(intStr), "%d", paramID);
+    ADD_TO_BUFFER(intStr);
     ADD_TO_BUFFER("\n");
     return 0;
 }
