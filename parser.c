@@ -5,8 +5,7 @@
  * @author Martin Valapka - xvalapm00
  */
 
-// TODO: BUILT-IN FUNCTIONS, AST, _ = ifj.write("string"), FUNCCALL to AST
-
+// TODO: BUILT-IN FUNCTIONS, AST, _ = ifj.write("string"), FUNCCALL to AST, TODO nemozem OKEN_TYPE_IDENTIFIER a !TOKEN_TYPE_IDENTIFIER pri expr
 #include "parser.h"
 #include "testing_utils.h"
 #include <string.h>
@@ -289,7 +288,8 @@ void parseType() {
 
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } else {
+    } 
+    else {
         printTokenInfo(currentToken);
         HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
     }
@@ -421,15 +421,20 @@ void parseStatement() {
         if (isTokenKeyword(currentToken, KEYWORD_VAR) ||
             isTokenKeyword(currentToken, KEYWORD_CONST)) {
             parseVarDef();
-        } else if (isTokenKeyword(currentToken, KEYWORD_IF)) {
+        } 
+        else if (isTokenKeyword(currentToken, KEYWORD_IF)) {
             parseIf();
-        } else if (isTokenKeyword(currentToken, KEYWORD_WHILE)) {
+        } 
+        else if (isTokenKeyword(currentToken, KEYWORD_WHILE)) {
             parseWhile();
-        } else if (isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
+        } 
+        else if (isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
             parseDiscardCall();
-        } else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+        } 
+        else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
             parseReturn();
-        } else if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
+        } 
+        else if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
             printTokenInfo(currentToken);
             getNextToken(currentToken);
 
@@ -451,7 +456,8 @@ void parseStatement() {
             }
             onlyOneArg = true;
             parseFuncCall();
-        } else {
+        } 
+        else {
             printTokenInfo(currentToken);
             HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
         }
@@ -463,9 +469,11 @@ void parseStatement() {
 
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
             parseFuncCall();
-        } else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
+        } 
+        else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
             parseVarAss();
-        } else {
+        } 
+        else {
             HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
         }
         break;
@@ -534,6 +542,7 @@ void parseVarDef() {
         getNextToken(currentToken);
         parseFuncCall();
     } 
+    // TODO: TOTO opravit
     else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -546,7 +555,7 @@ void parseVarDef() {
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
         addRightNode(ast, currenParent, exprNode);
-
+    
         printf("\n");
         displayAST(ast);
         printf("\n");
@@ -758,7 +767,7 @@ void parseElse() {
     getNextToken(currentToken);
 }
 
-// FUNC_CALL ::= token_id token_Orb ARGS token_Crb token_semicolon
+// FUNC_CALL ::= token_Orb ARGS token_Crb token_semicolon
 void parseFuncCall() {
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
@@ -795,7 +804,42 @@ void parseDiscardCall() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    parseExpression(ast, currentToken);
+    if (currentToken->type == isTokenKeyword(currentToken, KEYWORD_IFJ)) {
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+
+        if (currentToken->type != TOKEN_TYPE_DOT) {
+            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
+        }
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+
+        if (!isTokenBuiltInFunction(currentToken)) {
+            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
+        }
+
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+        parseFuncCall();
+    } 
+    // TODO: TOTO opravit
+    else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
+        parseFuncCall();
+    } 
+    else {
+        AST *exprTree = initAST();
+        parseExpression(exprTree, currentToken);
+        exprTree->isExpression = true;
+        ASTNode *exprNode = initASTNode();
+        exprNode->exprTree = exprTree;
+        addRightNode(ast, currenParent, exprNode);
+
+        printf("\n");
+        displayAST(ast);
+        printf("\n");
+    }
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);

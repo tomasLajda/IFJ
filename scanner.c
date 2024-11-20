@@ -12,7 +12,8 @@ IFJ Project
 #include <stdbool.h>
 #include <stdlib.h>
 
-extern FILE *sourceFile; // Source file to be used as input for scanner
+FILE *sourceFile; // Source file to be used as input for scanner
+int count = 0;
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
@@ -20,6 +21,9 @@ int freeAndReturn(DynamicString *string, int errorCode) {
 }
 
 int checkTypeValid(DynamicString *string, Token *token) {
+    // TODO: DELETE DEBUG
+    printf("STRING: %s\n", dynamicStringToCString(string));
+
     if (dynamicStringCompare(string, "?i32")) {
         token->type = TOKEN_TYPE_KEYWORD;
         token->attribute.keyword = KEYWORD_I_32_NULL;
@@ -121,10 +125,12 @@ int getNextToken(Token *token) {
 
     int state = STATE_START;
     token->type = TOKEN_TYPE_EMPTY;
+    token->attribute.noAttribute = NULL;
 
     while (true) {
 
         int current = getc(sourceFile);
+        count++;
 
         // TODO: delete debug
         // // DEBUG
@@ -195,7 +201,11 @@ int getNextToken(Token *token) {
             } else if (current == ':') {
                 token->type = TOKEN_TYPE_COLON;
                 return TOKEN_OK;
+            } else if (current == '|') {
+                token->type = TOKEN_TYPE_VB;
+                return TOKEN_OK;
             }
+
             // STRING
             else if (current == '"') {
                 token->type = TOKEN_TYPE_STRING_VALUE;
@@ -485,20 +495,23 @@ int getNextToken(Token *token) {
         // TYPE
         case STATE_TYPE:
             if (current == '[') {
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_OPENING_SQUARE_BRAC;
             } else if (islower(current) || isdigit(current)) {
                 dynamicStringAddChar(&buffer, current);
             } else {
                 ungetc(current, sourceFile);
-                if (checkTypeValid(&buffer, token) == TOKEN_OK)
+                if (checkTypeValid(&buffer, token) == TOKEN_OK) {
                     return freeAndReturn(&buffer, TOKEN_OK);
-                else
+                } else {
                     return freeAndReturn(&buffer, LEXICAL_ERROR);
+                }
             }
             break;
 
         case STATE_OPENING_SQUARE_BRAC:
             if (current == ']') {
+                dynamicStringAddChar(&buffer, current);
                 state = STATE_CLOSING_SQUARE_BRAC;
             } else {
                 ungetc(current, sourceFile);
@@ -520,4 +533,14 @@ int getNextToken(Token *token) {
             break;
         }
     }
+}
+
+void resetCharCount() { count = 0; }
+
+void ungetcCharCount() {
+    int c = 0;
+    while (count-- != 0) {
+        ungetc(c, sourceFile);
+    }
+    (void)c;
 }
