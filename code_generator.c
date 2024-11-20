@@ -145,6 +145,7 @@ void generateFuncBody(ASTNode *node) {
 void processNode(ASTNode *node) {
     if (node == NULL) {
         // todo: handle error
+        HANDLE_ERROR("ASTNode in processNode func (code gen) is NULL", INTERNAL_ERROR);
     }
 
     switch (node->token->type) {
