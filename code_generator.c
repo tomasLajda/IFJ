@@ -48,6 +48,7 @@ void addIntToBuffer(int value) {
 }
 
 // TODO: function for generating unique labels
+
 // TODO : function for generating unique temporary variables? mozna nebude potreba - diky pouziti
 // datoveho zasobniku pro expressions
 
@@ -100,6 +101,7 @@ int generateCodeHeader() {
 
 void generateBuiltInFunctions() {
     ADD_TO_BUFFER("# Built-in functions\n");
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_STRING);
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_READ);
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_WRITE);
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_I2F);
