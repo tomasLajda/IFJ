@@ -23,6 +23,40 @@ bool onlyThreeArgs = false;
 bool parsingReturnType = false;
 unsigned int argCounter = 0;
 unsigned int paramCounter = 0;
+TokenBuffer tokenBuffer = {NULL, NULL};
+
+void initTokenBuffer() {
+    if (tokenBuffer.first == NULL) {
+        tokenBuffer.first = malloc(sizeof(Token));
+    }
+    if (tokenBuffer.second == NULL) {
+        tokenBuffer.second = malloc(sizeof(Token));
+    }
+}
+
+void freeTokenBuffer() {
+    if (tokenBuffer.first != NULL) {
+        free(tokenBuffer.first);
+        tokenBuffer.first = NULL;
+    }
+    if (tokenBuffer.second != NULL) {
+        free(tokenBuffer.second);
+        tokenBuffer.second = NULL;
+    }
+}
+
+void addTokenToBuffer(Token *token) {
+    if (tokenBuffer.first == NULL) {
+        tokenBuffer.first = token;
+    } 
+    else if (tokenBuffer.second == NULL) {
+        tokenBuffer.second = token;
+    } 
+    else {
+        printf("Token buffer is full\n");
+        return;
+    }
+}
 
 void goBack(ASTNode *startNode) {
     ASTNode *currentNode = startNode;
@@ -317,7 +351,7 @@ void parseReturn() {
     } 
     else {
         AST *exprTree = initAST();
-        parseExpression(exprTree, currentToken);
+        //parseExpression(exprTree, currentToken);
         exprTree->isExpression = true;
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
@@ -550,7 +584,7 @@ void parseVarDef() {
     }
     else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
-        parseExpression(exprTree, currentToken);
+        //parseExpression(exprTree, currentToken);
         exprTree->isExpression = true;
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
@@ -618,7 +652,7 @@ void parseVarAss() {
     }
     else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
-        parseExpression(exprTree, currentToken);
+        //parseExpression(exprTree, currentToken);
         exprTree->isExpression = true;
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
@@ -656,7 +690,7 @@ void parseWhile() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    parseExpression(ast, currentToken);
+    //parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
@@ -716,7 +750,7 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    parseExpression(ast, currentToken);
+    //parseExpression(ast, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
@@ -830,7 +864,7 @@ void parseDiscardCall() {
     } 
     else {
         AST *exprTree = initAST();
-        parseExpression(exprTree, currentToken);
+        //parseExpression(exprTree, currentToken);
         exprTree->isExpression = true;
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
@@ -879,7 +913,7 @@ void parseArgs() {
         getNextToken(currentToken);
     } 
     else {
-        parseExpression(ast, currentToken);
+       // parseExpression(ast, currentToken);
     }
 
     argCounter++;
