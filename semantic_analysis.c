@@ -28,7 +28,7 @@ unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
 bool checkFunctionDefined(SymbolTable *table, const char *key);
 bool isConstruct(ASTNode *node);
 void jumpToPreviousConstruct(ASTNode *node);
-bool checkBuildInFunction(const char *key);
+bool checkBuildInFunction(Keyword key);
 DataType convertNullableType(DataType type);
 void functionParameterAnalysis(ASTNode *node);
 void functionAnalysis(ASTNode *node);
@@ -43,6 +43,7 @@ void functionCallAnalysis(ASTNode *node);
 Operand determineNextOperand(Operand left, Operand right, TokenType operator);
 Operand expressionAnalysis(ASTNode *node);
 void semanticAnalysis();
+void buildInFunctionAnalysis(ASTNode *node);
 
 bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
 
@@ -167,12 +168,12 @@ void jumpToPreviousConstruct(ASTNode *node) {
     }
 }
 
-bool checkBuildInFunction(const char *key) {
-    return strcmp(key, "readstr") == 0 || strcmp(key, "readi32") == 0 ||
-           strcmp(key, "readf64") == 0 || strcmp(key, "write") == 0 || strcmp(key, "i2f") == 0 ||
-           strcmp(key, "f2i") == 0 || strcmp(key, "string") == 0 || strcmp(key, "length") == 0 ||
-           strcmp(key, "concat") == 0 || strcmp(key, "substring") == 0 ||
-           strcmp(key, "strcmp") == 0 || strcmp(key, "ord") == 0 || strcmp(key, "chr") == 0;
+bool checkBuildInFunction(Keyword key) {
+    return key == KEYWORD_STRING || key == KEYWORD_LENGTH || key == KEYWORD_CONCAT ||
+           key == KEYWORD_SUBSTRING || key == KEYWORD_STRCMP || key == KEYWORD_ORD ||
+           key == KEYWORD_CHR || key == KEYWORD_WRITE || key == KEYWORD_READSTR ||
+           key == KEYWORD_READI32 || key == KEYWORD_READF64 || key == KEYWORD_I2F ||
+           key == KEYWORD_F2I;
 }
 
 DataType convertNullableType(DataType type) {
@@ -550,6 +551,11 @@ void returnAnalysis(ASTNode *node) {
 }
 
 void functionCallAnalysis(ASTNode *node) {
+    if (node->token->type == TOKEN_TYPE_KEYWORD) {
+        buildInFunctionAnalysis(node);
+        return;
+    }
+
     if (!checkFunctionDefined(symbolTableTop(&symbolTableStack), node->token->attribute.string)) {
         HANDLE_ERROR("Function not defined", UNDEFINED_ERROR);
     }
@@ -572,6 +578,83 @@ void functionCallAnalysis(ASTNode *node) {
 
     if (parameterCount != parameterIndex) {
         HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
+    }
+}
+
+void buildInFunctionAnalysis(ASTNode *node) {
+    DataType parameterType[3] = {TYPE_VOID, TYPE_VOID, TYPE_VOID};
+    DataType returnType = TYPE_VOID;
+
+    switch (node->token->attribute.keyword) {
+    case KEYWORD_STRING:
+        // 1 param toto budu nervy
+        parameterType[0] = TYPE_U_8_ARRAY_NULL;
+        returnType = TYPE_U_8_ARRAY;
+        break;
+    case KEYWORD_LENGTH:
+        // 1 param
+        parameterType[0] = TYPE_U_8_ARRAY;
+        returnType = TYPE_I_32;
+        break;
+    case KEYWORD_CONCAT:
+        // 2 params
+        parameterType[0] = TYPE_U_8_ARRAY;
+        parameterType[1] = TYPE_U_8_ARRAY;
+        returnType = TYPE_U_8_ARRAY;
+        break;
+    case KEYWORD_SUBSTRING:
+        // 3 params
+        parameterType[0] = TYPE_U_8_ARRAY;
+        parameterType[1] = TYPE_I_32;
+        parameterType[2] = TYPE_I_32;
+        returnType = TYPE_U_8_ARRAY_NULL;
+        break;
+    case KEYWORD_STRCMP:
+        // 2 params
+        parameterType[0] = TYPE_U_8_ARRAY;
+        parameterType[1] = TYPE_U_8_ARRAY;
+        returnType = TYPE_I_32;
+        break;
+    case KEYWORD_ORD:
+        // 2 params
+        parameterType[0] = TYPE_U_8_ARRAY;
+        parameterType[1] = TYPE_I_32;
+        returnType = TYPE_I_32;
+        break;
+    case KEYWORD_CHR:
+        // 1 param
+        parameterType[0] = TYPE_I_32;
+        returnType = TYPE_I_32;
+        break;
+    case KEYWORD_WRITE:
+        // 1 param
+        parameterType[0] = TYPE_ANY;
+        break;
+    case KEYWORD_READSTR:
+        // 0 params
+        returnType = TYPE_U_8_ARRAY_NULL;
+        break;
+    case KEYWORD_READI32:
+        // 0 params
+        returnType = TYPE_I_32_NULL;
+        break;
+    case KEYWORD_READF64:
+        // 0 params
+        returnType = TYPE_F_64_NULL;
+        break;
+    case KEYWORD_I2F:
+        // 1 param
+        parameterType[0] = TYPE_I_32;
+        returnType = TYPE_F_64;
+        break;
+    case KEYWORD_F2I:
+        // 1 param
+        parameterType[0] = TYPE_F_64;
+        returnType = TYPE_I_32;
+        break;
+    default:
+        HANDLE_ERROR("Function not defined", UNDEFINED_ERROR);
+        break;
     }
 }
 
