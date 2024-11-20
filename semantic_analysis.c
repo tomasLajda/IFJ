@@ -8,8 +8,11 @@
 
 #include "semantic_analysis.h"
 #include "ast.h"
+#include "helpers.h"
 
 extern AST *ast;
+ASTNode *currentVariable;
+AST *listOfVariables;
 Stack symbolTableStack;
 Symbol currentSymbol;
 
@@ -318,6 +321,7 @@ void functionBodyAnalysis(ASTNode *node) {
     node = node->left;
     symbolTableCopyFunctionParams(
         table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
+    listOfVariables = node->exprTree;
 
     statementAnalysis(node->right);
 
@@ -440,6 +444,13 @@ void variableDefinitionAnalysis(ASTNode *node) {
 
     node = node->left;
     currentSymbol.key = node->token->attribute.string;
+
+    ASTNode *nodeCopy = initASTNode();
+    Token *tokenCopy = copyToken(node->token);
+    nodeCopy->token = tokenCopy;
+    addRightNode(listOfVariables, currentVariable, nodeCopy);
+    currentVariable = nodeCopy;
+
     if (node->left != NULL) {
         currentSymbol.type = (DataType)node->left->token->attribute.keyword;
     } else {
