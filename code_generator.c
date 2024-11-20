@@ -291,7 +291,7 @@ void processNode(ASTNode *node) {
 
 int mainStart() {
     ADD_TO_BUFFER("# Start of Main:\n");
-    ADD_TO_BUFFER("$$main\n");
+    ADD_TO_BUFFER("LABEL $$main\n");
     ADD_TO_BUFFER("CREATEFRAME\n");
     ADD_TO_BUFFER("PUSHFRAME\n");
     return 0;
