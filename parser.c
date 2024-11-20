@@ -15,6 +15,8 @@
 AST *ast = NULL;
 ASTNode *mainParent = NULL;
 ASTNode *currenParent = NULL;
+TokenBuffer tokenBuffer = {NULL, NULL};
+Token *decider = NULL;
 bool voidFuncType = false;
 bool onlyZeroArgs = false;
 bool onlyOneArg = false;
@@ -23,15 +25,10 @@ bool onlyThreeArgs = false;
 bool parsingReturnType = false;
 unsigned int argCounter = 0;
 unsigned int paramCounter = 0;
-TokenBuffer tokenBuffer = {NULL, NULL};
 
 void initTokenBuffer() {
-    if (tokenBuffer.first == NULL) {
-        tokenBuffer.first = malloc(sizeof(Token));
-    }
-    if (tokenBuffer.second == NULL) {
-        tokenBuffer.second = malloc(sizeof(Token));
-    }
+    tokenBuffer.first = malloc(sizeof(Token));
+    tokenBuffer.second = malloc(sizeof(Token));
 }
 
 void freeTokenBuffer() {
@@ -533,6 +530,8 @@ void parseStatement() {
                 HANDLE_ERROR("Unexpected built-in function in function call", SYNTAX_ERROR,
                              currentToken);
             }
+            decider = copyToken(currentToken);
+
             printTokenInfo(currentToken);
             getNextToken(currentToken);
 
@@ -549,6 +548,8 @@ void parseStatement() {
         break;
 
     case TOKEN_TYPE_IDENTIFIER:
+        decider = copyToken(currentToken);
+
         printTokenInfo(currentToken);
         getNextToken(currentToken);
 
@@ -623,6 +624,7 @@ void parseVarDef() {
             HANDLE_ERROR("Expected built-in function after '.'", UNDEFINED_ERROR, currentToken);
         }
 
+        decider = copyToken(currentToken);
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseFuncCall();
@@ -635,7 +637,7 @@ void parseVarDef() {
     }
     else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
-        //parseExpression(exprTree, currentToken);
+        parseExpression(exprTree, NULL, NULL, currentToken);
         exprTree->isExpression = true;
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
@@ -670,6 +672,10 @@ void parseTypeSpec() {
 
 // VAR_ASS ::= token_id token_equals EXPR token_semicolon
 void parseVarAss() {
+
+    ASTNode *varID = initASTNode();
+    varID->token = copyToken(decider);
+
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR,
                      currentToken);
@@ -690,7 +696,7 @@ void parseVarAss() {
         if (!isTokenBuiltInFunction(currentToken)) {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
-
+        decider = copyToken(currentToken);
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseFuncCall();
@@ -703,7 +709,7 @@ void parseVarAss() {
     }
     else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
-        //parseExpression(exprTree, currentToken);
+        parseExpression(exprTree, NULL, NULL, currentToken);
         exprTree->isExpression = true;
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
@@ -715,13 +721,13 @@ void parseVarAss() {
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             printTokenInfo(currentToken);
-            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR, currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } 
     else {
-        HANDLE_ERROR("Unexpected token in variable definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Unexpected token in variable assignment", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -732,6 +738,13 @@ void parseWhile() {
     if (!isTokenKeyword(currentToken, KEYWORD_WHILE)) {
         HANDLE_ERROR("Expected 'while' at the beginning of while loop", SYNTAX_ERROR, currentToken);
     }
+
+    ASTNode *whileNode = initASTNode();
+    whileNode->token = copyToken(currentToken);
+    addRightNode(ast, currenParent, whileNode);
+    currenParent = whileNode;
+    mainParent = whileNode;
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -741,7 +754,7 @@ void parseWhile() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    //parseExpression(ast, currentToken);
+    parseExpression(ast, NULL, NULL, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
@@ -777,6 +790,10 @@ void parseNullCond() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected identifier in null condition", SYNTAX_ERROR, currentToken);
     }
+
+    ASTNode *nullCondIDNode = initASTNode();
+    nullCondIDNode->token = copyToken(currentToken);
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -792,6 +809,16 @@ void parseIf() {
     if (!isTokenKeyword(currentToken, KEYWORD_IF)) {
         HANDLE_ERROR("Expected 'if' at the beginning of if statement", SYNTAX_ERROR, currentToken);
     }
+
+    ASTNode *ifNode = initASTNode();
+    ifNode->token = copyToken(currentToken);
+    addRightNode(ast, currenParent, ifNode);
+    currenParent = ifNode;
+    mainParent = ifNode;
+
+    ASTNode *nullCondition = initASTNode();
+    nullCondition->token = createToken(TOKEN_TYPE_NULL_COND);
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -801,7 +828,7 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    //parseExpression(ast, currentToken);
+    parseExpression(ast, NULL, NULL, currentToken);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
@@ -809,7 +836,9 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    parseNullCond();
+    if (currentToken->type == TOKEN_TYPE_VB) {
+        parseNullCond();
+    }
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of if statement", SYNTAX_ERROR, currentToken);
@@ -854,6 +883,10 @@ void parseElse() {
 
 // FUNC_CALL ::= token_Orb ARGS token_Crb token_semicolon
 void parseFuncCall() {
+
+    ASTNode *funcID = initASTNode();
+    funcID->token = copyToken(decider);
+
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
     }
@@ -880,14 +913,24 @@ void parseDiscardCall() {
     if (!isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
         HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR, currentToken);
     }
+
+    ASTNode *discardNode = initASTNode();
+    discardNode->token = copyToken(currentToken);
+    addRightNode(ast, currenParent, discardNode);
+    currenParent = discardNode;
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after '_' in discard call", SYNTAX_ERROR, currentToken);
     }
+    
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    // AST *exprTree = initAST();
+    // Token *delimiter = malloc(sizeof(Token));
 
     if (currentToken->type == isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         printTokenInfo(currentToken);
@@ -902,7 +945,7 @@ void parseDiscardCall() {
         if (!isTokenBuiltInFunction(currentToken)) {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
-
+        decider = copyToken(currentToken);
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseFuncCall();
@@ -915,7 +958,7 @@ void parseDiscardCall() {
     } 
     else {
         AST *exprTree = initAST();
-        //parseExpression(exprTree, currentToken);
+        parseExpression(exprTree, NULL, NULL, currentToken);
         exprTree->isExpression = true;
         ASTNode *exprNode = initASTNode();
         exprNode->exprTree = exprTree;
@@ -960,11 +1003,23 @@ void parseArgs() {
     }
 
     if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        ASTNode *argID = initASTNode();
+        argID->token = copyToken(currentToken);
+
+        if (argCounter == 1) {
+            addLeftNode(ast, currenParent, argID);
+            currenParent = argID;
+        } 
+        else {
+            addRightNode(ast, currenParent, argID);
+        }
+        currenParent = argID;
+
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } 
     else {
-       // parseExpression(ast, currentToken);
+       parseExpression(ast, NULL, NULL, currentToken);
     }
 
     argCounter++;
@@ -999,6 +1054,7 @@ int parse() {
     }
 
     displayAST(ast);
+    free(decider);
     //freeTokenBuffer();
 
     return 0;
