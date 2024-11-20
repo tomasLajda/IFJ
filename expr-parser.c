@@ -1,12 +1,12 @@
-// /*
-// IFJ Project
+/*
+IFJ Project
 
-// @brief Implementation file for the expression parser
+@brief Implementation file for the expression parser
 
-// @author Matúš Csirik - xcsirim00
-// TODO: delimiter testy, return int ak zloba
+@author Matúš Csirik - xcsirim00
+TODO: delimiter testy, return int ak zloba
 
-// */
+*/
 
 #include "expr-parser.h"
 #include "error_codes.h"
@@ -223,7 +223,7 @@ int chooseReduceRule(Stack *stack) {
  *   - Pointer to the filled destination stack if successful.
  *   - NULL if a syntax error occurs or memory allocation fails.
  */
-Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
+Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token *delimiterToken) {
 
     // Initialize a temporary stack and a token pointer
     Stack tempStack;
@@ -237,6 +237,19 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     int openingParentheses = 0;
     int closingParentheses = 0;
     int relationOperators = 0;
+
+    if (firstToken != NULL) {
+        ASTNode *astNode1 = initASTNode();
+        astNode1->token = copyToken(firstToken);
+        StackElement *newElement1 = createStackElement(firstToken, astNode1);
+        push(&tempStack, newElement1);
+    }
+    if (secondToken != NULL) {
+        ASTNode *astNode2 = initASTNode();
+        astNode2->token = copyToken(secondToken);
+        StackElement *newElement2 = createStackElement(secondToken, astNode2);
+        push(&tempStack, newElement2);
+    }
 
     // Begin filling
     getNextToken(token);
@@ -328,7 +341,7 @@ Stack *fillInputStack(Stack *stack, Token *delimiterToken) {
     return stack;
 }
 
-int parseExpression(AST *exprAST, Token *token) {
+int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *delimiterToken) {
 
     // Initialize the parsing stack
     Stack *stack = (Stack *)malloc(sizeof(Stack));
@@ -357,14 +370,13 @@ int parseExpression(AST *exprAST, Token *token) {
     initStack(input);
 
     // Fill the input stack with tokens up to the delimiter token
-    if (fillInputStack(input, token) == NULL) { // syntax error
+    if (fillInputStack(input, firstToken, secondToken, delimiterToken) == NULL) { // syntax error
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
         free(stack);
         return SYNTAX_ERROR; // Indicate syntax error
     }
-
     // Initialize the current input element
     StackElement *currentInputElement = top(input);
     if (isEmpty(input)) {

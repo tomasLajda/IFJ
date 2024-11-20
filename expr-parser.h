@@ -23,12 +23,17 @@ IFJ Project
  * reduction rules, and checks the correctness of the syntax of the expression.
  *
  * @param exprAST Pointer to the AST structure to be populated.
- * @param token Pointer to the initial token to begin parsing.
+ * @param firstToken Pointer to the optional first token of the expression.
+ * @param secondToken Pointer to the optional second token of the expression.
+ * @param delimiterToken Pointer to the token in which to store the delimiter.
+ *
+ * @note firstToken and secondToken are optional and can be NULL. They can be used independently.
+ *
  * @return
  *   - 0 on successful parsing.
  *   - SYNTAX_ERROR (2) if a syntax error is encountered.
  *   - INTERNAL_ERROR (99) for internal failures (e.g., memory allocation issues).
  */
-int parseExpression(AST *exprAST, Token *token);
+int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *delimiterToken);
 
 #endif // EXPR_PARSER_H
