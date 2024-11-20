@@ -10,6 +10,7 @@ IFJ project
 #include "error_codes.h"
 #include "helpers.h"
 #include <math.h>
+#include <stdio.h>
 
 #define ADD_TO_BUFFER(_code) dynamicStringAddString(&codeBuffer, (const char *)(_code))
 
@@ -136,7 +137,6 @@ void generateFuncBody(ASTNode *node) {
 
 void processNode(ASTNode *node) {
     if (node == NULL) {
-        return INTERNAL_ERROR;
         // todo: handle error
     }
 

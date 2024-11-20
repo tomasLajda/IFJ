@@ -54,8 +54,8 @@ char *TokenTypeToString(TokenType type) {
         return "*";
     case TOKEN_TYPE_DIV:
         return "/";
-    case TOKEN_TYPE_OR:
-        return "OR";
+    case TOKEN_TYPE_VB:
+        return "|";
     case TOKEN_TYPE_LEFT_BR:
         return "(";
     case TOKEN_TYPE_RIGHT_BR:
