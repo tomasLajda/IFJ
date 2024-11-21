@@ -365,7 +365,7 @@ void addFloatToBuffer(double num);
  * @param labelType Typ návěstí (například "if", "while").
  * @param suffix Popisný text přidávaný za typ návěstí (například "false", "end").
  */
-void addLabelToBuffer(const char *labelType, const char *suffix);
+void addLabelToBuffer(const char *labelType, const char *suffix, int currentLabelCounter);
 
 /**
  * @brief Generates code for a built-in function call.
