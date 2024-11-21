@@ -173,6 +173,7 @@ void processNode(ASTNode *node) {
                 // nullable if
                 labelCounter++;
                 int currentLabelCounter = labelCounter;
+                ADD_TO_BUFFER("   # NULL IF START\n");
                 ADD_TO_BUFFER("DEFVAR LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
                 ADD_TO_BUFFER("\n");
@@ -194,11 +195,13 @@ void processNode(ASTNode *node) {
                 processNode(conditionNode->right); // false
                 ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("NULL_if", "end", currentLabelCounter);
+                ADD_TO_BUFFER("   # NULL IF END\n");
 
             } else {
                 // normal if
                 labelCounter++;
                 int currentLabelCounter = labelCounter;
+                ADD_TO_BUFFER("   # IF START\n");
                 ASTNode *conditionNode = node->left;
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
@@ -213,6 +216,7 @@ void processNode(ASTNode *node) {
                 processNode(conditionNode->right); // false
                 ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("if", "end", currentLabelCounter);
+                ADD_TO_BUFFER("   # IF END\n");
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
@@ -220,6 +224,7 @@ void processNode(ASTNode *node) {
                 // nullable while
                 labelCounter++;
                 int currentLabelCounter = labelCounter;
+                ADD_TO_BUFFER("   # NULL WHILE START\n");
                 ADD_TO_BUFFER("DEFVAR LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
                 ADD_TO_BUFFER("\n");
@@ -236,10 +241,12 @@ void processNode(ASTNode *node) {
                 addLabelToBuffer("NULL_while", "start", currentLabelCounter);
                 ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("NULL_while", "end", currentLabelCounter);
+                ADD_TO_BUFFER("   # NULL WHILE END\n");
             } else {
                 // normal while
                 labelCounter++;
                 int currentLabelCounter = labelCounter;
+                ADD_TO_BUFFER("   # WHILE START\n");
                 ASTNode *conditionNode = node->left;
                 ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("while", "start", currentLabelCounter);
@@ -253,6 +260,7 @@ void processNode(ASTNode *node) {
                 addLabelToBuffer("while", "start", currentLabelCounter);
                 ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("while", "end", currentLabelCounter);
+                ADD_TO_BUFFER("   # WHILE END\n");
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_UNDERSCORE) {
