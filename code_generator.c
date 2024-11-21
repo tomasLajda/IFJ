@@ -29,7 +29,7 @@ void addLabelToBuffer(const char *labelType, const char *suffix, int currentLabe
     ADD_TO_BUFFER(label);
 }
 
-void addFloatToBuffer(double value) {
+void addFloatToBuffer(float value) {
     ADD_TO_BUFFER("float@");
     int enoughSpaceForDouble = 64;
     char doubleStr[enoughSpaceForDouble];

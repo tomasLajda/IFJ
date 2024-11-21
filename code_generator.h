@@ -357,7 +357,7 @@ void addIntToBuffer(int num);
  *
  * @param num The float value to be added to the buffer.
  */
-void addFloatToBuffer(double num);
+void addFloatToBuffer(float num);
 /**
  * @brief Adds a label to the buffer in the format `$<labelType>_<suffix>_<labelCounter>\n`.
  *
