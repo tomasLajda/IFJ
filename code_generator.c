@@ -169,7 +169,7 @@ void processNode(ASTNode *node) {
 
     case TOKEN_TYPE_KEYWORD:
         if (node->token->attribute.keyword == KEYWORD_IF) {
-            if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
+            if (node->left->token->type == TOKEN_TYPE_VB) {
                 // nullable if
                 labelCounter++;
                 int currentLabelCounter = labelCounter;
@@ -238,7 +238,7 @@ void processNode(ASTNode *node) {
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
-            if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
+            if (node->left->token->type == TOKEN_TYPE_VB) {
                 // nullable while
                 labelCounter++;
                 int currentLabelCounter = labelCounter;
