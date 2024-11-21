@@ -11,7 +11,6 @@
 #include "helpers.h"
 
 extern AST *ast;
-ASTNode *currentVariable;
 AST *listOfVariables;
 Stack symbolTableStack;
 Symbol currentSymbol;
@@ -379,10 +378,15 @@ void ifAnalysis(ASTNode *node) {
         if (type == TYPE_NULL || !isNullableType(type)) {
             HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
         }
-
         currentSymbol.type = convertNullableType(type);
-        addRightNode(listOfVariables, currentVariable, node->right);
-        currentVariable = node->right;
+
+        ASTNode *nodeCopy = initASTNode();
+        Token *tokenCopy = copyToken(node->right->token);
+        nodeCopy->token = tokenCopy;
+
+        ASTNode *temp = listOfVariables->root;
+        ast->root = nodeCopy;
+        nodeCopy->right = temp;
 
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
@@ -441,8 +445,13 @@ void whileAnalysis(ASTNode *node) {
         }
 
         currentSymbol.type = convertNullableType(type);
-        addRightNode(listOfVariables, currentVariable, node->right);
-        currentVariable = node->right;
+        ASTNode *nodeCopy = initASTNode();
+        Token *tokenCopy = copyToken(node->right->token);
+        nodeCopy->token = tokenCopy;
+
+        ASTNode *temp = listOfVariables->root;
+        ast->root = nodeCopy;
+        nodeCopy->right = temp;
 
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
@@ -461,15 +470,18 @@ void variableDefinitionAnalysis(ASTNode *node) {
         currentSymbol.constant = false;
     }
     currentSymbol.compileTime = false;
+    currentSymbol.used = false;
 
     node = node->left;
     currentSymbol.key = node->token->attribute.string;
 
     ASTNode *nodeCopy = initASTNode();
-    Token *tokenCopy = copyToken(node->token);
+    Token *tokenCopy = copyToken(node->right->token);
     nodeCopy->token = tokenCopy;
-    addRightNode(listOfVariables, currentVariable, nodeCopy);
-    currentVariable = nodeCopy;
+
+    ASTNode *temp = listOfVariables->root;
+    ast->root = nodeCopy;
+    nodeCopy->right = temp;
 
     if (node->left != NULL) {
         currentSymbol.type = (DataType)node->left->token->attribute.keyword;
@@ -488,7 +500,8 @@ void variableDefinitionAnalysis(ASTNode *node) {
                                    : functionCallAnalysis(node->exprTree->root);
 
     if (currentSymbol.type != TYPE_ANY && currentSymbol.type != expressionResult.type &&
-        (expressionResult.type != TYPE_NULL || !isNullableType(currentSymbol.type))) {
+        (expressionResult.type != TYPE_NULL || !isNullableType(currentSymbol.type)) &&
+        convertNullableType(currentSymbol.type) != expressionResult.type) {
         HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
     }
 
@@ -531,7 +544,8 @@ void variableAssignmentAnalysis(ASTNode *node) {
                                    : functionCallAnalysis(node->exprTree->root);
 
     if (valueType != TYPE_ANY && valueType != expressionResult.type &&
-        (expressionResult.type != TYPE_NULL || !isNullableType(valueType))) {
+        (expressionResult.type != TYPE_NULL || !isNullableType(valueType)) &&
+        convertNullableType(currentSymbol.type) != expressionResult.type) {
         HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
     }
 
