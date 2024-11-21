@@ -134,6 +134,26 @@ void displayASTNode(ASTNode *node, int level, bool isLeft) {
     }
     if (node->token != NULL) {
         printf("Token Type: %s", TokenTypeToString(node->token->type));
+        // Display additional token information
+        switch (node->token->type) {
+        case TOKEN_TYPE_IDENTIFIER:
+        case TOKEN_TYPE_STRING_VALUE:
+            if (node->token->attribute.string != NULL) {
+                printf(", Value: \"%s\"", node->token->attribute.string);
+            }
+            break;
+        case TOKEN_TYPE_INTEGER_VALUE:
+            printf(", Integer: %d", node->token->attribute.integer);
+            break;
+        case TOKEN_TYPE_DOUBLE_VALUE:
+            printf(", Double: %f", node->token->attribute.decimal);
+            break;
+        case TOKEN_TYPE_KEYWORD:
+            printf(", Keyword: %s", TokenKeywordToString(node->token->attribute.keyword));
+            break;
+        default:
+            break;
+        }
     } else {
         printf("NULL Token");
     }

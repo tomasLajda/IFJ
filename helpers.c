@@ -310,3 +310,338 @@ char *TokenKeywordToString(Keyword keyword) {
         return "UNKNOWN_KEYWORD";
     }
 }
+
+ASTNode *mockASTProgramStructure(int type) {
+    ASTNode *root = initASTNode();
+    switch (type) {
+    // Discard call
+    case 1:
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_UNDERSCORE;
+
+        ASTNode *left = initASTNode();
+        left->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree = initAST();
+
+        exprTree->root = initASTNode();
+        exprTree->root->token = createToken(TOKEN_TYPE_PLUS);
+        exprTree->root->left = initASTNode();
+        exprTree->root->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTree->root->left->token->attribute.integer = 2;
+        exprTree->root->right = initASTNode();
+        exprTree->root->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTree->root->right->token->attribute.integer = 3;
+        exprTree->isExpression = true;
+        left->exprTree = exprTree;
+
+        root->left = left;
+
+        return root;
+        break;
+
+    // Function call
+    case 2:
+        // FUNCTION NAME
+        root->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->token->attribute.string = malloc(5);
+        strcpy(root->token->attribute.string, "fooo");
+
+        // FIRST ARGUMENT
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree1 = initAST();
+        ASTNode *exprTreeRoot = initASTNode();
+        exprTreeRoot->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        exprTreeRoot->token->attribute.decimal = 3.14;
+        exprTree1->root = exprTreeRoot;
+        exprTree1->isExpression = true;
+        root->left->exprTree = exprTree1;
+
+        // SECOND ARGUMENT
+        root->left->right = initASTNode();
+        root->left->right->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree2 = initAST();
+        ASTNode *exprTreeRoot2 = initASTNode();
+        exprTreeRoot2->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot2->token->attribute.decimal = 100;
+        exprTree2->root = exprTreeRoot2;
+        exprTree2->isExpression = true;
+        root->left->right->exprTree = exprTree2;
+
+        return root;
+        break;
+
+    // Main function definition
+    case 30:
+
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_PUB;
+
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->token->attribute.keyword = KEYWORD_FN;
+
+        // RETURN TYPE
+        root->left->right = initASTNode();
+        root->left->right->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->right->token->attribute.keyword = KEYWORD_VOID;
+
+        root->left->left = initASTNode();
+        root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->left->token->attribute.keyword = KEYWORD_MAIN;
+
+        root->left->left->left = NULL; // No arguments
+
+        return root;
+        break;
+
+    // Function definition
+    case 3:
+
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_PUB;
+
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->token->attribute.keyword = KEYWORD_FN;
+
+        // RETURN TYPE
+        root->left->right = initASTNode();
+        root->left->right->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->right->token->attribute.keyword = KEYWORD_F_64;
+
+        // FUNCTION NAME
+        root->left->left = initASTNode();
+        root->left->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->left->token->attribute.string = malloc(5);
+        strcpy(root->left->left->token->attribute.string, "bar");
+        root->left->left->exprTree = initAST(); // init for list of variable names
+
+        // FIRST PARAMETER
+        root->left->left->left = initASTNode();
+        root->left->left->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->left->left->token->attribute.string = malloc(2);
+        strcpy(root->left->left->left->token->attribute.string, "a");
+        root->left->left->left->left = initASTNode();
+        root->left->left->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->left->left->left->token->attribute.keyword = KEYWORD_F_64;
+
+        // SECOND PARAMETER
+        root->left->left->left->right = initASTNode();
+        root->left->left->left->right->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->left->left->right->token->attribute.string = malloc(2);
+        strcpy(root->left->left->left->right->token->attribute.string, "b");
+        root->left->left->left->right->left = initASTNode();
+        root->left->left->left->right->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->left->left->right->left->token->attribute.keyword = KEYWORD_F_64;
+
+        // RETURN
+        root->left->left->right = initASTNode();
+        root->left->left->right->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->left->right->token->attribute.keyword = KEYWORD_RETURN;
+        // EXPRESSION FOR RETURN (currently 3.14 + a + b)
+        root->left->left->right->exprTree = initAST();
+        root->left->left->right->exprTree->root = initASTNode();
+        root->left->left->right->exprTree->root->token = createToken(TOKEN_TYPE_PLUS);
+        root->left->left->right->exprTree->root->left = initASTNode();
+        root->left->left->right->exprTree->root->left->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        root->left->left->right->exprTree->root->left->token->attribute.decimal = 3.14;
+        root->left->left->right->exprTree->root->right = initASTNode();
+        root->left->left->right->exprTree->root->right->token = createToken(TOKEN_TYPE_PLUS);
+        root->left->left->right->exprTree->root->right->left = initASTNode();
+        root->left->left->right->exprTree->root->right->left->token =
+            createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->left->right->exprTree->root->right->left->token->attribute.string = malloc(2);
+        strcpy(root->left->left->right->exprTree->root->right->left->token->attribute.string, "a");
+        root->left->left->right->exprTree->root->right->right = initASTNode();
+        root->left->left->right->exprTree->root->right->right->token =
+            createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->left->right->exprTree->root->right->right->token->attribute.string = malloc(2);
+        strcpy(root->left->left->right->exprTree->root->right->right->token->attribute.string, "b");
+
+        return root;
+        break;
+
+    // If
+    case 4:
+
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_IF;
+
+        // CONDITION
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree3 = initAST();
+        ASTNode *exprTreeRoot3 = initASTNode();
+        exprTreeRoot3->token = createToken(TOKEN_TYPE_EQ);
+        exprTreeRoot3->left = initASTNode();
+        exprTreeRoot3->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot3->left->token->attribute.integer = 2;
+        exprTreeRoot3->right = initASTNode();
+        exprTreeRoot3->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot3->right->token->attribute.integer = 2;
+        exprTree3->root = exprTreeRoot3;
+        exprTree3->isExpression = true;
+        root->left->exprTree = exprTree3;
+
+        return root;
+        break;
+
+    // Null if
+    case 5:
+
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_IF;
+
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_NULL_COND);
+
+        // INDENTIFIER FOR STORAGE
+        root->left->right = initASTNode();
+        root->left->right->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->right->token->attribute.string = malloc(9);
+        strcpy(root->left->right->token->attribute.string, "identIF");
+
+        // CONDITION
+        root->left->left = initASTNode();
+        root->left->left->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree4 = initAST();
+        ASTNode *exprTreeRoot4 = initASTNode();
+        exprTreeRoot4->token = createToken(TOKEN_TYPE_EQ);
+        exprTreeRoot4->left = initASTNode();
+        exprTreeRoot4->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot4->left->token->attribute.integer = 6;
+        exprTreeRoot4->right = initASTNode();
+        exprTreeRoot4->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot4->right->token->attribute.integer = 6;
+        exprTree4->root = exprTreeRoot4;
+        exprTree4->isExpression = true;
+        root->left->left->exprTree = exprTree4;
+
+        return root;
+        break;
+
+    // While
+    case 6:
+
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_WHILE;
+
+        // CONDITION
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree5 = initAST();
+        ASTNode *exprTreeRoot5 = initASTNode();
+        exprTreeRoot5->token = createToken(TOKEN_TYPE_EQ);
+        exprTreeRoot5->left = initASTNode();
+        exprTreeRoot5->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot5->left->token->attribute.integer = 9;
+        exprTreeRoot5->right = initASTNode();
+        exprTreeRoot5->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot5->right->token->attribute.integer = 9;
+        exprTree5->root = exprTreeRoot5;
+        exprTree5->isExpression = true;
+        root->left->exprTree = exprTree5;
+
+        return root;
+        break;
+
+    // Null while
+    case 7:
+
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_WHILE;
+
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_NULL_COND);
+
+        // INDENTIFIER FOR STORAGE
+        root->left->right = initASTNode();
+        root->left->right->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->right->token->attribute.string = malloc(12);
+        strcpy(root->left->right->token->attribute.string, "identWHILE");
+
+        // CONDITION
+        root->left->left = initASTNode();
+        root->left->left->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree6 = initAST();
+        ASTNode *exprTreeRoot6 = initASTNode();
+        exprTreeRoot6->token = createToken(TOKEN_TYPE_EQ);
+        exprTreeRoot6->left = initASTNode();
+        exprTreeRoot6->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot6->left->token->attribute.integer = 0;
+        exprTreeRoot6->right = initASTNode();
+        exprTreeRoot6->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot6->right->token->attribute.integer = 0;
+        exprTree6->root = exprTreeRoot6;
+        exprTree6->isExpression = true;
+        root->left->left->exprTree = exprTree6;
+
+        return root;
+        break;
+
+    // Variable definition
+    case 8:
+
+        // VARIABLE TYPE
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_CONST;
+
+        // VARIABLE NAME
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->token->attribute.string = malloc(10);
+        strcpy(root->left->token->attribute.string, "premenna");
+
+        // TYPE
+        root->left->left = initASTNode();
+        root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->left->left->token->attribute.keyword = KEYWORD_F_64;
+
+        // VALUE (currently 3.14)
+        root->left->right = initASTNode();
+        root->left->right->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree8 = initAST();
+        ASTNode *exprTreeRoot8 = initASTNode();
+        exprTreeRoot8->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        exprTreeRoot8->token->attribute.decimal = 3.14;
+        exprTree8->root = exprTreeRoot8;
+        exprTree8->isExpression = true;
+        root->left->right->exprTree = exprTree8;
+
+        return root;
+        break;
+
+    // Variable assignment
+    case 9:
+
+        // VARIABLE NAME
+        root->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->token->attribute.string = malloc(10);
+        strcpy(root->token->attribute.string, "menime");
+
+        // VALUE (currently 99 / 11)
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree7 = initAST();
+        ASTNode *exprTreeRoot7 = initASTNode();
+        exprTreeRoot7->token = createToken(TOKEN_TYPE_DIV);
+        exprTreeRoot7->left = initASTNode();
+        exprTreeRoot7->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot7->left->token->attribute.integer = 99;
+        exprTreeRoot7->right = initASTNode();
+        exprTreeRoot7->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot7->right->token->attribute.integer = 11;
+        exprTree7->root = exprTreeRoot7;
+        exprTree7->isExpression = true;
+        root->left->exprTree = exprTree7;
+
+        return root;
+        break;
+
+    // Default case
+    default:
+        break;
+    }
+    return NULL;
+}
