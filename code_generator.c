@@ -94,7 +94,7 @@ int generateCodeHeader() {
     ADD_TO_BUFFER(".IFJcode24\n");
     ADD_TO_BUFFER("JUMP $$main\n");
     generateBuiltInFunctions();
-    ADD_TO_BUFFER("# End of Header\n");
+    ADD_TO_BUFFER("# End of Header\n\n");
     return 0;
 }
 
@@ -306,6 +306,7 @@ int mainEnd() {
     ADD_TO_BUFFER("POPFRAME\n");
     ADD_TO_BUFFER("CLEARS\n");
     ADD_TO_BUFFER("JUMP $$END\n");
+    ADD_TO_BUFFER("# End of Main\n\n");
 
     return 0;
 }
@@ -327,7 +328,7 @@ int functionEnd(char *functionName) {
     ADD_TO_BUFFER("RETURN\n");
     ADD_TO_BUFFER("# End of function ");
     ADD_TO_BUFFER(functionName);
-    ADD_TO_BUFFER("\n");
+    ADD_TO_BUFFER("\n\n");
     return 0;
 }
 
