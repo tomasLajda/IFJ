@@ -358,12 +358,12 @@ void addIntToBuffer(int num);
  * @param num The float value to be added to the buffer.
  */
 void addFloatToBuffer(double num);
-
 /**
- * @brief Přidá návěstí do bufferu ve formátu `$<labelType>_<suffix>_<labelCounter>\n`.
+ * @brief Adds a label to the buffer in the format `$<labelType>_<suffix>_<labelCounter>\n`.
  *
- * @param labelType Typ návěstí (například "if", "while").
- * @param suffix Popisný text přidávaný za typ návěstí (například "false", "end").
+ * @param labelType The type of the label (e.g., "if", "while").
+ * @param currentLabelCounter The label counter.
+ * @param suffix Descriptive text added after the label type (e.g., "false", "end").
  */
 void addLabelToBuffer(const char *labelType, const char *suffix, int currentLabelCounter);
 
