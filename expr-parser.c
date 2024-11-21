@@ -403,7 +403,8 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        return SYNTAX_ERROR; // Indicate syntax error
+        HANDLE_ERROR("Syntax error. fillinupstack() returned null\n", SYNTAX_ERROR,
+                     SYNTAX_ERROR); // Indicate syntax error
     }
 
     // Initialize the current input element
@@ -476,7 +477,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
                 free(input);
                 cleanupStack(stack);
                 free(stack);
-                return SYNTAX_ERROR; // Syntax error
+                HANDLE_ERROR("Invalid reduction rule.\n", INTERNAL_ERROR, INTERNAL_ERROR);
             }
         } else if (reducible == 2) { // Syntax error detected
             cleanupStack(input);
@@ -484,8 +485,8 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
             cleanupStack(stack);
             free(stack);
 
-            return SYNTAX_ERROR;      // Syntax error
-        } else if (!isEmpty(input)) { // Shift
+            HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
+        } else if (!isEmpty(input)) {                                    // Shift
             Token *currentToken = createToken(currentInputElement->tokenPtr->type);
             ASTNode *currentASTNode = copyASTNode(currentInputElement->ASTNodePtr);
             pop(input);
@@ -506,7 +507,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
             free(input);
             cleanupStack(stack);
             free(stack);
-            return SYNTAX_ERROR; // Indicate syntax error
+            HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
         }
     }
 
@@ -521,6 +522,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
+        printf("PARSING SUCCESSFUL\n");
         return 0; // Indicate successful parsing
     } else {
         // Parsing incomplete or incorrect
@@ -530,6 +532,6 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        return SYNTAX_ERROR; // Indicate syntax error
+        HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
     }
 }
