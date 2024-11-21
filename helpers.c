@@ -344,7 +344,7 @@ ASTNode *mockASTProgramStructure(int type) {
         // FUNCTION NAME
         root->token = createToken(TOKEN_TYPE_IDENTIFIER);
         root->token->attribute.string = malloc(5);
-        strcpy(root->token->attribute.string, "fooo");
+        strcpy(root->token->attribute.string, "bar");
 
         // FIRST ARGUMENT
         root->left = initASTNode();
@@ -362,8 +362,8 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->right->token = createToken(TOKEN_TYPE_EXPR);
         AST *exprTree2 = initAST();
         ASTNode *exprTreeRoot2 = initASTNode();
-        exprTreeRoot2->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot2->token->attribute.decimal = 100;
+        exprTreeRoot2->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        exprTreeRoot2->token->attribute.decimal = 1.0;
         exprTree2->root = exprTreeRoot2;
         exprTree2->isExpression = true;
         root->left->right->exprTree = exprTree2;
@@ -390,6 +390,19 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->left->token->attribute.keyword = KEYWORD_MAIN;
         root->left->left->exprTree = initAST();
+        root->left->left->exprTree->root = initASTNode();
+
+        // //
+        //         root->left->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        //         root->left->left->token->attribute.string = malloc(5);
+        //         strcpy(root->left->left->token->attribute.string, "bar");
+        root->left->left->exprTree->root->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->left->left->exprTree->root->token->attribute.string = malloc(15);
+        strcpy(root->left->left->exprTree->root->token->attribute.string, "variableX");
+
+        // printf("\n--------------------------\nroot->left->left->exprTree->root->token->attribute."
+        //        "string: %s\n--------------------------\n",
+        //        root->left->left->exprTree->root->token->attribute.string);
 
         root->left->left->left = NULL; // No arguments
 
