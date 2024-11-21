@@ -336,9 +336,11 @@ void parseReturn() {
         tokenBuffer.first = copyToken(currentToken);
 
         if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
             tokenBuffer.second = copyToken(currentToken);
             printf("Token 1: ");
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
 
             if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
                 parseFuncCall();
@@ -346,9 +348,15 @@ void parseReturn() {
                 AST *exprTree = initAST();
                 ASTNode *exprNode = initASTNode();
                 exprTree->root = exprNode;
+                printf("BUFFER 1 %s\n", TokenTypeToString(tokenBuffer.first->type));
+                printf("BUFFER 2 %s\n", TokenTypeToString(tokenBuffer.second->type));
                 parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
+                printf("Expression tree23:\n");
+                displayAST(exprTree);
                 currenParent->exprTree = exprTree;
-                currenParent->exprTree->isExpression = true;
+
+                printf("Expression tree:\n");
+                displayAST(exprTree);
                 printf("CAU: ");
                 printTokenInfo(currentToken);
             }
@@ -357,8 +365,10 @@ void parseReturn() {
             ASTNode *exprNode = initASTNode();
             exprTree->root = exprNode;
             parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
-            currenParent->exprTree = exprTree;
-            currenParent->exprTree->isExpression = true;
+            exprNode->exprTree = exprTree;
+            exprNode->exprTree->isExpression = true;
+            exprNode->token = createToken(TOKEN_TYPE_EXPR);
+            addLeftNode(ast, currenParent, exprNode);
 
             printf("Expression tree:\n");
             displayAST(exprTree);
@@ -616,6 +626,8 @@ void parseVarDef() {
             printTokenInfo(currentToken);
             currenParent->exprTree = exprTree;
             currenParent->exprTree->isExpression = true;
+            exprNode->token = createToken(TOKEN_TYPE_EXPR);
+            addLeftNode(ast, currenParent, exprNode);
             getNextToken(currentToken);
             displayAST(exprTree);
         }
@@ -710,6 +722,8 @@ void parseVarAss() {
             parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
             currenParent->exprTree = exprTree;
             currenParent->exprTree->isExpression = true;
+            exprNode->token = createToken(TOKEN_TYPE_EXPR);
+            addLeftNode(ast, currenParent, exprNode);
         }
     } else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
@@ -719,6 +733,8 @@ void parseVarAss() {
 
         currenParent->exprTree = exprTree;
         currenParent->exprTree->isExpression = true;
+        exprNode->token = createToken(TOKEN_TYPE_EXPR);
+        addLeftNode(ast, currenParent, exprNode);
 
         printTokenInfo(currentToken);
         displayAST(exprTree);
@@ -762,11 +778,13 @@ void parseWhile() {
     ASTNode *exprNode = initASTNode();
     exprTree->root = exprNode;
     parseExpression(exprTree, NULL, NULL, currentToken);
-    currenParent->exprTree = exprTree;
-    currenParent->exprTree->isExpression = true;
+    exprNode->exprTree = exprTree;
+    exprNode->exprTree->isExpression = true;
+    exprNode->token = createToken(TOKEN_TYPE_EXPR);
+    addLeftNode(ast, currenParent, exprNode);
 
     printf("Expression tree for while:\n");
-    displayAST(exprTree);
+    displayAST(exprNode->exprTree);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
@@ -774,7 +792,9 @@ void parseWhile() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    parseNullCond();
+    if (currentToken->type == TOKEN_TYPE_VB) {
+        parseNullCond();
+    }
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of while loop", SYNTAX_ERROR, currentToken);
@@ -793,9 +813,6 @@ void parseWhile() {
 
 // NULL_CONDITION ::= token_vb token_id token_vb | ε
 void parseNullCond() {
-    if (currentToken->type != TOKEN_TYPE_VB) {
-        return;
-    }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -805,6 +822,23 @@ void parseNullCond() {
 
     ASTNode *nullCondIDNode = initASTNode();
     nullCondIDNode->token = copyToken(currentToken);
+    ASTNode *nullCondNode = initASTNode();
+    nullCondNode->token = createToken(TOKEN_TYPE_NULL_COND);
+
+    displayAST(ast);
+    printf("Curren parent 1: ");
+    displayASTNode(currenParent, 0, true);
+    currenParent = currenParent->left;
+    printf("Curren parent: ");
+    displayASTNode(currenParent, 0, true);
+    // currenParent->parent = nullCondNode;
+    // nullCondNode->parent = mainParent;
+    // mainParent->left = nullCondNode;
+    // nullCondNode->left = currenParent;
+    // nullCondNode->right = nullCondIDNode;
+    // nullCondIDNode->parent = nullCondNode;
+
+    displayAST(ast);
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -828,9 +862,6 @@ void parseIf() {
     currenParent = ifNode;
     mainParent = ifNode;
 
-    ASTNode *nullCondition = initASTNode();
-    nullCondition->token = createToken(TOKEN_TYPE_NULL_COND);
-
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -840,7 +871,14 @@ void parseIf() {
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
-    parseExpression(ast, NULL, NULL, currentToken);
+    AST *exprTree = initAST();
+    ASTNode *exprNode = initASTNode();
+    exprTree->root = exprNode;
+    parseExpression(exprTree, NULL, NULL, currentToken);
+    exprNode->exprTree = exprTree;
+    exprNode->exprTree->isExpression = true;
+    exprNode->token = createToken(TOKEN_TYPE_EXPR);
+    addLeftNode(ast, currenParent, exprNode);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
