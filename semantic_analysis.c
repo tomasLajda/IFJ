@@ -263,6 +263,7 @@ void functionAnalysis(ASTNode *node) {
         }
     }
     symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
+    symbolResetValues(&currentSymbol);
 
     jumpToPreviousConstruct(&node);
     node = node->right;
@@ -324,20 +325,19 @@ void functionBodyAnalysis(ASTNode *node) {
     symbolTableInit(table, symbolTableTop(&symbolTableStack));
     symbolTablePush(&symbolTableStack, table);
 
-    node = node->left;
-    node = node->left;
-    if (node->token->type == TOKEN_TYPE_KEYWORD) {
-        symbolTableCopyFunctionParams(table, symbolTableGetSymbol(table, "main")->params);
-        symbolTableSetFunctionKey(table, "main");
-    } else {
-        symbolTableCopyFunctionParams(
-            table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
-        symbolTableSetFunctionKey(table, node->token->attribute.string);
-    }
-
     AST *newAST = initAST();
     node->exprTree = newAST;
     listOfVariables = newAST;
+
+    node = node->left;
+    node = node->left;
+    if (node->token->type == TOKEN_TYPE_KEYWORD) {
+        symbolTableSetFunctionKey(table, "main");
+    } else {
+        symbolTableSetFunctionKey(table, node->token->attribute.string);
+        symbolTableCopyFunctionParams(
+            table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
+    }
 
     statementAnalysis(node->right);
 
@@ -357,9 +357,9 @@ void ifAnalysis(ASTNode *node) {
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
-        if (!checkDeclaration(symbolTableTop(&symbolTableStack),
-                              node->right->token->attribute.string)) {
-            HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
+        if (checkDeclaration(symbolTableTop(&symbolTableStack),
+                             node->right->token->attribute.string)) {
+            HANDLE_ERROR("Variable is not defined", UNDEFINED_ERROR);
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
@@ -381,12 +381,20 @@ void ifAnalysis(ASTNode *node) {
         currentSymbol.type = convertNullableType(type);
 
         ASTNode *nodeCopy = initASTNode();
-        Token *tokenCopy = copyToken(node->right->token);
+        Token *tokenCopy = malloc(sizeof(Token));
+        if (tokenCopy == NULL) {
+            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+        }
+        tokenCopy->type = TOKEN_TYPE_IDENTIFIER;
+        tokenCopy->attribute.string = currentSymbol.key;
         nodeCopy->token = tokenCopy;
 
         ASTNode *temp = listOfVariables->root;
-        ast->root = nodeCopy;
+        listOfVariables->root = nodeCopy;
         nodeCopy->right = temp;
+        if (temp != NULL) {
+            temp->parent = nodeCopy;
+        }
 
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
@@ -422,8 +430,8 @@ void whileAnalysis(ASTNode *node) {
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
-        if (!checkDeclaration(symbolTableTop(&symbolTableStack),
-                              node->right->token->attribute.string)) {
+        if (checkDeclaration(symbolTableTop(&symbolTableStack),
+                             node->right->token->attribute.string)) {
             HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
@@ -444,14 +452,21 @@ void whileAnalysis(ASTNode *node) {
             HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
         }
 
-        currentSymbol.type = convertNullableType(type);
         ASTNode *nodeCopy = initASTNode();
-        Token *tokenCopy = copyToken(node->right->token);
+        Token *tokenCopy = malloc(sizeof(Token));
+        if (tokenCopy == NULL) {
+            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+        }
+        tokenCopy->type = TOKEN_TYPE_IDENTIFIER;
+        tokenCopy->attribute.string = currentSymbol.key;
         nodeCopy->token = tokenCopy;
 
         ASTNode *temp = listOfVariables->root;
-        ast->root = nodeCopy;
+        listOfVariables->root = nodeCopy;
         nodeCopy->right = temp;
+        if (temp != NULL) {
+            temp->parent = nodeCopy;
+        }
 
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
@@ -476,12 +491,15 @@ void variableDefinitionAnalysis(ASTNode *node) {
     currentSymbol.key = node->token->attribute.string;
 
     ASTNode *nodeCopy = initASTNode();
-    Token *tokenCopy = copyToken(node->right->token);
+    Token *tokenCopy = copyToken(node->token);
     nodeCopy->token = tokenCopy;
 
     ASTNode *temp = listOfVariables->root;
-    ast->root = nodeCopy;
+    listOfVariables->root = nodeCopy;
     nodeCopy->right = temp;
+    if (temp != NULL) {
+        temp->parent = nodeCopy;
+    }
 
     if (node->left != NULL) {
         currentSymbol.type = (DataType)node->left->token->attribute.keyword;
@@ -513,7 +531,9 @@ void variableDefinitionAnalysis(ASTNode *node) {
         HANDLE_ERROR("Cannot infer variable type", TYPE_INFERENCE_ERROR);
     }
 
-    currentSymbol.type = expressionResult.type;
+    if (currentSymbol.type == TYPE_ANY) {
+        currentSymbol.type = expressionResult.type;
+    }
 
     symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
     symbolResetValues(&currentSymbol);
@@ -545,7 +565,7 @@ void variableAssignmentAnalysis(ASTNode *node) {
 
     if (valueType != TYPE_ANY && valueType != expressionResult.type &&
         (expressionResult.type != TYPE_NULL || !isNullableType(valueType)) &&
-        convertNullableType(currentSymbol.type) != expressionResult.type) {
+        convertNullableType(valueType) != expressionResult.type) {
         HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
     }
 
@@ -733,7 +753,7 @@ Operand determineNextOperand(Operand left, Operand right, TokenType operator) {
             return result;
         }
 
-        if (right.type == TYPE_F_64 && !left.compileTime) {
+        if (right.type == TYPE_F_64 && left.compileTime) {
             result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
             return result;
         }
@@ -745,7 +765,7 @@ Operand determineNextOperand(Operand left, Operand right, TokenType operator) {
             return result;
         }
 
-        if (right.type == TYPE_I_32 && !right.compileTime) {
+        if (right.type == TYPE_I_32 && right.compileTime) {
             result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
             return result;
         }
