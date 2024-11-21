@@ -143,7 +143,8 @@ void generateFuncBody(ASTNode *node) {
 
 void processNode(ASTNode *node) {
     if (node == NULL) {
-        HANDLE_ERROR("ASTNode in processNode func (code gen) is NULL", INTERNAL_ERROR);
+        // HANDLE_ERROR("ASTNode in processNode func (code gen) is NULL", INTERNAL_ERROR);
+        return;
     }
 
     switch (node->token->type) {
@@ -412,11 +413,16 @@ int generateFuncCall(ASTNode *node) {
     // currentNode - each parameter
     while (currentNode != NULL) {
         // TODO u defvaru pouzit unikatni jmeno?
+
+        int enoughSpaceForInt = 12;
+        char intStr[enoughSpaceForInt];
+        snprintf(intStr, sizeof(intStr), "%d", paramID);
+
         ADD_TO_BUFFER("DEFVAR TF@%%arg");
-        addIntToBuffer(paramID);
+        ADD_TO_BUFFER(intStr);
         ADD_TO_BUFFER("\n");
         ADD_TO_BUFFER("MOVE TF@%%arg");
-        addIntToBuffer(paramID);
+        ADD_TO_BUFFER(intStr);
         ADD_TO_BUFFER(" ");
 
         paramID++;
