@@ -94,4 +94,20 @@ void displayAST(AST *ast);
  */
 void displayASTNode(ASTNode *node, int level, bool isLeft);
 
+/**
+ * @brief Prints contents of the AST (including nested ASTs)
+ *
+ * @param ast AST to be pdisplayed
+ */
+void displayEntireAST(AST *ast);
+
+/**
+ * @brief Helper function to print contents of an AST node
+ *
+ * @param node AST node to be displayed
+ * @param level Current level in the tree (for indentation)
+ * @param isLeft Set true if the node is a left child, false otherwise
+ */
+void displayEntireASTNode(ASTNode *node, int level, bool isLeft);
+
 #endif //_AST_H

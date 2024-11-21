@@ -311,7 +311,7 @@ void processNode(ASTNode *node) {
         } else if (node->token->attribute.keyword == KEYWORD_WRITE) {
             ADD_TO_BUFFER("CREATEFRAME\n");
             ADD_TO_BUFFER("DEFVAR TF@value\n");
-            generateExpression(node->left);
+            generateExpression(node->left->exprTree->root);
             ADD_TO_BUFFER("POPS TF@value\n");
             ADD_TO_BUFFER("CALL $IFJ24_write\n");
         } else if (node->token->attribute.keyword == KEYWORD_VAR ||
