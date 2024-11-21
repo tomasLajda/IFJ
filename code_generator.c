@@ -118,7 +118,7 @@ void generateFuncBody(ASTNode *node) {
     ASTNode *currentVarible = node->exprTree->root;
     while (currentVarible != NULL) {
         ADD_TO_BUFFER("DEFVAR LF@");
-        ADD_TO_BUFFER(node->token->attribute.string);
+        ADD_TO_BUFFER(currentVarible->token->attribute.string);
         ADD_TO_BUFFER("\n");
         currentVarible = currentVarible->right;
     }
