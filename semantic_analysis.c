@@ -30,7 +30,7 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
 unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
 bool checkFunctionDefined(SymbolTable *table, const char *key);
 bool isConstruct(ASTNode *node);
-void jumpToPreviousConstruct(ASTNode *node);
+void jumpToPreviousConstruct(ASTNode **node);
 bool checkBuildInFunction(Keyword key);
 DataType convertNullableType(DataType type);
 void functionParameterAnalysis(ASTNode *node);
@@ -165,9 +165,12 @@ bool isConstruct(ASTNode *node) {
             node->token->attribute.keyword == KEYWORD_WHILE);
 }
 
-void jumpToPreviousConstruct(ASTNode *node) {
-    while (!isConstruct(node)) {
-        node = node->parent;
+void jumpToPreviousConstruct(ASTNode **node) {
+    while ((*node)->parent != NULL) {
+        (*node) = (*node)->parent;
+        if (isConstruct(*node)) {
+            return;
+        }
     }
 }
 
@@ -260,8 +263,9 @@ void functionAnalysis(ASTNode *node) {
             HANDLE_ERROR("Main function cannot have parameters", PARAMETER_ERROR);
         }
     }
+    symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
 
-    jumpToPreviousConstruct(node);
+    jumpToPreviousConstruct(&node);
     node = node->right;
     functionAnalysis(node);
 }
@@ -323,8 +327,15 @@ void functionBodyAnalysis(ASTNode *node) {
 
     node = node->left;
     node = node->left;
-    symbolTableCopyFunctionParams(
-        table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
+    if (node->token->type == TOKEN_TYPE_KEYWORD) {
+        symbolTableCopyFunctionParams(table, symbolTableGetSymbol(table, "main")->params);
+        symbolTableSetFunctionKey(table, "main");
+    } else {
+        symbolTableCopyFunctionParams(
+            table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
+        symbolTableSetFunctionKey(table, node->token->attribute.string);
+    }
+
     AST *newAST = initAST();
     node->exprTree = newAST;
     listOfVariables = newAST;
@@ -346,7 +357,7 @@ void ifAnalysis(ASTNode *node) {
     node = node->left;
 
     bool nullCond = false;
-    if (node->token->type == TOKEN_TYPE_NULL_COND) {
+    if (node->token->type == TOKEN_TYPE_VB) {
         if (!checkDeclaration(symbolTableTop(&symbolTableStack),
                               node->right->token->attribute.string)) {
             HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
@@ -370,6 +381,9 @@ void ifAnalysis(ASTNode *node) {
         }
 
         currentSymbol.type = convertNullableType(type);
+        addRightNode(listOfVariables, currentVariable, node->right);
+        currentVariable = node->right;
+
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
     }
@@ -403,7 +417,7 @@ void whileAnalysis(ASTNode *node) {
     node = node->left;
 
     bool nullCond = false;
-    if (node->token->type == TOKEN_TYPE_NULL_COND) {
+    if (node->token->type == TOKEN_TYPE_VB) {
         if (!checkDeclaration(symbolTableTop(&symbolTableStack),
                               node->right->token->attribute.string)) {
             HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
@@ -427,6 +441,9 @@ void whileAnalysis(ASTNode *node) {
         }
 
         currentSymbol.type = convertNullableType(type);
+        addRightNode(listOfVariables, currentVariable, node->right);
+        currentVariable = node->right;
+
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
     }
@@ -755,7 +772,7 @@ Operand determineNextOperand(Operand left, Operand right, TokenType operator) {
 
 Operand expressionAnalysis(ASTNode *node) {
     if (node == NULL) {
-        HANDLE_ERROR("Expression is NULL", INTERNAL_ERROR);
+        HANDLE_ERROR("Expected expression", INTERNAL_ERROR);
     }
 
     if (node->left == NULL && node->right == NULL) {
