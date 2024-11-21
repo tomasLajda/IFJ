@@ -240,17 +240,11 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
     int providedTokens = 0;
 
     if (firstToken != NULL) {
-        ASTNode *astNode1 = initASTNode();
-        astNode1->token = copyToken(firstToken);
-        StackElement *newElement1 = createStackElement(firstToken, astNode1);
-        push(&tempStack, newElement1);
+        printf("firsttoken nie je null\n");
         providedTokens++;
     }
     if (secondToken != NULL) {
-        ASTNode *astNode2 = initASTNode();
-        astNode2->token = copyToken(secondToken);
-        StackElement *newElement2 = createStackElement(secondToken, astNode2);
-        push(&tempStack, newElement2);
+        printf("secondtoken nie je null\n");
         providedTokens++;
     }
 
@@ -264,9 +258,24 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
             *delimiterToken = *delim;
             return stack;
         }
-    }
-    while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+        token = copyToken(firstToken);
+        providedTokens--;
+    } else if (providedTokens == 1) {
+        if (firstToken != NULL) {
+            token = copyToken(firstToken);
+            providedTokens--;
+        } else if (secondToken != NULL) {
+            providedTokens--;
+            token = copyToken(secondToken);
+        } else {
+            HANDLE_ERROR("Unexpected NULL token", INTERNAL_ERROR, NULL);
+        }
+    } else {
         getNextToken(token);
+    }
+
+    while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+        printf("getting token %s\n", TokenTypeToString(token->type));
         // Track parentheses balance
         if (token->type == TOKEN_TYPE_LEFT_BR) {
             openingParentheses++;
@@ -299,11 +308,17 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
         push(&tempStack, newElement);
-        getNextToken(token);
+        if (providedTokens == 1) {
+            token = copyToken(secondToken);
+            providedTokens--;
+        } else {
+            getNextToken(token);
+        }
     }
 
     // Assign the delimiter token and check if its valid
     *delimiterToken = *token;
+    printf("DELIM: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA %s\n", TokenTypeToString(delimiterToken->type));
     if (!isDelimiter(token)) {
         cleanupStack(&tempStack);
         return NULL; // Token doesn't belong in the expression - a syntax error occured
