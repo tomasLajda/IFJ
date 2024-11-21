@@ -566,15 +566,18 @@ ASTNode *mockASTProgramStructure(int type) {
         // CONDITION
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_EXPR);
+        root->left->parent = root;
         AST *exprTree5 = initAST();
         ASTNode *exprTreeRoot5 = initASTNode();
         exprTreeRoot5->token = createToken(TOKEN_TYPE_EQ);
         exprTreeRoot5->left = initASTNode();
         exprTreeRoot5->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
         exprTreeRoot5->left->token->attribute.integer = 9;
+        exprTreeRoot5->left->parent = exprTreeRoot5;
         exprTreeRoot5->right = initASTNode();
         exprTreeRoot5->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
         exprTreeRoot5->right->token->attribute.integer = 9;
+        exprTreeRoot5->right->parent = exprTreeRoot5;
         exprTree5->root = exprTreeRoot5;
         exprTree5->isExpression = true;
         root->left->exprTree = exprTree5;
@@ -621,7 +624,7 @@ ASTNode *mockASTProgramStructure(int type) {
 
         // VARIABLE TYPE
         root->token = createToken(TOKEN_TYPE_KEYWORD);
-        root->token->attribute.keyword = KEYWORD_CONST;
+        root->token->attribute.keyword = KEYWORD_VAR;
 
         // VARIABLE NAME
         root->left = initASTNode();
@@ -653,8 +656,9 @@ ASTNode *mockASTProgramStructure(int type) {
 
         // VARIABLE NAME
         root->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->isAssignment = true;
         root->token->attribute.string = malloc(10);
-        strcpy(root->token->attribute.string, "menime");
+        strcpy(root->token->attribute.string, "premenna");
 
         // VALUE (currently 99 / 11)
         root->left = initASTNode();
@@ -663,8 +667,8 @@ ASTNode *mockASTProgramStructure(int type) {
         ASTNode *exprTreeRoot7 = initASTNode();
         exprTreeRoot7->token = createToken(TOKEN_TYPE_DIV);
         exprTreeRoot7->left = initASTNode();
-        exprTreeRoot7->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot7->left->token->attribute.integer = 99;
+        exprTreeRoot7->left->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        exprTreeRoot7->left->token->attribute.decimal = 9.2;
         exprTreeRoot7->right = initASTNode();
         exprTreeRoot7->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
         exprTreeRoot7->right->token->attribute.integer = 11;

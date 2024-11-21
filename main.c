@@ -31,11 +31,22 @@ int main() {
     currentNode->left->left = nullIfStatement;
     currentNode = nullIfStatement;
 
+    ASTNode *whileStatement = mockASTProgramStructure(6);
+    currentNode->right = whileStatement;
+    currentNode = whileStatement;
+
+    ASTNode *variableAssignment = mockASTProgramStructure(9);
+    currentNode->right = variableAssignment;
+    currentNode = variableAssignment;
+
     currentNode = mockASTProgramStructure(3);
     currentNode->parent = previousNode->right;
     previousNode->right->right = currentNode;
-    displayAST(ast);
+
+    // displayEntireAST(ast);
 
     semanticAnalysis();
+    // displayEntireAST(ast);
+    // displayAST(ast->root->right->exprTree);
     return 0;
 }
