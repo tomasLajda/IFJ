@@ -19,12 +19,12 @@ int labelCounter = 0;
 int expressionCounter = 0;
 int tempVarCounter = 0;
 
-void addLabelToBuffer(const char *labelType, const char *suffix) {
+void addLabelToBuffer(const char *labelType, const char *suffix, int currentLabelCounter) {
     // Static buffer for label
     char label[100]; // enough space for label
 
     // Construct label name in the format $<labelType>_<suffix>_<labelCounter>
-    snprintf(label, sizeof(label), "$%s_%s_%d\n", labelType, suffix, labelCounter);
+    snprintf(label, sizeof(label), "$%s_%s_%d\n", labelType, suffix, currentLabelCounter);
 
     ADD_TO_BUFFER(label);
 }
@@ -172,6 +172,7 @@ void processNode(ASTNode *node) {
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
                 // nullable if
                 labelCounter++;
+                int currentLabelCounter = labelCounter;
                 ADD_TO_BUFFER("DEFVAR LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
                 ADD_TO_BUFFER("\n");
@@ -180,75 +181,78 @@ void processNode(ASTNode *node) {
                 // expression result is on top of the data stack
                 ADD_TO_BUFFER("PUSHS nil@nil\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
-                addLabelToBuffer("NULL_if", "false");
+                addLabelToBuffer("NULL_if", "false", currentLabelCounter);
                 ADD_TO_BUFFER("MOVE LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
                 ADD_TO_BUFFER(" LF@");
                 ADD_TO_BUFFER(conditionNode->exprTree->root->token->attribute.string);
                 processNode(conditionNode->left); // true
                 ADD_TO_BUFFER("JUMP ");
-                addLabelToBuffer("NULL_if", "end");
+                addLabelToBuffer("NULL_if", "end", currentLabelCounter);
                 ADD_TO_BUFFER("LABEL ");
-                addLabelToBuffer("NULL_if", "false");
+                addLabelToBuffer("NULL_if", "false", currentLabelCounter);
                 processNode(conditionNode->right); // false
                 ADD_TO_BUFFER("LABEL ");
-                addLabelToBuffer("NULL_if", "end");
+                addLabelToBuffer("NULL_if", "end", currentLabelCounter);
 
             } else {
                 // normal if
                 labelCounter++;
+                int currentLabelCounter = labelCounter;
                 ASTNode *conditionNode = node->left;
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
                 ADD_TO_BUFFER("PUSHS bool@false\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
-                addLabelToBuffer("if", "false");
+                addLabelToBuffer("if", "false", currentLabelCounter);
                 processNode(conditionNode->left); // true
                 ADD_TO_BUFFER("JUMP ");
-                addLabelToBuffer("if", "end");
+                addLabelToBuffer("if", "end", currentLabelCounter);
                 ADD_TO_BUFFER("LABEL ");
-                addLabelToBuffer("if", "false");
+                addLabelToBuffer("if", "false", currentLabelCounter);
                 processNode(conditionNode->right); // false
                 ADD_TO_BUFFER("LABEL ");
-                addLabelToBuffer("if", "end");
+                addLabelToBuffer("if", "end", currentLabelCounter);
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_WHILE) {
             if (node->left->token->type == TOKEN_TYPE_NULL_COND) {
                 // nullable while
                 labelCounter++;
+                int currentLabelCounter = labelCounter;
                 ADD_TO_BUFFER("DEFVAR LF@");
                 ADD_TO_BUFFER(node->left->right->token->attribute.string);
                 ADD_TO_BUFFER("\n");
                 ASTNode *conditionNode = node->left->left;
                 ADD_TO_BUFFER("LABEL ");
-                addLabelToBuffer("NULL_while", "start");
+                addLabelToBuffer("NULL_while", "start", currentLabelCounter);
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
                 ADD_TO_BUFFER("PUSHS nil@nil\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
-                addLabelToBuffer("NULL_while", "end");
+                addLabelToBuffer("NULL_while", "end", currentLabelCounter);
                 processNode(conditionNode->left); // while body
                 ADD_TO_BUFFER("JUMP ");
-                addLabelToBuffer("NULL_while", "start");
+                addLabelToBuffer("NULL_while", "start", currentLabelCounter);
                 ADD_TO_BUFFER("LABEL ");
-                addLabelToBuffer("NULL_while", "end");
+                addLabelToBuffer("NULL_while", "end", currentLabelCounter);
             } else {
                 // normal while
                 labelCounter++;
+                int currentLabelCounter = labelCounter;
                 ASTNode *conditionNode = node->left;
                 ADD_TO_BUFFER("LABEL ");
-                addLabelToBuffer("while", "start");
+                addLabelToBuffer("while", "start", currentLabelCounter);
                 generateExpression(conditionNode->exprTree->root);
                 // expression result is on top of the data stack
                 ADD_TO_BUFFER("PUSHS bool@false\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
-                addLabelToBuffer("while", "end");
+                addLabelToBuffer("while", "end", currentLabelCounter);
                 processNode(conditionNode->left); // while body
                 ADD_TO_BUFFER("JUMP ");
-                addLabelToBuffer("while", "start");
+                addLabelToBuffer("while", "start", currentLabelCounter);
                 ADD_TO_BUFFER("LABEL ");
-                addLabelToBuffer("while", "end");
+                addLabelToBuffer("while", "end", currentLabelCounter);
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_UNDERSCORE) {
