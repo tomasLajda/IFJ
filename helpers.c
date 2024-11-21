@@ -615,7 +615,7 @@ ASTNode *mockASTProgramStructure(int type) {
 
     // Variable assignment
     case 9:
-
+        root->isAssignment = true;
         // VARIABLE NAME
         root->token = createToken(TOKEN_TYPE_IDENTIFIER);
         root->token->attribute.string = malloc(10);
