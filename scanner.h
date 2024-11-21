@@ -16,7 +16,7 @@ IFJ project
 
 typedef union {
     int integer;
-    double decimal;
+    float decimal;
     char *string;
     Keyword keyword;
     void *noAttribute;
