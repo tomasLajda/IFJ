@@ -7,7 +7,12 @@ int main() {
 
     AST *newAST = initAST();
     newAST->root = mockASTProgramStructure(3);
-    // newAST->root->left->left->right = mockASTProgramStructure(4);
+    newAST->root->right = mockASTProgramStructure(30);
+    newAST->root->right->left->left->right = mockASTProgramStructure(4);
+    newAST->root->right->left->left->right->left->left = mockASTProgramStructure(4);
+    newAST->root->right->left->left->right->left->right = mockASTProgramStructure(2);
+    newAST->root->right->left->left->right->left->left->left->left = mockASTProgramStructure(6);
+
     // newAST->root->left->left->right->left->left = mockASTProgramStructure(2);
     // newAST->root->left->left->right->left->right = mockASTProgramStructure(9);
     displayAST(newAST);

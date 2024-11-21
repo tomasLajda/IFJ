@@ -389,6 +389,7 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->left = initASTNode();
         root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->left->token->attribute.keyword = KEYWORD_MAIN;
+        root->left->left->exprTree = initAST();
 
         root->left->left->left = NULL; // No arguments
 
@@ -538,7 +539,7 @@ ASTNode *mockASTProgramStructure(int type) {
         exprTreeRoot5->left->token->attribute.integer = 9;
         exprTreeRoot5->right = initASTNode();
         exprTreeRoot5->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot5->right->token->attribute.integer = 9;
+        exprTreeRoot5->right->token->attribute.integer = 8;
         exprTree5->root = exprTreeRoot5;
         exprTree5->isExpression = true;
         root->left->exprTree = exprTree5;
