@@ -24,8 +24,7 @@ bool onlyOneArg = false;
 bool onlyTwoArgs = false;
 bool onlyThreeArgs = false;
 bool parsingReturnType = false;
-bool inElse = false;
-//bool nullCond = false;
+bool firstInTrue = false;
 unsigned int argCounter = 0;
 unsigned int paramCounter = 0;
 
@@ -49,9 +48,9 @@ void goBack(ASTNode *startNode) {
     ASTNode *currentNode = startNode;
     while (currentNode != NULL) {
 
-        printf("I am in node: ");
-        displayASTNode(currentNode, 0, true);
-        printf("\n");
+        //printf("I am in node: ");
+        //displayASTNode(currentNode, 0, true);
+        //printf("\n");
 
         if ((isTokenKeyword(currentNode->token, KEYWORD_IF) ||
              isTokenKeyword(currentNode->token, KEYWORD_WHILE) ||
@@ -166,9 +165,9 @@ void parseFuncDef() {
     addRightNode(ast, currentParent, pubNode);
     currentParent = pubNode;
 
-    printf("\n");
-    displayAST(ast);
-    printf("\n");
+    //printf("\n");
+    //displayAST(ast);
+    //printf("\n");
 
     getNextToken(currentToken);
 
@@ -197,9 +196,9 @@ void parseFuncDef() {
     addLeftNode(ast, currentParent, funcIdNode);
     currentParent = funcIdNode;
 
-    printf("\n");
-    displayAST(ast);
-    printf("\n");
+    //printf("\n");
+    //displayAST(ast);
+    //printf("\n");
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -250,7 +249,7 @@ void parseFunc() {
     getNextToken(currentToken);
 }
 
-// V_FUNC ::= token_void token_Ocb STATEMENTS token_Ccb
+// V_FUNC ::= token_void token_Ocb ` token_Ccb
 void parseVoidFunc() {
     if (!isTokenKeyword(currentToken, KEYWORD_VOID)) {
         HANDLE_ERROR("Expected 'void' in function definition", SYNTAX_ERROR, currentToken);
@@ -262,9 +261,9 @@ void parseVoidFunc() {
     mainParent = mainParent->left;
     currentParent = mainParent;
 
-    printf("\n");
-    displayAST(ast);
-    printf("\n");
+    //printf("\n");
+    //displayAST(ast);
+    //printf("\n");
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -341,7 +340,7 @@ void parseReturn() {
             printTokenInfo(currentToken);
             getNextToken(currentToken);
             tokenBuffer.second = copyToken(currentToken);
-            printf("Token 1: ");
+            //printf("Token 1: ");
             // printTokenInfo(currentToken);
 
             if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
@@ -350,17 +349,17 @@ void parseReturn() {
                 AST *exprTree = initAST();
                 ASTNode *exprNode = initASTNode();
                 exprTree->root = exprNode;
-                printf("BUFFER 1 %s\n", TokenTypeToString(tokenBuffer.first->type));
-                printf("BUFFER 2 %s\n", TokenTypeToString(tokenBuffer.second->type));
+                //printf("BUFFER 1 %s\n", TokenTypeToString(tokenBuffer.first->type));
+                //printf("BUFFER 2 %s\n", TokenTypeToString(tokenBuffer.second->type));
                 parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
-                printf("Expression tree23:\n");
-                displayAST(exprTree);
+                //printf("Expression tree23:\n");
+                //displayAST(exprTree);
                 
                 currentParent->exprTree = exprTree;
 
-                printf("Expression tree:\n");
-                displayAST(exprTree);
-                printf("CAU: ");
+                //printf("Expression tree:\n");
+                //displayAST(exprTree);
+                //printf("CAU: ");
                 printTokenInfo(currentToken);
             }
         } else {
@@ -372,8 +371,8 @@ void parseReturn() {
             exprNode->exprTree->isExpression = true;
             currentParent->exprTree = exprTree;
 
-            printf("Expression tree:\n");
-            displayAST(exprTree);
+            //printf("Expression tree:\n");
+            //displayAST(exprTree);
 
             goBack(currentParent);
         }
@@ -417,9 +416,9 @@ void parseParams() {
     }
     currentParent = paramIdNode;
 
-    printf("\n");
-    displayAST(ast);
-    printf("\n");
+    //printf("\n");
+    //displayAST(ast);
+    //printf("\n");
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -445,6 +444,10 @@ void parseStatements() {
         return;
     }
 
+    printf("\n");
+    displayAST(ast);
+    printf("\n");
+
     if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
         printf("I am in return\n");
         ASTNode *returnNode = initASTNode();
@@ -453,14 +456,17 @@ void parseStatements() {
 
         printf("Curren parent: ");
         printTokenInfo(currentParent->token);
+        //printf("Main parent: ");
+        //printTokenInfo(mainParent->token);
 
         if (currentParent && currentParent->token->type == TOKEN_TYPE_EXPR &&
-            currentParent->left == NULL) {
+            currentParent->left == NULL && firstInTrue == true) {
             addLeftNode(ast, currentParent, returnNode);
+            firstInTrue = false;
         } 
         else {
-            printf("Curren parent: ");
-            displayASTNode(currentParent, 0, true);
+            //printf("Curren parent: ");
+            //displayASTNode(currentParent, 0, true);
             addRightNode(ast, currentParent, returnNode);
         }
         currentParent = returnNode;
@@ -543,7 +549,7 @@ void parseStatement() {
         } else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
             parseVarAss();
         } else {
-            printf("CAU ");
+            //printf("CAU ");
             printTokenInfo(currentToken);
             HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
         }
@@ -563,9 +569,19 @@ void parseVarDef() {
                      currentToken);
     }
 
+    printf("Curren parent vo vardef: ");
+    printTokenInfo(currentParent->token);
+
     ASTNode *varTypeNode = initASTNode();
     varTypeNode->token = copyToken(currentToken);
-    addRightNode(ast, currentParent, varTypeNode);
+
+    if (firstInTrue == true) {
+        addLeftNode(ast, currentParent, varTypeNode);
+        firstInTrue = false;
+    }
+    else {
+        addRightNode(ast, currentParent, varTypeNode);
+    }
     currentParent = varTypeNode;
     mainParent = varTypeNode;
 
@@ -620,47 +636,46 @@ void parseVarDef() {
 
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-        printf("tt: %s\n", TokenTypeToString(currentToken->type));
+        //printf("tt: %s\n", TokenTypeToString(currentToken->type));
         tokenBuffer.second = copyToken(currentToken);
-        printf("tt: %s\n", TokenTypeToString(tokenBuffer.second->type));
+        //printf("tt: %s\n", TokenTypeToString(tokenBuffer.second->type));
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
             parseFuncCall();
         } else {
             AST *exprTree = initAST();
             ASTNode *exprNode = initASTNode();
             exprTree->root = exprNode;
-            printf("PRED EX: \n");
-            printTokenInfo(currentToken);
-            printTokenInfo(tokenBuffer.first);
-            printTokenInfo(tokenBuffer.second);
-            int result =
-                parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
-            printf("%d\n", result);
-            printf("PO EX ");
+            //printf("PRED EX: \n");
+            //printTokenInfo(currentToken);
+            //printTokenInfo(tokenBuffer.first);
+            //printTokenInfo(tokenBuffer.second);
+            parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
+            //printf("%d\n", result);
+            //printf("PO EX ");
             printTokenInfo(currentToken);
             currentParent->exprTree = exprTree;
             currentParent->exprTree->isExpression = true;
             exprNode->token = createToken(TOKEN_TYPE_EXPR);
             addLeftNode(ast, currentParent, exprNode);
             getNextToken(currentToken);
-            displayAST(exprTree);
+            //displayAST(exprTree);
         }
     } else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
         ASTNode *exprNode = initASTNode();
         exprTree->root = exprNode;
-        printf("ahojki%s\n", TokenTypeToString(currentToken->type));
+        //printf("ahojki%s\n", TokenTypeToString(currentToken->type));
         parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
-        displayAST(exprTree);
+        //displayAST(exprTree);
         currentParent->exprTree = exprTree;
         currentParent->exprTree->isExpression = true;
 
-        printf("Expression tree for vardef:\n");
-        displayAST(currentParent->exprTree);
+        //printf("Expression tree for vardef:\n");
+        //displayAST(currentParent->exprTree);
 
-        printf("\n");
-        displayAST(ast);
-        printf("\n");
+        //printf("\n");
+        //displayAST(ast);
+        //printf("\n");
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             printTokenInfo(currentToken);
@@ -689,7 +704,15 @@ void parseTypeSpec() {
 void parseVarAss() {
     ASTNode *varID = initASTNode();
     varID->token = copyToken(decider);
-    addRightNode(ast, currentParent, varID);
+
+    if (firstInTrue == true) {
+        addLeftNode(ast, currentParent, varID);
+        firstInTrue = false;
+    }
+    else {
+        addRightNode(ast, currentParent, varID);
+    }
+
     currentParent = varID;
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
@@ -725,8 +748,8 @@ void parseVarAss() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         tokenBuffer.second = copyToken(currentToken);
-        printf("1 :  %s\n", TokenTypeToString(tokenBuffer.first->type));
-        printf("2 :  %s\n", TokenTypeToString(tokenBuffer.second->type));
+        //printf("1 :  %s\n", TokenTypeToString(tokenBuffer.first->type));
+        //printf("2 :  %s\n", TokenTypeToString(tokenBuffer.second->type));
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
             parseFuncCall();
         } else {
@@ -751,11 +774,11 @@ void parseVarAss() {
         addLeftNode(ast, currentParent, exprNode);
 
         printTokenInfo(currentToken);
-        displayAST(exprTree);
+        //displayAST(exprTree);
 
-        printf("\n");
-        displayAST(ast);
-        printf("\n");
+        //printf("\n");
+        //displayAST(ast);
+        //printf("\n");
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             printTokenInfo(currentToken);
@@ -777,7 +800,14 @@ void parseWhile() {
 
     ASTNode *whileNode = initASTNode();
     whileNode->token = copyToken(currentToken);
-    addRightNode(ast, currentParent, whileNode);
+
+    if (firstInTrue == true) {
+        addLeftNode(ast, currentParent,whileNode);
+        firstInTrue = false;
+    }
+    else {
+        addRightNode(ast, currentParent, whileNode);
+    }
     currentParent = whileNode;
     mainParent = whileNode;
 
@@ -798,8 +828,8 @@ void parseWhile() {
     addLeftNode(ast, currentParent, exprNode);
     currentParent = exprNode;
 
-    printf("Expression tree for while:\n");
-    displayAST(exprNode->exprTree);
+    //rintf("Expression tree for while:\n");
+    //isplayAST(exprNode->exprTree);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
@@ -818,6 +848,7 @@ void parseWhile() {
     getNextToken(currentToken);
 
     parseStatements();
+    goBack(currentParent);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of while loop", SYNTAX_ERROR, currentToken);
@@ -829,32 +860,50 @@ void parseWhile() {
 // NULL_CONDITION ::= token_vb token_id token_vb | ε
 void parseNullCond() {
     //bool isNullCond = true;
+    printf("SOM TU\n");
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+    printf("SOM TUgvgvv\n");
+    printTokenInfo(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+        printf("SOM TUfdfffdfd\n");
         HANDLE_ERROR("Expected identifier in null condition", SYNTAX_ERROR, currentToken);
     }
-
-    displayAST(ast);
+    printf("fjididffjfdfdfdf");
+    printf("%s", TokenTypeToString(currentToken->type));
+    //displayAST(ast);
+    printf("Curren parentkjkjgfgkg: ");
     ASTNode *nullNode = initASTNode();
+    printf("NULL node: ");
+    printf("TOKEN: %s", TokenTypeToString(nullNode->token->type));
     nullNode->token = createToken(TOKEN_TYPE_VB);
+    printf("NULL node: ");
+    printf("TOKEN: %s", TokenTypeToString(nullNode->token->type));
     nullNode->right = initASTNode();
+    printf("NULL node1: ");
+    printf("TOKEN: %s", TokenTypeToString(nullNode->token->type));
     nullNode->right->token = copyToken(currentToken);
 
-    goBack(currentParent);
+    printf("NULL node: ");
+    printf("TOKEN: %s", TokenTypeToString(nullNode->token->type));
+
+    // goBack(currentParent);
+
+    printf("Curren parent 1: ");
+    printTokenInfo(currentParent->token);
 
     currentParent = currentParent->left;
     currentParent->parent = nullNode;
     mainParent->left = nullNode;
     nullNode->left = currentParent;
 
-    displayAST(ast);
-    printf("Curren parent 1: ");
-    displayASTNode(currentParent, 0, true);
-    printf("Curren parent: ");
-    displayASTNode(currentParent, 0, true);
-    displayAST(ast);
+    //displayAST(ast);
+    //printf("Curren parent 1: ");
+    //displayASTNode(currentParent, 0, true);
+    //printf("Curren parent: ");
+    //displayASTNode(currentParent, 0, true);
+    //displayAST(ast);
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -874,7 +923,14 @@ void parseIf() {
 
     ASTNode *ifNode = initASTNode();
     ifNode->token = copyToken(currentToken);
-    addRightNode(ast, currentParent, ifNode);
+
+    if (firstInTrue == true) {
+        addLeftNode(ast, currentParent, ifNode);
+        firstInTrue = false;
+    }
+    else {
+        addRightNode(ast, currentParent, ifNode);
+    }
     currentParent = ifNode;
     mainParent = ifNode;
 
@@ -889,16 +945,38 @@ void parseIf() {
     ASTNode *exprNode = initASTNode();
     exprTree->root = exprNode;
     parseExpression(exprTree, NULL, NULL, currentToken);
+    printf("TENTO: ");
+    printTokenInfo(currentToken);
     exprNode->exprTree = exprTree;
     exprNode->exprTree->isExpression = true;
     exprNode->token = createToken(TOKEN_TYPE_EXPR);
+
+    printf("TENTO: ");
+    printTokenInfo(currentToken);
+
+    printf("Expression tree before:\n");
+    printTokenInfo(currentParent->token);
+
+    printf("TENTO: ");
+    printTokenInfo(currentToken);
     addLeftNode(ast, currentParent, exprNode);
+    printf("TENTO: ");
+    printTokenInfo(currentToken);
+
+    printf("ODTIALTO: \n");
+    printf("%s", TokenTypeToString(currentParent->token->type));
     currentParent = exprNode;
+    printf("%s", TokenTypeToString(currentParent->token->type));
+    printf("%s", TokenTypeToString(currentToken->type));
+
+    printf("Expression tree currentParent for if:\n");
+    printTokenInfo(currentParent->token);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
+    printf("Current token: ");
     getNextToken(currentToken);
 
     if (currentToken->type == TOKEN_TYPE_VB) {
@@ -908,14 +986,17 @@ void parseIf() {
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of if statement", SYNTAX_ERROR, currentToken);
     }
+    firstInTrue = true;
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
+    firstInTrue = false;
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of if statement", SYNTAX_ERROR, currentToken);
     }
+    currentParent = exprNode;
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -924,7 +1005,8 @@ void parseIf() {
 
 // ELSE ::= token_else token_Ocb STATEMENTS token_Ccb | ε
 void parseElse() {
-    inElse = true;
+    printf("Current token: ");
+    printTokenInfo(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_ELSE)) {
         HANDLE_ERROR("Expected 'else' to start the else statement", SYNTAX_ERROR, currentToken);
@@ -982,7 +1064,14 @@ void parseDiscardCall() {
 
     ASTNode *discardNode = initASTNode();
     discardNode->token = copyToken(currentToken);
-    addRightNode(ast, currentParent, discardNode);
+
+    if (firstInTrue == true) {
+        addLeftNode(ast, currentParent, discardNode);
+        firstInTrue = false;
+    }
+    else {
+        addRightNode(ast, currentParent, discardNode);
+    }
     currentParent = discardNode;
 
     printTokenInfo(currentToken);
@@ -1020,7 +1109,7 @@ void parseDiscardCall() {
         getNextToken(currentToken);
 
         tokenBuffer.second = copyToken(currentToken);
-        printf("2. Token in discardCall ");
+        //printf("2. Token in discardCall ");
         printTokenInfo(currentToken);
 
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
@@ -1033,10 +1122,10 @@ void parseDiscardCall() {
             currentParent->exprTree = exprTree;
             currentParent->exprTree->isExpression = true;
 
-            printf("Expression tree in discardCall:\n");
-            displayAST(exprTree);
+            //printf("Expression tree in discardCall:\n");
+            //displayAST(exprTree);
 
-            printf("TOKEN IN DISCARD_CALL: ");
+            //printf("TOKEN IN DISCARD_CALL: ");
             printTokenInfo(currentToken);
         }
     } else {
@@ -1047,12 +1136,12 @@ void parseDiscardCall() {
         currentParent->exprTree = exprTree;
         currentParent->exprTree->isExpression = true;
 
-        printf("Expression tree in discardCall:\n");
-        displayAST(exprTree);
+        //printf("Expression tree in discardCall:\n");
+        //displayAST(exprTree);
 
-        printf("\n");
-        displayAST(ast);
-        printf("\n");
+        //printf("\n");
+        //displayAST(ast);
+        //printf("\n");
     }
 
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {

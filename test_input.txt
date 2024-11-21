@@ -1,9 +1,10 @@
 
             const ifj = @import("ifj24.zig");
-            pub fn main() i32 {
-                const variable : i32 = x;
-                //i = 10;
-                _ = djlfgh;
-                return variable;
+            pub fn main() void {
+                var i = 0;
+                if (y > 5) | xjhj |{
+                    var xg = 5;
+                }
+                return;
             }
             
