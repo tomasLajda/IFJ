@@ -217,7 +217,7 @@ void displayEntireASTNode(ASTNode *node, int level, bool isLeft) {
             printf("  ");
         }
         printf("|-- Nested AST:\n");
-        displayASTNode(node->exprTree->root, level + 1, true);
+        displayEntireASTNode(node->exprTree->root, level + 1, true);
     }
 }
 
