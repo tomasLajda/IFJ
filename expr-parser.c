@@ -240,17 +240,11 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
     int providedTokens = 0;
 
     if (firstToken != NULL) {
-        ASTNode *astNode1 = initASTNode();
-        astNode1->token = copyToken(firstToken);
-        StackElement *newElement1 = createStackElement(firstToken, astNode1);
-        push(&tempStack, newElement1);
+        printf("firsttoken nie je null\n");
         providedTokens++;
     }
     if (secondToken != NULL) {
-        ASTNode *astNode2 = initASTNode();
-        astNode2->token = copyToken(secondToken);
-        StackElement *newElement2 = createStackElement(secondToken, astNode2);
-        push(&tempStack, newElement2);
+        printf("secondtoken nie je null\n");
         providedTokens++;
     }
 
@@ -264,9 +258,24 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
             *delimiterToken = *delim;
             return stack;
         }
-    }
-    while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+        token = copyToken(firstToken);
+        providedTokens--;
+    } else if (providedTokens == 1) {
+        if (firstToken != NULL) {
+            token = copyToken(firstToken);
+            providedTokens--;
+        } else if (secondToken != NULL) {
+            providedTokens--;
+            token = copyToken(secondToken);
+        } else {
+            HANDLE_ERROR("Unexpected NULL token", INTERNAL_ERROR, NULL);
+        }
+    } else {
         getNextToken(token);
+    }
+
+    while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+        printf("getting token %s\n", TokenTypeToString(token->type));
         // Track parentheses balance
         if (token->type == TOKEN_TYPE_LEFT_BR) {
             openingParentheses++;
@@ -299,11 +308,17 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
         push(&tempStack, newElement);
-        getNextToken(token);
+        if (providedTokens == 1) {
+            token = copyToken(secondToken);
+            providedTokens--;
+        } else {
+            getNextToken(token);
+        }
     }
 
     // Assign the delimiter token and check if its valid
     *delimiterToken = *token;
+    printf("DELIM: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA %s\n", TokenTypeToString(delimiterToken->type));
     if (!isDelimiter(token)) {
         cleanupStack(&tempStack);
         return NULL; // Token doesn't belong in the expression - a syntax error occured
@@ -388,7 +403,8 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        return SYNTAX_ERROR; // Indicate syntax error
+        HANDLE_ERROR("Syntax error. fillinupstack() returned null\n", SYNTAX_ERROR,
+                     SYNTAX_ERROR); // Indicate syntax error
     }
 
     // Initialize the current input element
@@ -461,7 +477,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
                 free(input);
                 cleanupStack(stack);
                 free(stack);
-                return SYNTAX_ERROR; // Syntax error
+                HANDLE_ERROR("Invalid reduction rule.\n", INTERNAL_ERROR, INTERNAL_ERROR);
             }
         } else if (reducible == 2) { // Syntax error detected
             cleanupStack(input);
@@ -469,8 +485,8 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
             cleanupStack(stack);
             free(stack);
 
-            return SYNTAX_ERROR;      // Syntax error
-        } else if (!isEmpty(input)) { // Shift
+            HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
+        } else if (!isEmpty(input)) {                                    // Shift
             Token *currentToken = createToken(currentInputElement->tokenPtr->type);
             ASTNode *currentASTNode = copyASTNode(currentInputElement->ASTNodePtr);
             pop(input);
@@ -491,7 +507,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
             free(input);
             cleanupStack(stack);
             free(stack);
-            return SYNTAX_ERROR; // Indicate syntax error
+            HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
         }
     }
 
@@ -506,6 +522,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
+        printf("PARSING SUCCESSFUL\n");
         return 0; // Indicate successful parsing
     } else {
         // Parsing incomplete or incorrect
@@ -515,6 +532,6 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        return SYNTAX_ERROR; // Indicate syntax error
+        HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
     }
 }
