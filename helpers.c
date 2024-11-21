@@ -371,6 +371,40 @@ ASTNode *mockASTProgramStructure(int type) {
         return root;
         break;
 
+    // Function call
+    case 20:
+        // FUNCTION NAME
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_WRITE;
+
+        // strcpy(root->token->attribute.string, "IFJ24_write");
+
+        // FIRST ARGUMENT
+        root->left = initASTNode();
+        root->left->token = createToken(TOKEN_TYPE_EXPR);
+        AST *exprTree01 = initAST();
+        ASTNode *exprTreeRoot00 = initASTNode();
+        exprTreeRoot00->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        exprTreeRoot00->token->attribute.string = malloc(15);
+        strcpy(exprTreeRoot00->token->attribute.string, "variableX");
+        exprTree01->root = exprTreeRoot00;
+        exprTree01->isExpression = true;
+        root->left->exprTree = exprTree01;
+
+        // // SECOND ARGUMENT
+        // root->left->right = initASTNode();
+        // root->left->right->token = createToken(TOKEN_TYPE_EXPR);
+        // AST *exprTree2 = initAST();
+        // ASTNode *exprTreeRoot2 = initASTNode();
+        // exprTreeRoot2->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        // exprTreeRoot2->token->attribute.decimal = 1.0;
+        // exprTree2->root = exprTreeRoot2;
+        // exprTree2->isExpression = true;
+        // root->left->right->exprTree = exprTree2;
+
+        return root;
+        break;
+
     // Main function definition
     case 30:
 
@@ -392,10 +426,6 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->left->exprTree = initAST();
         root->left->left->exprTree->root = initASTNode();
 
-        // //
-        //         root->left->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
-        //         root->left->left->token->attribute.string = malloc(5);
-        //         strcpy(root->left->left->token->attribute.string, "bar");
         root->left->left->exprTree->root->token = createToken(TOKEN_TYPE_IDENTIFIER);
         root->left->left->exprTree->root->token->attribute.string = malloc(15);
         strcpy(root->left->left->exprTree->root->token->attribute.string, "variableX");
@@ -629,25 +659,28 @@ ASTNode *mockASTProgramStructure(int type) {
     // Variable assignment
     case 9:
 
+        root->isAssignment = true;
+
         // VARIABLE NAME
         root->token = createToken(TOKEN_TYPE_IDENTIFIER);
-        root->token->attribute.string = malloc(10);
-        strcpy(root->token->attribute.string, "menime");
+        root->token->attribute.string = malloc(15);
+        strcpy(root->token->attribute.string, "variableX");
 
         // VALUE (currently 99 / 11)
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_EXPR);
         AST *exprTree7 = initAST();
         ASTNode *exprTreeRoot7 = initASTNode();
-        exprTreeRoot7->token = createToken(TOKEN_TYPE_DIV);
-        exprTreeRoot7->left = initASTNode();
-        exprTreeRoot7->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot7->left->token->attribute.integer = 99;
-        exprTreeRoot7->right = initASTNode();
-        exprTreeRoot7->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot7->right->token->attribute.integer = 11;
+        exprTreeRoot7 = mockASTProgramStructure(2);
+        // exprTreeRoot7->token = createToken(TOKEN_TYPE_DIV);
+        // exprTreeRoot7->left = initASTNode();
+        // exprTreeRoot7->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        // exprTreeRoot7->left->token->attribute.integer = 99;
+        // exprTreeRoot7->right = initASTNode();
+        // exprTreeRoot7->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        // exprTreeRoot7->right->token->attribute.integer = 11;
         exprTree7->root = exprTreeRoot7;
-        exprTree7->isExpression = true;
+        // exprTree7->isExpression = true;
         root->left->exprTree = exprTree7;
 
         return root;
