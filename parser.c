@@ -24,6 +24,7 @@ bool onlyOneArg = false;
 bool onlyTwoArgs = false;
 bool onlyThreeArgs = false;
 bool parsingReturnType = false;
+bool inElse = false;
 unsigned int argCounter = 0;
 unsigned int paramCounter = 0;
 
@@ -340,7 +341,7 @@ void parseReturn() {
             getNextToken(currentToken);
             tokenBuffer.second = copyToken(currentToken);
             printf("Token 1: ");
-            //printTokenInfo(currentToken);
+            // printTokenInfo(currentToken);
 
             if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
                 parseFuncCall();
@@ -353,6 +354,7 @@ void parseReturn() {
                 parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
                 printf("Expression tree23:\n");
                 displayAST(exprTree);
+                
                 currenParent->exprTree = exprTree;
 
                 printf("Expression tree:\n");
@@ -367,8 +369,7 @@ void parseReturn() {
             parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
             exprNode->exprTree = exprTree;
             exprNode->exprTree->isExpression = true;
-            exprNode->token = createToken(TOKEN_TYPE_EXPR);
-            addLeftNode(ast, currenParent, exprNode);
+            currenParent->exprTree = exprTree;
 
             printf("Expression tree:\n");
             displayAST(exprTree);
@@ -448,7 +449,13 @@ void parseStatements() {
         ASTNode *returnNode = initASTNode();
         printTokenInfo(currentToken);
         returnNode->token = copyToken(currentToken);
-        addRightNode(ast, currenParent, returnNode);
+
+        if (currenParent && currenParent->token->type == TOKEN_TYPE_EXPR &&
+            currenParent->left == NULL) {
+            addLeftNode(ast, currenParent, returnNode);
+        } else {
+            addRightNode(ast, currenParent, returnNode);
+        }
         currenParent = returnNode;
 
         printf("\n");
@@ -820,15 +827,25 @@ void parseNullCond() {
         HANDLE_ERROR("Expected identifier in null condition", SYNTAX_ERROR, currentToken);
     }
 
-    ASTNode *nullCondIDNode = initASTNode();
-    nullCondIDNode->token = copyToken(currentToken);
-    ASTNode *nullCondNode = initASTNode();
-    nullCondNode->token = createToken(TOKEN_TYPE_NULL_COND);
+    displayAST(ast);
+    ASTNode *nullNode = initASTNode();
+    nullNode->token = createToken(TOKEN_TYPE_VB);
+    nullNode->right = initASTNode();
+    nullNode->right->token = copyToken(currentToken);
+
+    // ASTNode *nullCondIDNode = initASTNode();
+    // nullCondIDNode->token = copyToken(currentToken);
+    // ASTNode *nullCondNode = initASTNode();
+    // nullCondNode->token = createToken(TOKEN_TYPE_NULL_COND);
+    currenParent = currenParent->left;
+    currenParent->parent = nullNode;
+    mainParent->left = nullNode;
+    nullNode->left = currenParent;
 
     displayAST(ast);
     printf("Curren parent 1: ");
     displayASTNode(currenParent, 0, true);
-    currenParent = currenParent->left;
+    // currenParent = currenParent->left;
     printf("Curren parent: ");
     displayASTNode(currenParent, 0, true);
     // currenParent->parent = nullCondNode;
