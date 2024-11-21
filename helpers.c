@@ -389,6 +389,7 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->left = initASTNode();
         root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->left->token->attribute.keyword = KEYWORD_MAIN;
+        root->left->left->exprTree = initAST(); // init for list of variable names
 
         root->left->left->left = NULL; // No arguments
 
