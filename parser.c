@@ -48,15 +48,16 @@ void goBack(ASTNode *startNode) {
     ASTNode *currentNode = startNode;
 
     while (currentNode != NULL) {
-        if ((isTokenKeyword(currentNode->token, KEYWORD_IF) ||
+        displayASTNode(currentNode, 0, false);
+        if ((currentNode != startNode) &&
+            (isTokenKeyword(currentNode->token, KEYWORD_IF) ||
              isTokenKeyword(currentNode->token, KEYWORD_WHILE) ||
              isTokenKeyword(currentNode->token, KEYWORD_PUB))) {
             currentParent = currentNode;
             mainParent = currentNode;
             break;
         }
-        ASTNode *parentNode = currentNode->parent;
-        currentNode = parentNode;
+        currentNode = currentNode->parent;
     }
 }
 
