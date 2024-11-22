@@ -28,8 +28,6 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
                             unsigned parameterIndex);
 unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
 bool checkFunctionDefined(SymbolTable *table, const char *key);
-bool isConstruct(ASTNode *node);
-void jumpToPreviousConstruct(ASTNode **node);
 bool checkBuildInFunction(Keyword key);
 DataType convertNullableType(DataType type);
 void functionParameterAnalysis(ASTNode *node);
@@ -157,22 +155,6 @@ bool checkFunctionDefined(SymbolTable *table, const char *key) {
     return symbol != NULL && symbol->function;
 }
 
-bool isConstruct(ASTNode *node) {
-    return node->token->type == TOKEN_TYPE_KEYWORD &&
-           (node->token->attribute.keyword == KEYWORD_IF ||
-            node->token->attribute.keyword == KEYWORD_PUB ||
-            node->token->attribute.keyword == KEYWORD_WHILE);
-}
-
-void jumpToPreviousConstruct(ASTNode **node) {
-    while ((*node)->parent != NULL) {
-        (*node) = (*node)->parent;
-        if (isConstruct(*node)) {
-            return;
-        }
-    }
-}
-
 bool checkBuildInFunction(Keyword key) {
     return key == KEYWORD_STRING || key == KEYWORD_LENGTH || key == KEYWORD_CONCAT ||
            key == KEYWORD_SUBSTRING || key == KEYWORD_STRCMP || key == KEYWORD_ORD ||
@@ -200,8 +182,11 @@ void functionParameterAnalysis(ASTNode *node) {
     }
 
     ListData currentParameter;
-
     currentParameter.key = node->token->attribute.string;
+
+    if (node->left == NULL || node->left->token->type != TOKEN_TYPE_KEYWORD) {
+        HANDLE_ERROR("Expected parameter type", INTERNAL_ERROR);
+    }
     currentParameter.type = (DataType)node->left->token->attribute.keyword;
 
     if (currentSymbol.params == NULL) {
@@ -225,8 +210,7 @@ void functionAnalysis(ASTNode *node) {
     if (node == NULL) {
         return;
     }
-
-    ASTNode *currentNode = node->left;
+    ASTNode *tempNode;
 
     currentSymbol.function = true;
     currentSymbol.constant = true;
@@ -234,25 +218,39 @@ void functionAnalysis(ASTNode *node) {
     currentSymbol.compileTime = false;
 
     node = node->left;
-    currentNode = node->right;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected function keyword", INTERNAL_ERROR);
+    }
 
-    currentSymbol.type = (DataType)currentNode->token->attribute.keyword;
+    tempNode = node->right;
+    if (tempNode == NULL || tempNode->token->type != TOKEN_TYPE_KEYWORD) {
+        HANDLE_ERROR("Expected function return type", INTERNAL_ERROR);
+    }
+
+    currentSymbol.type = (DataType)tempNode->token->attribute.keyword;
 
     node = node->left;
-    currentNode = node;
-    if (currentNode->token->type == TOKEN_TYPE_KEYWORD &&
-        currentNode->token->attribute.keyword == KEYWORD_MAIN) {
+    if (node == NULL) {
+        HANDLE_ERROR("Expected function id", INTERNAL_ERROR);
+    }
+
+    tempNode = node;
+    if (tempNode->token->type == TOKEN_TYPE_KEYWORD) {
+        if (tempNode->token->attribute.keyword != KEYWORD_MAIN) {
+            HANDLE_ERROR("Expected function main keyword", INTERNAL_ERROR);
+        }
+
         currentSymbol.key = "main";
     } else {
-        currentSymbol.key = currentNode->token->attribute.string;
+        currentSymbol.key = tempNode->token->attribute.string;
     }
 
     if (checkDeclaration(symbolTableTop(&symbolTableStack), currentSymbol.key)) {
         HANDLE_ERROR("Function redefinition", REDEFINITION_ERROR);
     }
 
-    currentNode = node->left;
-    functionParameterAnalysis(currentNode);
+    tempNode = node->left;
+    functionParameterAnalysis(tempNode);
 
     if (strcmp(currentSymbol.key, "main") == 0) {
         if (currentSymbol.type != TYPE_VOID) {
@@ -265,7 +263,16 @@ void functionAnalysis(ASTNode *node) {
     symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
     symbolResetValues(&currentSymbol);
 
-    jumpToPreviousConstruct(&node);
+    node = node->parent;
+    if (node == NULL) {
+        HANDLE_ERROR("Function id doesn't have a parent", INTERNAL_ERROR);
+    }
+
+    node = node->parent;
+    if (node == NULL) {
+        HANDLE_ERROR("Function keyword doesn't have a parent", INTERNAL_ERROR);
+    }
+
     node = node->right;
     functionAnalysis(node);
 }
@@ -331,6 +338,7 @@ void functionBodyAnalysis(ASTNode *node) {
 
     node = node->left;
     node = node->left;
+
     if (node->token->type == TOKEN_TYPE_KEYWORD) {
         symbolTableSetFunctionKey(table, "main");
     } else {
@@ -354,6 +362,9 @@ void ifAnalysis(ASTNode *node) {
     symbolTablePush(&symbolTableStack, table);
 
     node = node->left;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected if condition or null condition", INTERNAL_ERROR);
+    }
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
@@ -367,6 +378,13 @@ void ifAnalysis(ASTNode *node) {
 
         nullCond = true;
         node = node->left;
+        if (node == NULL) {
+            HANDLE_ERROR("Expected if condition", INTERNAL_ERROR);
+        }
+    }
+
+    if (node->exprTree == NULL) {
+        HANDLE_ERROR("Expected if condition expression", INTERNAL_ERROR);
     }
 
     DataType type = expressionAnalysis(node->exprTree->root).type;
@@ -427,6 +445,9 @@ void whileAnalysis(ASTNode *node) {
     symbolTablePush(&symbolTableStack, table);
 
     node = node->left;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected while condition or null condition", INTERNAL_ERROR);
+    }
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
@@ -440,9 +461,16 @@ void whileAnalysis(ASTNode *node) {
 
         nullCond = true;
         node = node->left;
+        if (node == NULL) {
+            HANDLE_ERROR("Expected while condition", INTERNAL_ERROR);
+        }
     }
 
+    if (node->exprTree == NULL) {
+        HANDLE_ERROR("Expected while condition expression", INTERNAL_ERROR);
+    }
     DataType type = expressionAnalysis(node->exprTree->root).type;
+
     if (!nullCond) {
         if (type != TYPE_BOOL) {
             HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
@@ -488,6 +516,9 @@ void variableDefinitionAnalysis(ASTNode *node) {
     currentSymbol.used = false;
 
     node = node->left;
+    if (node == NULL || node->token->type != TOKEN_TYPE_IDENTIFIER) {
+        HANDLE_ERROR("Expected variable id", INTERNAL_ERROR);
+    }
     currentSymbol.key = node->token->attribute.string;
 
     ASTNode *nodeCopy = initASTNode();
@@ -512,6 +543,13 @@ void variableDefinitionAnalysis(ASTNode *node) {
     }
 
     node = node->right;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected variable definition assignment", INTERNAL_ERROR);
+    }
+    if (node->exprTree == NULL) {
+        HANDLE_ERROR("Expected variable definition assignment expression", INTERNAL_ERROR);
+    }
+
     Operand expressionResult = node->exprTree->isExpression
                                    ? expressionAnalysis(node->exprTree->root)
                                    : functionCallAnalysis(node->exprTree->root);
@@ -542,6 +580,10 @@ void variableAssignmentAnalysis(ASTNode *node) {
     DataType valueType = TYPE_ANY;
 
     if (node->token->type != TOKEN_TYPE_KEYWORD) {
+        if (node->token->type != TOKEN_TYPE_IDENTIFIER) {
+            HANDLE_ERROR("Expected variable id", INTERNAL_ERROR);
+        }
+
         if (!checkDeclaration(symbolTableTop(&symbolTableStack), node->token->attribute.string)) {
             HANDLE_ERROR("Variable not defined", UNDEFINED_ERROR);
         }
@@ -556,7 +598,18 @@ void variableAssignmentAnalysis(ASTNode *node) {
             getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
     }
 
+    if (node->token->type == TOKEN_TYPE_KEYWORD &&
+        node->token->attribute.keyword != KEYWORD_UNDERSCORE) {
+        HANDLE_ERROR("Expected underscore keyword", INTERNAL_ERROR);
+    }
+
     node = node->left;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected assignment expression", INTERNAL_ERROR);
+    }
+    if (node->exprTree == NULL) {
+        HANDLE_ERROR("Expected assignment expression", INTERNAL_ERROR);
+    }
 
     Operand expressionResult = node->exprTree->isExpression
                                    ? expressionAnalysis(node->exprTree->root)
@@ -581,7 +634,7 @@ void returnAnalysis(ASTNode *node) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
     } else {
-        if (returnType == TYPE_VOID && node->exprTree->root != NULL) {
+        if (returnType == TYPE_VOID && node->exprTree != NULL) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
 
@@ -598,6 +651,10 @@ void returnAnalysis(ASTNode *node) {
 }
 
 Operand functionCallAnalysis(ASTNode *node) {
+    if (node == NULL) {
+        HANDLE_ERROR("Function call root node is NULL", INTERNAL_ERROR);
+    }
+
     if (node->token->type == TOKEN_TYPE_KEYWORD) {
         return buildInFunctionAnalysis(node);
     }
