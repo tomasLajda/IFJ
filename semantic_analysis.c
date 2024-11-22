@@ -208,7 +208,7 @@ Operand functionCallAnalysis(ASTNode *node);
  * @param operator The operator.
  * @return The operand representing the result of the operation.
  */
-Operand determineNextOperand(Operand left, Operand right, TokenType operator);
+Operand determineNextOperand(Operand left, Operand right, ASTNode *node);
 
 /**
  * @brief Analyzes an expression.
@@ -985,9 +985,11 @@ Operand buildInFunctionAnalysis(ASTNode *node) {
     return (Operand){.type = returnType, .compileTime = false};
 }
 
-Operand determineNextOperand(Operand left, Operand right, TokenType operator) {
+Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
     Operand result;
     result.compileTime = left.compileTime && right.compileTime;
+
+    TokenType operator= node->token->type;
 
     switch (left.type) {
     case TYPE_I_32:
@@ -1052,6 +1054,7 @@ Operand expressionAnalysis(ASTNode *node) {
         HANDLE_ERROR("Expected expression", INTERNAL_ERROR);
     }
 
+    // TODO redo to reduce compile time expressions
     if (node->left == NULL && node->right == NULL) {
         if (node->token->type == TOKEN_TYPE_IDENTIFIER) {
             if (!checkDeclaration(symbolTableTop(&symbolTableStack),
@@ -1067,20 +1070,20 @@ Operand expressionAnalysis(ASTNode *node) {
         }
 
         if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
-            return (Operand){.type = TYPE_I_32, .compileTime = true};
+            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
         }
 
         if (node->token->type == TOKEN_TYPE_DOUBLE_VALUE) {
-            return (Operand){.type = TYPE_F_64, .compileTime = true};
+            return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
         }
 
         if (node->token->type == TOKEN_TYPE_STRING_VALUE) {
-            return (Operand){.type = TYPE_U_8_ARRAY, .compileTime = true};
+            return (Operand){.type = TYPE_U_8_ARRAY, .compileTime = true, .token = node->token};
         }
 
         if (node->token->type == TOKEN_TYPE_KEYWORD &&
             node->token->attribute.keyword == KEYWORD_NULL) {
-            return (Operand){.type = TYPE_NULL, .compileTime = true};
+            return (Operand){.type = TYPE_NULL, .compileTime = true, .token = node->token};
         }
 
         HANDLE_ERROR("Invalid token type", INTERNAL_ERROR);
@@ -1089,9 +1092,7 @@ Operand expressionAnalysis(ASTNode *node) {
     Operand leftType = expressionAnalysis(node->left);
     Operand rightType = expressionAnalysis(node->right);
 
-    TokenType operator= node->token->type;
-
-    return determineNextOperand(leftType, rightType, operator);
+    return determineNextOperand(leftType, rightType, node);
 }
 
 void semanticAnalysis() {
