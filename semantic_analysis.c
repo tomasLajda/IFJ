@@ -512,7 +512,6 @@ void variableDefinitionAnalysis(ASTNode *node) {
     }
 
     node = node->right;
-
     Operand expressionResult = node->exprTree->isExpression
                                    ? expressionAnalysis(node->exprTree->root)
                                    : functionCallAnalysis(node->exprTree->root);
@@ -603,6 +602,8 @@ Operand functionCallAnalysis(ASTNode *node) {
         return buildInFunctionAnalysis(node);
     }
 
+    char *functionKey = node->token->attribute.string;
+
     if (!checkFunctionDefined(symbolTableTop(&symbolTableStack), node->token->attribute.string)) {
         HANDLE_ERROR("Function not defined", UNDEFINED_ERROR);
     }
@@ -614,9 +615,8 @@ Operand functionCallAnalysis(ASTNode *node) {
     node = node->left;
     while (node != NULL) {
         Operand expressionResult = expressionAnalysis(node->exprTree->root);
-        if (!checkFunctionParameter(symbolTableTop(&symbolTableStack),
-                                    node->token->attribute.string, expressionResult.type,
-                                    parameterIndex)) {
+        if (!checkFunctionParameter(symbolTableTop(&symbolTableStack), functionKey,
+                                    expressionResult.type, parameterIndex)) {
             HANDLE_ERROR("Invalid function parameter", PARAMETER_ERROR);
         }
 
@@ -632,8 +632,11 @@ Operand functionCallAnalysis(ASTNode *node) {
         HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
     }
 
-    return (Operand){.type = getReturnType(symbolTableTop(&symbolTableStack)),
-                     .compileTime = false};
+    Operand functionReturn =
+        (Operand){.type = getVariableType(symbolTableTop(&symbolTableStack), functionKey),
+                  .compileTime = false};
+
+    return functionReturn;
 }
 
 Operand buildInFunctionAnalysis(ASTNode *node) {
@@ -724,7 +727,7 @@ Operand buildInFunctionAnalysis(ASTNode *node) {
             HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
         }
 
-        Operand expressionResult = expressionAnalysis(node->left->exprTree->root);
+        Operand expressionResult = expressionAnalysis(node->exprTree->root);
         if (expressionResult.type != parameterType[i] &&
             (expressionResult.type != TYPE_NULL || !isNullableType(parameterType[i])) &&
             parameterType[i] != TYPE_ANY) {
