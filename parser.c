@@ -647,8 +647,13 @@ void parseVarDef() {
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
             AST *exprTree = initAST();
             exprTree->root = funcID;
-            currentParent = funcID;
+            ASTNode *valueNode = initASTNode();
+            valueNode->token = createToken(TOKEN_TYPE_EXPR);
+            mainParent->left->right = valueNode;
+            mainParent->left->right->exprTree = exprTree;
             exprTree->isExpression = false;
+            // funcID->exprTree->root =
+            currentParent = funcID;
             parseFuncCall();
             currentParent = mainParent;
         } else {
@@ -763,7 +768,16 @@ void parseVarAss() {
         tokenBuffer.second = copyToken(currentToken);
 
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
+            AST *exprTree = initAST();
+            exprTree->root = funcID;
+            ASTNode *valueNode = initASTNode();
+            valueNode->token = createToken(TOKEN_TYPE_EXPR);
+            mainParent->left = valueNode;
+            mainParent->left->exprTree = exprTree;
+            exprTree->isExpression = false;
+            currentParent = funcID;
             parseFuncCall();
+            currentParent = mainParent;
         } else {
             AST *exprTree = initAST();
             ASTNode *exprNode = initASTNode();
@@ -802,6 +816,7 @@ void parseVarAss() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+    // getNextToken(currentToken);
 }
 
 // While ::= token_while token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb
@@ -1187,7 +1202,7 @@ void parseArgs() {
     argNode->token = createToken(TOKEN_TYPE_EXPR);
     parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
 
-    if (argCounter == 1) {
+    if (argCounter == 0) {
         addLeftNode(ast, currentParent, argNode);
     } else {
         addRightNode(ast, currentParent, argNode);
@@ -1200,7 +1215,7 @@ void parseArgs() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseArgs();
-    } 
+    }
 }
 
 int parse() {
@@ -1220,7 +1235,8 @@ int parse() {
         return SYNTAX_ERROR;
     }
 
-    displayAST(ast);
+    printf("FINAL PRINT: \n");
+    displayEntireAST(ast);
     free(decider);
     // freeTokenBuffer();
 
