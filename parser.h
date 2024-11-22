@@ -8,34 +8,64 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
-#include "scanner.h"
 #include "ast.h"
 #include "error_codes.h"
 #include "expr-parser.h"
+#include "scanner.h"
+#include "semantic_analysis.h"
 #include "symtable.h"
 
-extern Token* currentToken;
-extern SymbolTable* symbolTable;
-extern AST* ast;
+extern Token *currentToken;
+extern AST *ast;
+
+typedef struct {
+    Token *first;
+    Token *second;
+} TokenBuffer;
+
+/**
+ * @brief Initializes the token buffer by allocating memory for tokens
+ */
+void initTokenBuffer();
+
+/**
+ * @brief Frees all memory allocated for the token buffer
+ */
+void freeTokenBuffer();
+
+/**
+ * @brief Goes back in the AST to the last node that is a WHILE, IF or PUB KEYWORD and sets it as the current and main parent
+ *
+ * @param startNode The node to start from
+ */
+void goBack(ASTNode *startNode);
 
 /**
  * @brief Checks if the current token is a keyword
- * 
+ *
  * @param keyword The keyword to check
  * @return True if the current token is the keyword, false otherwise
  */
-bool isTokenKeyword(Token* token, Keyword keyword);
+bool isTokenKeyword(Token *token, Keyword keyword);
 
 /**
- * @brief Checks the next token without changing the current token
- * 
- * @return The next token
+ * @brief Checks if the current token is a built-in function
+ *
+ * @return True if the current token is a built-in function, false otherwise
  */
-Token* peek();
+bool isTokenBuiltInFunction(Token *token);
+
+/**
+ * @brief Checks if the current token is a keyword
+ *
+ * @param keyword The keyword to check
+ * @return True if the current token is the keyword, false otherwise
+ */
+bool isTokenKeyword(Token *token, Keyword keyword);
 
 /**
  * @brief Parses the whole program
- * 
+ *
  * @return Returns 0 if the program was parsed successfully, non-zero if an error was encountered
  */
 int parse();
@@ -46,7 +76,7 @@ int parse();
 void parseProg();
 
 /**
- * @brief PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig"); 
+ * @brief PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
  */
 void parseProlog();
 
@@ -56,23 +86,28 @@ void parseProlog();
 void parseFuncDefs();
 
 /**
- * @brief FUNC_DEF ::= token_pub token_fn token_func_id token_Orb PARAMS token_Crb FUNC_TYPE 
- * 
- * Also handles FUNC_TYPE decision (void vs non-void)
- * V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
- * FUNC ::= TYPE token_Ocb STATEMENTS RETURN token_Ccb
+ * @brief FUNC_DEF ::= token_pub token_fn token_func_id token_Orb PARAMS token_Crb FUNC_TYPE
  */
 void parseFuncDef();
 
 /**
+ * @brief FUNC_TYPE ::= V_FUNC | FUNC
+ */
+void parseFuncType();
+
+/**
+ * @brief V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
+ */
+void parseVoidFunc();
+
+/**
  * @brief FUNC ::= TYPE token_Ocb STATEMENTS RETURN token_Ccb
- * V_FUNC ::= token_void token_Ocb STATEMENTS V_RETURN token_Ccb
  */
 void parseFunc();
 
 /**
  * @brief RETURN ::= token_return EXPR token_semicolon
- *        V_RETURN ::= token_return token_semicolon | ε       
+ *        V_RETURN ::= token_return token_semicolon | ε
  */
 void parseReturn();
 
@@ -93,7 +128,8 @@ void parseStatement();
 void parseParams();
 
 /**
- * @brief TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 | token_void
+ * @brief TYPE ::= token_i32 | token_?i32 | token_f64 | token_?f64 | token_[]u8 | token_?[]u8 |
+ * token_void
  */
 void parseType();
 
