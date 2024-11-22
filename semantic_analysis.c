@@ -15,34 +15,205 @@ AST *listOfVariables;
 Stack symbolTableStack;
 Symbol currentSymbol;
 
+/**
+ * @brief Checks if a double is an integer.
+ * @param number The double to check.
+ * @return True if the double is an integer, false otherwise.
+ */
 bool isDoubleInteger(double number);
+
+/**
+ * @brief Checks if the operator is an equality operator.
+ * @param operator The operator to check.
+ * @return True if the operator is an equality operator, false otherwise.
+ */
 bool isEqualOperator(TokenType operator);
+
+/**
+ * @brief Checks if the operator is a relational operator.
+ * @param operator The operator to check.
+ * @return True if the operator is a relational operator, false otherwise.
+ */
 bool isRelationalOperator(TokenType operator);
+
+/**
+ * @brief Checks if the type is nullable.
+ * @param type The type to check.
+ * @return True if the type is nullable, false otherwise.
+ */
 bool isNullableType(DataType type);
+
+/**
+ * @brief Checks if a variable is declared in the symbol table.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @return True if the variable is declared, false otherwise.
+ */
 bool checkDeclaration(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if the assignment type matches the variable type.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @param valueType The type of the value being assigned.
+ * @return True if the types match, false otherwise.
+ */
 bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType);
+
+/**
+ * @brief Gets the type of a variable from the symbol table.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @return The type of the variable.
+ */
 DataType getVariableType(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a variable is constant.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @return True if the variable is constant, false otherwise.
+ */
 bool checkVariableConstant(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a variable is known at compile time.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @return True if the variable is known at compile time, false otherwise.
+ */
 bool checkVariableCompileTime(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a function parameter matches the expected type.
+ * @param table The symbol table to check.
+ * @param key The key of the function.
+ * @param type The expected type of the parameter.
+ * @param parameterIndex The index of the parameter.
+ * @return True if the parameter matches the expected type, false otherwise.
+ */
 bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
                             unsigned parameterIndex);
+
+/**
+ * @brief Gets the number of parameters of a function.
+ * @param table The symbol table to check.
+ * @param key The key of the function.
+ * @return The number of parameters of the function.
+ */
 unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
+
+/**
+ * @brief Gets the return type of the current function.
+ * @param table The symbol table to check.
+ * @return The return type of the current function.
+ */
+DataType getReturnType(SymbolTable *table);
+
+/**
+ * @brief Checks if a function is defined.
+ * @param table The symbol table to check.
+ * @param key The key of the function.
+ * @return True if the function is defined, false otherwise.
+ */
 bool checkFunctionDefined(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a function is a built-in function.
+ * @param key The keyword representing the function.
+ * @return True if the function is a built-in function, false otherwise.
+ */
 bool checkBuildInFunction(Keyword key);
+
+/**
+ * @brief Converts a nullable type to its non-nullable counterpart.
+ * @param type The nullable type to convert.
+ * @return The non-nullable counterpart of the type.
+ */
 DataType convertNullableType(DataType type);
+
+/**
+ * @brief Analyzes the parameters of a function.
+ * @param node The AST node representing the function parameters.
+ */
 void functionParameterAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a function definition.
+ * @param node The AST node representing the function definition.
+ */
 void functionAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a statement.
+ * @param node The AST node representing the statement.
+ */
 void statementAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes the body of a function.
+ * @param node The AST node representing the function body.
+ */
 void functionBodyAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes an if statement.
+ * @param node The AST node representing the if statement.
+ */
 void ifAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a while statement.
+ * @param node The AST node representing the while statement.
+ */
 void whileAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a variable definition.
+ * @param node The AST node representing the variable definition.
+ */
 void variableDefinitionAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a variable assignment.
+ * @param node The AST node representing the variable assignment.
+ */
 void variableAssignmentAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a return statement.
+ * @param node The AST node representing the return statement.
+ */
 void returnAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a function call.
+ * @param node The AST node representing the function call.
+ * @return The operand representing the result of the function call.
+ */
 Operand functionCallAnalysis(ASTNode *node);
+
+/**
+ * @brief Determines the next operand in an expression.
+ * @param left The left operand.
+ * @param right The right operand.
+ * @param operator The operator.
+ * @return The operand representing the result of the operation.
+ */
 Operand determineNextOperand(Operand left, Operand right, TokenType operator);
+
+/**
+ * @brief Analyzes an expression.
+ * @param node The AST node representing the expression.
+ * @return The operand representing the result of the expression.
+ */
 Operand expressionAnalysis(ASTNode *node);
-void semanticAnalysis();
+
+/**
+ * @brief Analyzes a built-in function call.
+ * @param node The AST node representing the built-in function call.
+ * @return The operand representing the result of the built-in function call.
+ */
 Operand buildInFunctionAnalysis(ASTNode *node);
 
 bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
