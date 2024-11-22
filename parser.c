@@ -111,8 +111,6 @@ void parseProg() {
 
 // PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
 void parseProlog() {
-    // printTokenInfo(currentToken);
-
     if (!isTokenKeyword(currentToken, KEYWORD_CONST)) {
         HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR, currentToken);
     }
@@ -1204,11 +1202,8 @@ int parse() {
     // printf("Parsing started\n");
 
     initTokenBuffer();
-    ast = initAST();
-    ASTNode *root = initASTNode();
-    ast->root = root;
-    currentParent = root;
-    mainParent = root;
+    currentParent = ast->root;
+    mainParent = ast->root;
 
     parseProg();
 

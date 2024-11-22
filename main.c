@@ -12,9 +12,12 @@ Token *currentToken;
 FILE *sourceFile;
 
 int main() {
-
+    currentToken = malloc(sizeof(Token));
     ast = initAST();
+    ASTNode *root = initASTNode();
+    ast->root = root;
     sourceFile = stdin;
+    getNextToken(currentToken);
 
     parse();
 
