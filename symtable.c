@@ -127,9 +127,7 @@ void treeDispose(BinaryTreeNodePtr node) {
         treeDispose(node->right);
     }
 
-    free(node->data.key);
-
-    if (node->data.function) {
+    if (node->data.params != NULL) {
         listDispose(node->data.params);
     }
 
@@ -300,7 +298,70 @@ Symbol *treeGet(BinaryTreeNodePtr node, const char *key) {
     return NULL;
 }
 
-bool symbolTableSearch(SymbolTable *table, const char *key) { return treeSearch(table->root, key); }
+/**
+ * @brief Prints a specified number of spaces.
+ *
+ * This function prints a given number of spaces to the standard output.
+ *
+ * @param count The number of spaces to print.
+ */
+void printSpaces(int count) {
+    for (int i = 0; i < count; i++) {
+        printf(" ");
+    }
+}
+
+/**
+ * @brief Recursively prints a binary tree in a structured format.
+ *
+ * This function performs an in-order traversal of a binary tree and prints
+ * each node's key with indentation corresponding to its level in the tree.
+ *
+ * @param node A pointer to the current node in the binary tree.
+ * @param level The current level of the node in the binary tree.
+ */
+void treePrint(BinaryTreeNodePtr node, int level) {
+    if (node == NULL) {
+        return;
+    }
+
+    treePrint(node->right, level + 1);
+
+    printSpaces(level * 4);
+    printf("%s\n", node->data.key);
+
+    treePrint(node->left, level + 1);
+}
+
+void treeCheckUsed(BinaryTreeNodePtr node) {
+    if (node == NULL) {
+        return;
+    }
+
+    treeCheckUsed(node->left);
+
+    if (!node->data.used) {
+        HANDLE_ERROR("Variable is declared but not used", UNUSED_VARIABLE_ERROR);
+    }
+
+    treeCheckUsed(node->right);
+}
+
+bool symbolTableSearch(SymbolTable *table, const char *key) {
+    bool found = false;
+
+    while (!found) {
+        found = treeSearch(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    return found;
+}
 
 void symbolTableInsert(SymbolTable *table, Symbol data) {
     table->root = treeInsert(table->root, data);
@@ -319,7 +380,9 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable) {
     table->previousTable = previousTable;
 }
 
-void symbolTableSetScope(SymbolTable *table, ScopeType scopeType) { table->scopeType = scopeType; }
+void symbolTableSetFunctionKey(SymbolTable *table, char *functionKey) {
+    table->functionKey = functionKey;
+}
 
 void symbolTableDelete(SymbolTable *table, const char *key) {
     table->root = treeDelete(table->root, key);
@@ -329,8 +392,40 @@ void symbolTableReassign(SymbolTable *table, const char *key, Symbol data) {
     treeReassign(table->root, key, data);
 }
 
+void symbolTableSetUsed(SymbolTable *table, const char *key) {
+    Symbol *symbol = NULL;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    if (symbol == NULL) {
+        HANDLE_ERROR("Symbol not found", UNDEFINED_ERROR);
+    }
+
+    symbol->used = true;
+}
+
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key) {
-    return treeGet(table->root, key);
+    Symbol *symbol = NULL;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    return symbol;
 }
 
 void symbolTablePush(Stack *stack, SymbolTable *table) {
@@ -370,8 +465,57 @@ void symbolTablePop(Stack *stack) {
     }
 
     StackElement *tmp = stack->top;
+
     symbolTableDispose((SymbolTable *)tmp->tokenPtr);
 
-    stack->top = stack->top->next;
+    stack->top = tmp->next;
     free(tmp);
+}
+
+void symbolTablePrint(SymbolTable *table) { treePrint(table->root, 0); }
+
+void symbolTableCopyFunctionParams(SymbolTable *table, List *params) {
+    if (params == NULL) {
+        return;
+    }
+
+    listFirst(params);
+    while (listIsActive(params)) {
+        ListData data;
+        listGetValue(params, &data);
+        Symbol newSymbol;
+        symbolSetValues(&newSymbol, data.key, data.type, false, false, false);
+        newSymbol.compileTime = false;
+        symbolTableInsert(table, newSymbol);
+        listNext(params);
+    }
+}
+
+void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bool constant,
+                     bool used) {
+    symbol->key = key;
+    symbol->type = type;
+    symbol->function = function;
+    symbol->constant = constant;
+    symbol->used = used;
+    symbol->params = NULL;
+}
+
+void symbolResetValues(Symbol *symbol) {
+    symbol->key = NULL;
+    symbol->type = TYPE_VOID;
+    symbol->function = false;
+    symbol->constant = false;
+    symbol->used = false;
+    symbol->params = NULL;
+}
+
+void symbolTableCheckUsed(SymbolTable *table) {
+    if (table == NULL) {
+        return;
+    }
+
+    if (table->root != NULL) {
+        treeCheckUsed(table->root);
+    }
 }

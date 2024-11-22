@@ -11,6 +11,11 @@
 
 #include "symtable.h"
 
+typedef struct Operand {
+    DataType type;
+    bool compileTime;
+} Operand;
+
 /**
  * @brief Check if a symbol is declared in the symbol table.
  *
@@ -21,52 +26,77 @@
 bool checkDeclaration(SymbolTable *table, const char *key);
 
 /**
- * @brief Check if an assignment is valid in the symbol table.
+ * @brief Check if the value being assigned to a variable is of the correct type.
  *
  * @param table Pointer to the symbol table.
- * @param key Key of the symbol to check.
- * @param type Expected data type of the symbol.
+ * @param key Key of the variable to check.
+ * @param valueType Data type of the value being assigned.
  * @return true if the assignment is valid, false otherwise.
  */
-bool checkAssignment(SymbolTable *table, const char *key, DataType type);
+bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType);
 
 /**
- * @brief Check if a function call is valid in the symbol table.
+ * @brief Check if a variable has already been assigned a value.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key Key of the variable to check.
+ * @return true if the variable has already been defined, false otherwise.
+ */
+bool checkVariableDefined(SymbolTable *table, const char *key);
+
+/**
+ * @brief Check if a function call parameter is valid in the symbol table.
  *
  * @param table Pointer to the symbol table.
  * @param key Key of the function to check.
- * @param type Expected return type of the function.
- * @param paramIndex Index of the parameter to check.
- * @return true if the function call is valid, false otherwise.
+ * @param type Expected data type of the parameter.
+ * @param parameterIndex Index of the parameter to check.
+ * @return true if the function call parameter is valid, false otherwise.
  */
-bool checkFunctionCall(SymbolTable *table, const char *key, DataType type, unsigned paramIndex);
-
-/**
- * @brief Check if a list of function call parameters is valid in the symbol table.
- *
- * @param table Pointer to the symbol table.
- * @param key Key of the function to check.
- * @param params List of parameters to check.
- * @return true if the parameter list is valid, false otherwise.
- */
-bool checkFunctionCallList(SymbolTable *table, const char *key, List *params);
-
-/**
- * @brief Get the data type of a symbol in the symbol table.
- *
- * @param table Pointer to the symbol table.
- * @param key Key of the symbol to check.
- * @return DataType of the symbol.
- */
-DataType getDataType(SymbolTable *table, const char *key);
+bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
+                            unsigned parameterIndex);
 
 /**
  * @brief Check if a return statement is valid in the symbol table.
  *
  * @param table Pointer to the symbol table.
+ * @param key Key of the function to check.
  * @param type Expected return type.
  * @return true if the return statement is valid, false otherwise.
  */
-bool checkReturn(SymbolTable *table, DataType type);
+DataType getReturnType(SymbolTable *table);
+
+/**
+ * @brief Checks if a function is defined in the symbol table.
+ *
+ * This function searches the symbol table for a function with the specified key
+ * and determines if it has been defined.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key The key representing the function to check.
+ * @return true if the function is defined, false otherwise.
+ */
+bool checkFunctionDefined(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a function is defined within the global scope in the symbol table.
+ *
+ * This function verifies that a function is defined within
+ * the global scope in the symbol table.
+ *
+ * @param table Pointer to the symbol table.
+ * @return true if the function is defined within the correct scope, false otherwise.
+ */
+bool checkFunctionDefinitionScope(SymbolTable *table);
+
+/**
+ * @brief Performs semantic analysis on the given input.
+ *
+ * This function serves as a starting point for semantic analysis.
+ * It checks the input for semantic correctness according to the
+ * specified rules and constraints of the language.
+ *
+ */
+void semanticAnalysis();
 
 #endif

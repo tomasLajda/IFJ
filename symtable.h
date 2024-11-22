@@ -20,7 +20,9 @@ typedef struct Symbol {
     char *key;
     DataType type;
     bool function;
-    bool defined;
+    bool constant;
+    bool used;
+    bool compileTime;
     List *params;
 } Symbol;
 
@@ -35,7 +37,7 @@ typedef BinaryTreeNode *BinaryTreeNodePtr;
 
 typedef struct SymbolTable {
     BinaryTreeNodePtr root;
-    ScopeType scopeType;
+    char *functionKey;
     struct SymbolTable *previousTable;
 } SymbolTable;
 
@@ -45,23 +47,18 @@ typedef struct SymbolTable {
  * @param table Pointer to the symbol table to be initialized.
  * @param previousTable Pointer to the previous symbol table.
  */
-/**
- * @brief Initializes the symbol table.
- *
- * @param table Pointer to the symbol table to be initialized.
- * @param previousTable Pointer to the previous symbol table.
- */
 void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
 
 /**
- * @brief Sets the scope type for the given symbol table.
+ * @brief Sets the function key for the given symbol table.
  *
- * This function updates the scope type of the provided symbol table to the specified scope type.
+ * This function updates the function key of the provided symbol table to the specified key,
+ * allowing the function to be found in the symbol table when needed.
  *
- * @param table Pointer to the symbol table whose scope type is to be set.
- * @param scopeType The new scope type to be assigned to the symbol table.
+ * @param table Pointer to the symbol table whose function key is to be set.
+ * @param functionKey The key of the function to set in the symbol table.
  */
-void symbolTableSetScope(SymbolTable *table, ScopeType scopeType);
+void symbolTableSetFunctionKey(SymbolTable *table, char *functionKey);
 
 /**
  * @brief Frees the symbol table and all its nodes.
@@ -105,6 +102,14 @@ void symbolTableDelete(SymbolTable *table, const char *key);
 void symbolTableReassign(SymbolTable *table, const char *key, Symbol data);
 
 /**
+ * @brief Sets the used flag of a symbol in the symbol table by its key.
+ *
+ * @param table Pointer to the symbol table.
+ * @param key The key of the symbol to set the used flag for.
+ */
+void symbolTableSetUsed(SymbolTable *table, const char *key);
+
+/**
  * @brief Pushes the symbol table onto the stack.
  *
  * @param stack Pointer to the stack.
@@ -143,5 +148,59 @@ SymbolTable *symbolTableGetPrevious(SymbolTable *table);
  * @return Pointer to the symbol if found, NULL otherwise.
  */
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key);
+
+/**
+ * @brief Prints the symbol table.
+ *
+ * @param table Pointer to the symbol table.
+ */
+void symbolTablePrint(SymbolTable *table);
+
+/**
+ * @brief Copies function parameters into the symbol table.
+ *
+ * This function copies the parameters into the symbol table, ensuring that
+ * the parameters are defined in the local scope and preventing shadowing.
+ *
+ * @param table Pointer to the symbol table.
+ * @param params List of parameters to be copied.
+ */
+void symbolTableCopyFunctionParams(SymbolTable *table, List *params);
+
+/**
+ * @brief Sets the values of a symbol.
+ *
+ * This function initializes a symbol with the provided key, data type,
+ * function flag, constant flag, and used flag.
+ *
+ * @param symbol Pointer to the symbol to be initialized.
+ * @param key The key associated with the symbol.
+ * @param type The data type of the symbol.
+ * @param function Boolean flag indicating if the symbol represents a function.
+ * @param constant Boolean flag indicating if the symbol is a constant.
+ * @param used Boolean flag indicating if the symbol has been used.
+ */
+void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bool constant,
+                     bool used);
+
+/**
+ * @brief Resets the values of a symbol.
+ *
+ * This function resets the values of a symbol to their default state.
+ *
+ * @param symbol Pointer to the symbol to be reset.
+ */
+void symbolResetValues(Symbol *symbol);
+
+/**
+ * @brief Checks if all symbols in the symbol table have been used.
+ *
+ * This function iterates through the given symbol table and verifies
+ * whether each symbol has been used. It can be used to ensure that
+ * there are no unused symbols in the table, if there is any unused
+ * variable, it will throw an error.
+ * @param table Pointer to the symbol table to be checked.
+ */
+void symbolTableCheckUsed(SymbolTable *table);
 
 #endif
