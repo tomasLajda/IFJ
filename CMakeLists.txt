@@ -5,9 +5,10 @@ project(IFJ C)
 
 # Set C standard
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_EXTENSIONS OFF)  # Ensure strict compliance with the C99 standard
 
 # Enable all warnings and debugging symbols
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g -ansi")
 
 # Find all source files
 file(GLOB SRCS "*.c")
