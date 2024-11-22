@@ -5,8 +5,6 @@
  * @author Martin Valapka - xvalapm00
  */
 
-// TODO: BUILT-IN FUNCTIONS, AST, _ = ifj.write("string"), FUNCCALL to AST, TODO nemozem, FUNCCALL
-// OKEN_TYPE_IDENTIFIER a !TOKEN_TYPE_IDENTIFIER pri expr
 #include "parser.h"
 #include "helpers.h"
 #include "testing_utils.h"
@@ -19,10 +17,6 @@ ASTNode *currentParent = NULL;
 TokenBuffer tokenBuffer = {NULL, NULL};
 Token *decider = NULL;
 bool voidFuncType = false;
-bool onlyZeroArgs = false;
-bool onlyOneArg = false;
-bool onlyTwoArgs = false;
-bool onlyThreeArgs = false;
 bool parsingReturnType = false;
 bool firstInTrue = false;
 unsigned int argCounter = 0;
@@ -70,27 +64,16 @@ bool isTokenBuiltInFunction(Token *token) {
     case KEYWORD_READSTR:
     case KEYWORD_READI32:
     case KEYWORD_READF64:
-        onlyZeroArgs = true;
-        return true;
-
     case KEYWORD_STRING:
     case KEYWORD_LENGTH:
     case KEYWORD_CHR:
     case KEYWORD_I2F:
     case KEYWORD_F2I:
-        onlyOneArg = true;
-        return true;
-
     case KEYWORD_CONCAT:
     case KEYWORD_STRCMP:
     case KEYWORD_ORD:
-        onlyTwoArgs = true;
-        return true;
-
     case KEYWORD_SUBSTRING:
-        onlyThreeArgs = true;
         return true;
-
     default:
         return false;
     }
@@ -437,10 +420,6 @@ void parseStatements() {
 
 // STATEMENT ::= VAR_DEF | IF | WHILE | FUNC_CALL | DISCARD_CALL | VAR_ASS
 void parseStatement() {
-    onlyZeroArgs = false;
-    onlyOneArg = false;
-    onlyTwoArgs = false;
-    onlyThreeArgs = false;
     parsingReturnType = false;
     argCounter = 0;
 
@@ -479,7 +458,6 @@ void parseStatement() {
             if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
                 HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
             }
-            onlyOneArg = true;
             parseFuncCall();
         } else {
             printTokenInfo(currentToken);
@@ -998,8 +976,6 @@ void parseDiscardCall() {
         getNextToken(currentToken);
 
         tokenBuffer.second = copyToken(currentToken);
-        // printf("2. Token in discardCall ");
-        printTokenInfo(currentToken);
 
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
             parseFuncCall();
@@ -1010,12 +986,6 @@ void parseDiscardCall() {
             parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
             currentParent->exprTree = exprTree;
             currentParent->exprTree->isExpression = true;
-
-            // printf("Expression tree in discardCall:\n");
-            // displayAST(exprTree);
-
-            // printf("TOKEN IN DISCARD_CALL: ");
-            //printTokenInfo(currentToken);
         }
     } else {
         AST *exprTree = initAST();
@@ -1024,13 +994,6 @@ void parseDiscardCall() {
         parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
         currentParent->exprTree = exprTree;
         currentParent->exprTree->isExpression = true;
-
-        // printf("Expression tree in discardCall:\n");
-        // displayAST(exprTree);
-
-        // printf("\n");
-        // displayAST(ast);
-        // printf("\n");
     }
 
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
@@ -1079,8 +1042,6 @@ void parseArgs() {
 }
 
 int parse() {
-    printf("Parsing started\n");
-
     initTokenBuffer();
     ast = initAST();
     ASTNode *root = initASTNode();
