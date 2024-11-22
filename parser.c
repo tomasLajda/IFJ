@@ -635,14 +635,22 @@ void parseVarDef() {
         }
         parseFuncCall();
     } else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        ASTNode *funcID = initASTNode();
+        funcID->token = copyToken(currentToken);
+        funcID->isAssignment = false;
+        currentParent = funcID;
 
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-        // printf("tt: %s\n", TokenTypeToString(currentToken->type));
         tokenBuffer.second = copyToken(currentToken);
-        // printf("tt: %s\n", TokenTypeToString(tokenBuffer.second->type));
+
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
+            AST *exprTree = initAST();
+            exprTree->root = funcID;
+            currentParent = funcID;
+            exprTree->isExpression = false;
             parseFuncCall();
+            currentParent = mainParent;
         } else {
             AST *exprTree = initAST();
             ASTNode *exprNode = initASTNode();
@@ -895,9 +903,9 @@ void parseNullCond() {
     printf("\n");
 
     displayASTNode(currentParent, 0, true);
-    //currentParent = currentParent->parent;
+    // currentParent = currentParent->parent;
     displayASTNode(currentParent, 0, true);
-//    currentParent = currentParent->left;
+    //    currentParent = currentParent->left;
     currentParent->parent = nullNode;
     mainParent->left = nullNode;
     nullNode->left = currentParent;
@@ -1037,9 +1045,6 @@ void parseElse() {
 
 // FUNC_CALL ::= token_Orb ARGS token_Crb token_semicolon
 void parseFuncCall() {
-    ASTNode *exprNode = initASTNode();
-    //printf("Func ID: %s", TokenTypeToString(funcID->token->type));
-
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
     }
@@ -1049,6 +1054,7 @@ void parseFuncCall() {
     parseArgs();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
+        printTokenInfo(currentToken);
         HANDLE_ERROR("Expected ')' after arguments in function call", SYNTAX_ERROR, currentToken);
     }
     printTokenInfo(currentToken);
@@ -1107,7 +1113,7 @@ void parseDiscardCall() {
         decider = copyToken(currentToken);
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-        
+
         if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
             HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
         }
@@ -1171,60 +1177,30 @@ void parseDiscardCall() {
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε
 void parseArgs() {
-    if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
-        if (onlyZeroArgs && argCounter > 0) {
-            HANDLE_ERROR("This built-in function takes no arguments", PARAMETER_ERROR,
-                         currentToken);
-        }
-        if (onlyTwoArgs && argCounter != 2) {
-            HANDLE_ERROR("Built-in functions require exactly 2 arguments", PARAMETER_ERROR,
-                         currentToken);
-        }
-        if (onlyOneArg && argCounter != 1) {
-            HANDLE_ERROR("Built-in function requires exactly 1 argument", PARAMETER_ERROR,
-                         currentToken);
-        }
-        argCounter = 0;
-        onlyZeroArgs = false;
-        onlyOneArg = false;
-        onlyTwoArgs = false;
-        return;
-    }
+    tokenBuffer.first = copyToken(currentToken);
+    ASTNode *argNode = initASTNode();
+    AST *exprTree = initAST();
+    ASTNode *root = initASTNode();
+    exprTree->root = root;
+    exprTree->isExpression = true;
+    argNode->exprTree = exprTree;
+    argNode->token = createToken(TOKEN_TYPE_EXPR);
+    parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
 
-    if (onlyZeroArgs) {
-        HANDLE_ERROR("This built-in function takes no arguments", PARAMETER_ERROR, currentToken);
-    }
-
-    if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
-        ASTNode *argID = initASTNode();
-        argID->token = copyToken(currentToken);
-
-        if (argCounter == 1) {
-            addLeftNode(ast, currentParent, argID);
-            currentParent = argID;
-        } else {
-            addRightNode(ast, currentParent, argID);
-        }
-        currentParent = argID;
-
-        printTokenInfo(currentToken);
-        getNextToken(currentToken);
+    if (argCounter == 1) {
+        addLeftNode(ast, currentParent, argNode);
     } else {
-        parseExpression(ast, NULL, NULL, currentToken);
+        addRightNode(ast, currentParent, argNode);
     }
+    currentParent = argNode;
 
     argCounter++;
-
-    if (onlyOneArg && argCounter > 1) {
-        HANDLE_ERROR("Built-in function requires exactly 1 argument", PARAMETER_ERROR,
-                     currentToken);
-    }
 
     if (currentToken->type == TOKEN_TYPE_COMMA) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseArgs();
-    }
+    } 
 }
 
 int parse() {
