@@ -630,6 +630,9 @@ void parseVarDef() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
 
+        if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+        }
         parseFuncCall();
     } else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
 
@@ -739,8 +742,11 @@ void parseVarAss() {
         decider = copyToken(currentToken);
         printTokenInfo(currentToken);
         getNextToken(currentToken);
+
+        if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+        }
         parseFuncCall();
-        return;
     } else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         ASTNode *funcID = initASTNode();
         funcID->token = copyToken(currentToken);
@@ -1101,6 +1107,10 @@ void parseDiscardCall() {
         decider = copyToken(currentToken);
         printTokenInfo(currentToken);
         getNextToken(currentToken);
+        
+        if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+        }
         parseFuncCall();
     } else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         printTokenInfo(currentToken);
