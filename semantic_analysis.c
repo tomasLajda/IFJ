@@ -44,6 +44,14 @@ bool isRelationalOperator(TokenType operator);
 bool isNullableType(DataType type);
 
 /**
+ * @brief Checks if a null value can be assigned to a variable.
+ * @param valueType The type of the value being assigned.
+ * @param varType The type of the variable.
+ * @return True if the null value can be assigned, false otherwise.
+ */
+bool checkNullAssignment(DataType valueType, DataType varType);
+
+/**
  * @brief Checks if a variable is declared in the symbol table.
  * @param table The symbol table to check.
  * @param key The key of the variable.
@@ -231,6 +239,10 @@ bool isRelationalOperator(TokenType operator) {
 bool isNullableType(DataType type) {
     return type == TYPE_I_32_NULL || type == TYPE_F_64_NULL || type == TYPE_U_8_ARRAY_NULL ||
            type == TYPE_NULL;
+}
+
+bool checkNullAssignment(DataType valueType, DataType varType) {
+    return (valueType == TYPE_NULL && isNullableType(varType));
 }
 
 bool checkDeclaration(SymbolTable *table, const char *key) { return symbolTableSearch(table, key); }
@@ -726,9 +738,9 @@ void variableDefinitionAnalysis(ASTNode *node) {
                                    : functionCallAnalysis(node->exprTree->root);
 
     if (currentSymbol.type != TYPE_ANY && currentSymbol.type != expressionResult.type &&
-        (expressionResult.type != TYPE_NULL || !isNullableType(currentSymbol.type)) &&
+        !checkNullAssignment(expressionResult.type, currentSymbol.type) &&
         convertNullableType(currentSymbol.type) != expressionResult.type) {
-        HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
+        HANDLE_ERROR("Invalid expression type assignment", TYPE_COMPATIBILITY_ERROR);
     }
 
     if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
@@ -787,7 +799,7 @@ void variableAssignmentAnalysis(ASTNode *node) {
                                    : functionCallAnalysis(node->exprTree->root);
 
     if (valueType != TYPE_ANY && valueType != expressionResult.type &&
-        (expressionResult.type != TYPE_NULL || !isNullableType(valueType)) &&
+        !checkNullAssignment(expressionResult.type, valueType) &&
         convertNullableType(valueType) != expressionResult.type) {
         HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
     }
