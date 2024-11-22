@@ -8,7 +8,7 @@ TODO: delimiter testy, return int ak zloba
 
 */
 
-#include "expr-parser.h"
+#include "expr_parser.h"
 #include "error_codes.h"
 #include "helpers.h"
 #include "scanner.h"
@@ -317,7 +317,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
 
     // Assign the delimiter token and check if its valid
     *delimiterToken = *token;
-    if (!isDelimiter(token)) {
+    if (!isDelimiter(delimiterToken)) {
         cleanupStack(&tempStack);
         return NULL; // Token doesn't belong in the expression - a syntax error occured
     }
@@ -401,7 +401,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        HANDLE_ERROR("Syntax error. fillinupstack() returned null\n", SYNTAX_ERROR,
+        HANDLE_ERROR("Syntax error. fillInputStack returned null\n", SYNTAX_ERROR,
                      SYNTAX_ERROR); // Indicate syntax error
     }
 
