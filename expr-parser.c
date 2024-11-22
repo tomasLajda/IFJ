@@ -11,6 +11,7 @@ TODO: delimiter testy, return int ak zloba
 #include "expr-parser.h"
 #include "error_codes.h"
 #include "helpers.h"
+#include "scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
 
