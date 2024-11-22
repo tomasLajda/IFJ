@@ -111,7 +111,7 @@ void parseProg() {
 
 // PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
 void parseProlog() {
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_CONST)) {
         HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR, currentToken);
@@ -121,25 +121,25 @@ void parseProlog() {
     if (!isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' in prolog", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_IMPORT)) {
         HANDLE_ERROR("Expected '@import' in prolog", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' in prolog", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -155,7 +155,7 @@ void parseFuncDefs() {
 void parseFuncDef() {
     paramCounter = 0;
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     if (!isTokenKeyword(currentToken, KEYWORD_PUB)) {
         HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
     }
@@ -181,12 +181,12 @@ void parseFuncDef() {
     currentParent = fnNode;
     mainParent = fnNode;
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER &&
         !isTokenKeyword(currentToken, KEYWORD_MAIN)) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         HANDLE_ERROR("Expected function identifier in function definition", SYNTAX_ERROR,
                      currentToken);
     }
@@ -200,20 +200,20 @@ void parseFuncDef() {
     // displayAST(ast);
     // printf("\n");
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' in function definition", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
     parseParams();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' in function definition", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
     parseFuncType();
 }
@@ -237,7 +237,7 @@ void parseFunc() {
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -245,7 +245,7 @@ void parseFunc() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -265,13 +265,13 @@ void parseVoidFunc() {
     // displayAST(ast);
     // printf("\n");
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -279,7 +279,7 @@ void parseVoidFunc() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -303,10 +303,10 @@ void parseType() {
             currentParent = mainParent;
         }
 
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
     }
 }
@@ -321,7 +321,7 @@ void parseReturn() {
         return;
     }
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (voidFuncType) {
@@ -329,15 +329,15 @@ void parseReturn() {
             HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR,
                          currentToken);
         }
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
         initTokenBuffer();
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         tokenBuffer.first = copyToken(currentToken);
 
         if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             getNextToken(currentToken);
             tokenBuffer.second = copyToken(currentToken);
             // printf("Token 1: ");
@@ -360,7 +360,7 @@ void parseReturn() {
                 // printf("Expression tree:\n");
                 // displayAST(exprTree);
                 // printf("CAU: ");
-                printTokenInfo(currentToken);
+                //printTokenInfo(currentToken);
             }
         } else {
             AST *exprTree = initAST();
@@ -378,20 +378,20 @@ void parseReturn() {
         }
 
         if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-                printTokenInfo(currentToken);
+                //printTokenInfo(currentToken);
                 HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
             }
         }
 
         else if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
         }
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
     }
 }
@@ -420,19 +420,19 @@ void parseParams() {
     // displayAST(ast);
     // printf("\n");
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_COLON) {
         HANDLE_ERROR("Expected ':' after parameter identifier", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseType();
 
     if (currentToken->type == TOKEN_TYPE_COMMA) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseParams();
     }
@@ -444,18 +444,18 @@ void parseStatements() {
         return;
     }
 
-    printf("\n");
-    displayAST(ast);
-    printf("\n");
+    //printf("\n");
+    //displayAST(ast);
+    //printf("\n");
 
     if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
-        printf("I am in return\n");
+        //printf("I am in return\n");
         ASTNode *returnNode = initASTNode();
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         returnNode->token = copyToken(currentToken);
 
-        printf("Curren parent: ");
-        printTokenInfo(currentParent->token);
+        //printf("Curren parent: ");
+        //printTokenInfo(currentParent->token);
         // printf("Main parent: ");
         // printTokenInfo(mainParent->token);
 
@@ -470,9 +470,9 @@ void parseStatements() {
         }
         currentParent = returnNode;
 
-        printf("\n");
-        displayAST(ast);
-        printf("\n");
+        //printf("\n");
+        //displayAST(ast);
+        //printf("\n");
 
         parseReturn();
 
@@ -508,13 +508,13 @@ void parseStatement() {
         } else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
             parseReturn();
         } else if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_DOT) {
                 HANDLE_ERROR("Unexpected token in built-in function", SYNTAX_ERROR, currentToken);
             }
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             getNextToken(currentToken);
 
             if (!isTokenKeyword(currentToken, KEYWORD_WRITE)) {
@@ -523,7 +523,7 @@ void parseStatement() {
             }
             decider = copyToken(currentToken);
 
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
@@ -532,7 +532,7 @@ void parseStatement() {
             onlyOneArg = true;
             parseFuncCall();
         } else {
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
         }
         break;
@@ -540,7 +540,7 @@ void parseStatement() {
     case TOKEN_TYPE_IDENTIFIER:
         decider = copyToken(currentToken);
 
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
@@ -549,12 +549,12 @@ void parseStatement() {
             parseVarAss();
         } else {
             // printf("CAU ");
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
         }
         break;
     default:
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR, currentToken);
         break;
     }
@@ -568,8 +568,8 @@ void parseVarDef() {
                      currentToken);
     }
 
-    printf("Curren parent vo vardef: ");
-    printTokenInfo(currentParent->token);
+    //printf("Curren parent vo vardef: ");
+    //printTokenInfo(currentParent->token);
 
     ASTNode *varTypeNode = initASTNode();
     varTypeNode->token = copyToken(currentToken);
@@ -583,7 +583,7 @@ void parseVarDef() {
     currentParent = varTypeNode;
     mainParent = varTypeNode;
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
@@ -595,11 +595,11 @@ void parseVarDef() {
     addLeftNode(ast, currentParent, varIdNode);
     currentParent = varIdNode;
 
-    printf("\n");
-    displayAST(ast);
-    printf("\n");
+    //printf("\n");
+    //displayAST(ast);
+    //printf("\n");
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseTypeSpec();
@@ -607,19 +607,19 @@ void parseVarDef() {
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' in variable definition", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
     initTokenBuffer();
     tokenBuffer.first = copyToken(currentToken);
 
     if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_DOT) {
             HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
         }
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (!isTokenBuiltInFunction(currentToken)) {
@@ -627,7 +627,7 @@ void parseVarDef() {
         }
 
         decider = copyToken(currentToken);
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
@@ -640,7 +640,7 @@ void parseVarDef() {
         funcID->isAssignment = false;
         currentParent = funcID;
 
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
         tokenBuffer.second = copyToken(currentToken);
 
@@ -667,7 +667,7 @@ void parseVarDef() {
             parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
             // printf("%d\n", result);
             // printf("PO EX ");
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             currentParent->exprTree = exprTree;
             currentParent->exprTree->isExpression = true;
             exprNode->token = createToken(TOKEN_TYPE_EXPR);
@@ -693,11 +693,10 @@ void parseVarDef() {
         // printf("\n");
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            printTokenInfo(currentToken);
-            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR,
-                         currentToken);
+            //printTokenInfo(currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
         }
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
         HANDLE_ERROR("Unexpected token in variable definition", SYNTAX_ERROR, currentToken);
@@ -709,7 +708,7 @@ void parseTypeSpec() {
     if (currentToken->type != TOKEN_TYPE_COLON) {
         return;
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseType();
@@ -733,27 +732,27 @@ void parseVarAss() {
         HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR,
                      currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     initTokenBuffer();
     tokenBuffer.first = copyToken(currentToken);
 
     if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_DOT) {
             HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
         }
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (!isTokenBuiltInFunction(currentToken)) {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
         decider = copyToken(currentToken);
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
@@ -763,7 +762,7 @@ void parseVarAss() {
     } else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         ASTNode *funcID = initASTNode();
         funcID->token = copyToken(currentToken);
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
         tokenBuffer.second = copyToken(currentToken);
 
@@ -799,7 +798,7 @@ void parseVarAss() {
         exprNode->token = createToken(TOKEN_TYPE_EXPR);
         addLeftNode(ast, currentParent, exprNode);
 
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         // displayAST(exprTree);
 
         // printf("\n");
@@ -807,16 +806,15 @@ void parseVarAss() {
         // printf("\n");
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR,
                          currentToken);
         }
     } else {
         HANDLE_ERROR("Unexpected token in variable assignment", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
-    // getNextToken(currentToken);
 }
 
 // While ::= token_while token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb
@@ -837,7 +835,7 @@ void parseWhile() {
     currentParent = whileNode;
     mainParent = whileNode;
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
@@ -860,7 +858,7 @@ void parseWhile() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type == TOKEN_TYPE_VB) {
@@ -870,7 +868,7 @@ void parseWhile() {
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of while loop", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -879,53 +877,36 @@ void parseWhile() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of while loop", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
 // NULL_CONDITION ::= token_vb token_id token_vb | ε
 void parseNullCond() {
     // bool isNullCond = true;
-    printf("SOM TU\n");
-    printTokenInfo(currentToken);
+    //printf("SOM TU\n");
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
-    printf("SOM TUgvgvv\n");
-    printTokenInfo(currentToken);
+    //printf("SOM TUgvgvv\n");
+    //printTokenInfo(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
-        printf("SOM TUfdfffdfd\n");
+        //printf("SOM TUfdfffdfd\n");
         HANDLE_ERROR("Expected identifier in null condition", SYNTAX_ERROR, currentToken);
     }
-    printf("fjididffjfdfdfdf");
-    printf("%s", TokenTypeToString(currentToken->type));
+    //printf("fjididffjfdfdfdf");
+    //printf("%s", TokenTypeToString(currentToken->type));
     // displayAST(ast);
-    printf("Curren parentkjkjgfgkg: ");
     ASTNode *nullNode = initASTNode();
-    printf("NULL node: ");
     nullNode->token = createToken(TOKEN_TYPE_VB);
-    printf("NULL node: ");
     nullNode->right = initASTNode();
-    printf("NULL node1: ");
     nullNode->right->token = copyToken(currentToken);
-
-    printf("NULL node: ");
-    printf("TOKEN: %s", TokenTypeToString(nullNode->token->type));
 
     // goBack(currentParent);
 
-    printf("\nCurren parent 1: ");
-    printTokenInfo(currentParent->token);
-    printf("\n");
-
-    displayASTNode(currentParent, 0, true);
-    // currentParent = currentParent->parent;
-    displayASTNode(currentParent, 0, true);
-    //    currentParent = currentParent->left;
     currentParent->parent = nullNode;
     mainParent->left = nullNode;
     nullNode->left = currentParent;
-
-    displayASTNode(mainParent, 0, true);
 
     // displayAST(ast);
     // printf("Curren parent 1: ");
@@ -934,13 +915,13 @@ void parseNullCond() {
     // displayASTNode(currentParent, 0, true);
     // displayAST(ast);
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_VB) {
         HANDLE_ERROR("Expected '|' after identifier in null condition", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -962,7 +943,7 @@ void parseIf() {
     currentParent = ifNode;
     mainParent = ifNode;
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
@@ -973,38 +954,38 @@ void parseIf() {
     ASTNode *exprNode = initASTNode();
     exprTree->root = exprNode;
     parseExpression(exprTree, NULL, NULL, currentToken);
-    printf("TENTO: ");
-    printTokenInfo(currentToken);
+    //printf("TENTO: ");
+    //printTokenInfo(currentToken);
     exprNode->exprTree = exprTree;
     exprNode->exprTree->isExpression = true;
     exprNode->token = createToken(TOKEN_TYPE_EXPR);
 
-    printf("TENTO: ");
-    printTokenInfo(currentToken);
+    //printf("TENTO: ");
+    //printTokenInfo(currentToken);
 
-    printf("Expression tree before:\n");
-    printTokenInfo(currentParent->token);
+    //printf("Expression tree before:\n");
+    //printTokenInfo(currentParent->token);
 
-    printf("TENTO: ");
-    printTokenInfo(currentToken);
+    //printf("TENTO: ");
+    //printTokenInfo(currentToken);
     addLeftNode(ast, currentParent, exprNode);
-    printf("TENTO: ");
-    printTokenInfo(currentToken);
+    //printf("TENTO: ");
+    //printTokenInfo(currentToken);
 
-    printf("ODTIALTO: \n");
-    printf("%s", TokenTypeToString(currentParent->token->type));
+    //printf("ODTIALTO: \n");
+    //printf("%s", TokenTypeToString(currentParent->token->type));
     currentParent = exprNode;
-    printf("%s", TokenTypeToString(currentParent->token->type));
-    printf("%s", TokenTypeToString(currentToken->type));
+    //printf("%s", TokenTypeToString(currentParent->token->type));
+    //printf("%s", TokenTypeToString(currentToken->type));
 
-    printf("Expression tree currentParent for if:\n");
-    printTokenInfo(currentParent->token);
+    //printf("Expression tree currentParent for if:\n");
+    //printTokenInfo(currentParent->token);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
-    printf("Current token: ");
+    //printTokenInfo(currentToken);
+    //printf("Current token: ");
     getNextToken(currentToken);
 
     if (currentToken->type == TOKEN_TYPE_VB) {
@@ -1015,7 +996,7 @@ void parseIf() {
         HANDLE_ERROR("Expected '{' to start the body of if statement", SYNTAX_ERROR, currentToken);
     }
     firstInTrue = true;
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -1025,7 +1006,7 @@ void parseIf() {
         HANDLE_ERROR("Expected '}' to end the body of if statement", SYNTAX_ERROR, currentToken);
     }
     currentParent = exprNode;
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseElse();
@@ -1033,20 +1014,20 @@ void parseIf() {
 
 // ELSE ::= token_else token_Ocb STATEMENTS token_Ccb | ε
 void parseElse() {
-    printf("Current token: ");
-    printTokenInfo(currentToken);
+    //printf("Current token: ");
+    //printTokenInfo(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_ELSE)) {
         HANDLE_ERROR("Expected 'else' to start the else statement", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR,
                      currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseStatements();
@@ -1054,7 +1035,7 @@ void parseElse() {
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of else statement", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -1063,22 +1044,22 @@ void parseFuncCall() {
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     parseArgs();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         HANDLE_ERROR("Expected ')' after arguments in function call", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of function call", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -1099,34 +1080,34 @@ void parseDiscardCall() {
     }
     currentParent = discardNode;
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after '_' in discard call", SYNTAX_ERROR, currentToken);
     }
 
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     initTokenBuffer();
     tokenBuffer.first = copyToken(currentToken);
 
     if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_DOT) {
             HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
         }
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (!isTokenBuiltInFunction(currentToken)) {
             HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
         }
         decider = copyToken(currentToken);
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
@@ -1134,12 +1115,12 @@ void parseDiscardCall() {
         }
         parseFuncCall();
     } else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         tokenBuffer.second = copyToken(currentToken);
         // printf("2. Token in discardCall ");
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
 
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
             parseFuncCall();
@@ -1155,7 +1136,7 @@ void parseDiscardCall() {
             // displayAST(exprTree);
 
             // printf("TOKEN IN DISCARD_CALL: ");
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
         }
     } else {
         AST *exprTree = initAST();
@@ -1174,11 +1155,11 @@ void parseDiscardCall() {
     }
 
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            printTokenInfo(currentToken);
+            //printTokenInfo(currentToken);
             HANDLE_ERROR("Expected ';' after discard expression", SYNTAX_ERROR, currentToken);
         }
     }
@@ -1186,7 +1167,7 @@ void parseDiscardCall() {
     else if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
         HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
     }
-    printTokenInfo(currentToken);
+    //printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
 
@@ -1212,14 +1193,14 @@ void parseArgs() {
     argCounter++;
 
     if (currentToken->type == TOKEN_TYPE_COMMA) {
-        printTokenInfo(currentToken);
+        //printTokenInfo(currentToken);
         getNextToken(currentToken);
         parseArgs();
     }
 }
 
 int parse() {
-    printf("Parsing started\n");
+    //printf("Parsing started\n");
 
     initTokenBuffer();
     ast = initAST();
@@ -1231,12 +1212,11 @@ int parse() {
     parseProg();
 
     if (currentToken->type != TOKEN_TYPE_EOF) {
-        fprintf(stderr, "Error: Unexpected token after parsing the program\n");
-        return SYNTAX_ERROR;
+        HANDLE_ERROR("Expected EOF at the end of the program", SYNTAX_ERROR, currentToken);
     }
 
-    printf("FINAL PRINT: \n");
-    displayEntireAST(ast);
+    //printf("FINAL PRINT: \n");
+    //displayEntireAST(ast);
     free(decider);
     // freeTokenBuffer();
 
