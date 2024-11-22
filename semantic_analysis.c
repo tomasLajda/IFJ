@@ -512,9 +512,15 @@ void variableDefinitionAnalysis(ASTNode *node) {
     }
 
     node = node->right;
-    Operand expressionResult = node->exprTree->isExpression
+    Operand expressionResult;
+
+    if (node) {
+        if (node->exprTree != NULL) {
+            expressionResult = node->exprTree->isExpression
                                    ? expressionAnalysis(node->exprTree->root)
                                    : functionCallAnalysis(node->exprTree->root);
+        }
+    }
 
     if (currentSymbol.type != TYPE_ANY && currentSymbol.type != expressionResult.type &&
         (expressionResult.type != TYPE_NULL || !isNullableType(currentSymbol.type)) &&

@@ -21,6 +21,8 @@ int main() {
 
     parse();
 
+    // displayEntireAST(ast);
+
     semanticAnalysis(ast);
 
     generateCode(stdout, ast);

@@ -10,7 +10,7 @@
 
 #include "ast.h"
 #include "error_codes.h"
-#include "expr-parser.h"
+#include "expr_parser.h"
 #include "scanner.h"
 #include "semantic_analysis.h"
 #include "symtable.h"
@@ -34,7 +34,8 @@ void initTokenBuffer();
 void freeTokenBuffer();
 
 /**
- * @brief Goes back in the AST to the last node that is a WHILE, IF or PUB KEYWORD and sets it as the current and main parent
+ * @brief Goes back in the AST to the last node that is a WHILE, IF or PUB KEYWORD and sets it as
+ * the current and main parent
  *
  * @param startNode The node to start from
  */
