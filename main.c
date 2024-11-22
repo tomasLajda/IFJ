@@ -45,7 +45,6 @@ int main() {
     variableAssignment->left->exprTree->isExpression = false;
     currentNode->right = variableAssignment;
     currentNode = variableAssignment;
-    displayEntireASTNode(currentNode, 0, true);
 
     currentNode = mockASTProgramStructure(3);
     currentNode->parent = previousNode->right;

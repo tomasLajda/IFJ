@@ -364,18 +364,18 @@ ASTNode *mockASTProgramStructure(int type) {
         exprTree1->isExpression = true;
         root->left->exprTree = exprTree1;
 
-        // SECOND ARGUMENT
-        root->left->right = initASTNode();
-        root->left->right->token = createToken(TOKEN_TYPE_EXPR);
-        root->left->right->parent = root->left;
-        AST *exprTree2 = initAST();
-        ASTNode *exprTreeRoot2 = initASTNode();
-        exprTreeRoot2->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
-        exprTreeRoot2->token->attribute.decimal = 2.3;
-        exprTreeRoot2->parent = root->left->right;
-        exprTree2->root = exprTreeRoot2;
-        exprTree2->isExpression = true;
-        root->left->right->exprTree = exprTree2;
+        // // SECOND ARGUMENT
+        // root->left->right = initASTNode();
+        // root->left->right->token = createToken(TOKEN_TYPE_EXPR);
+        // root->left->right->parent = root->left;
+        // AST *exprTree2 = initAST();
+        // ASTNode *exprTreeRoot2 = initASTNode();
+        // exprTreeRoot2->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        // exprTreeRoot2->token->attribute.decimal = 2.3;
+        // exprTreeRoot2->parent = root->left->right;
+        // exprTree2->root = exprTreeRoot2;
+        // exprTree2->isExpression = true;
+        // root->left->right->exprTree = exprTree2;
 
         return root;
         break;
