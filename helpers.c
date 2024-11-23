@@ -477,6 +477,7 @@ ASTNode *mockASTProgramStructure(int type) {
 
         // EXPRESSION FOR RETURN (currently 3.14 + a + b)
         root->left->left->right->exprTree = initAST();
+        root->left->left->right->exprTree->isExpression = true;
         root->left->left->right->exprTree->root = initASTNode();
         root->left->left->right->exprTree->root->token = createToken(TOKEN_TYPE_PLUS);
         root->left->left->right->exprTree->root->parent = root->left->left->right->exprTree->root;
@@ -486,9 +487,8 @@ ASTNode *mockASTProgramStructure(int type) {
         // root->left->left->right->exprTree->root->left->token->attribute.string = malloc(10);
         // strcpy(root->left->left->right->exprTree->root->left->token->attribute.string,
         // "premenna");
-        root->left->left->right->exprTree->root->left->token =
-            createToken(TOKEN_TYPE_INTEGER_VALUE);
-        root->left->left->right->exprTree->root->left->token->attribute.integer = 3;
+        root->left->left->right->exprTree->root->left->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        root->left->left->right->exprTree->root->left->token->attribute.decimal = 3.0;
         root->left->left->right->exprTree->root->left->parent =
             root->left->left->right->exprTree->root;
 

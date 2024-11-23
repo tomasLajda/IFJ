@@ -776,7 +776,7 @@ void ifAnalysis(ASTNode *node) {
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
-        // Todo why this is working
+        // Todo why this is working ????
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
             HANDLE_ERROR("Variable is not defined", UNDEFINED_ERROR);
@@ -850,6 +850,7 @@ void whileAnalysis(ASTNode *node) {
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
+        // Todo why this is working ????
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
             HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
@@ -1020,7 +1021,7 @@ void variableAssignmentAnalysis(ASTNode *node) {
                                    ? expressionAnalysis(node->exprTree->root)
                                    : functionCallAnalysis(node->exprTree->root);
 
-    // Convert integer to double for consistent type
+    // Convert integer to double if needed for consistent type
     if ((valueType == TYPE_F_64 || valueType == TYPE_F_64_NULL) &&
         expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
         float value = (float)expressionResult.token->attribute.integer;
@@ -1052,7 +1053,19 @@ void returnAnalysis(ASTNode *node) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
 
-        Operand expressionResult = expressionAnalysis(node->exprTree->root);
+        Operand expressionResult = node->exprTree->isExpression
+                                       ? expressionAnalysis(node->exprTree->root)
+                                       : functionCallAnalysis(node->exprTree->root);
+
+        // Convert integer to double if needed for consistent type
+        if ((returnType == TYPE_F_64 || returnType == TYPE_F_64_NULL) &&
+            expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
+            float value = (float)expressionResult.token->attribute.integer;
+            expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            expressionResult.token->attribute.decimal = value;
+            expressionResult.type = TYPE_F_64;
+        }
+
         if (expressionResult.type != returnType &&
             (expressionResult.type != TYPE_NULL || !isNullableType(returnType))) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
@@ -1087,9 +1100,12 @@ Operand functionCallAnalysis(ASTNode *node) {
     while (node != NULL) {
         DataType parameterType = getFunctionParameterType(symbolTableTop(&symbolTableStack),
                                                           functionKey, parameterIndex);
-        Operand expressionResult = expressionAnalysis(node->exprTree->root);
 
-        // Convert integer to double for consistent type
+        Operand expressionResult = node->exprTree->isExpression
+                                       ? expressionAnalysis(node->exprTree->root)
+                                       : functionCallAnalysis(node->exprTree->root);
+
+        // Convert integer to double if needed for consistent type
         if ((parameterType == TYPE_F_64 || parameterType == TYPE_F_64_NULL) &&
             expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
             float value = (float)expressionResult.token->attribute.integer;
@@ -1211,7 +1227,9 @@ Operand buildInFunctionAnalysis(ASTNode *node) {
             HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
         }
 
-        Operand expressionResult = expressionAnalysis(node->exprTree->root);
+        Operand expressionResult = node->exprTree->isExpression
+                                       ? expressionAnalysis(node->exprTree->root)
+                                       : functionCallAnalysis(node->exprTree->root);
 
         // Convert integer to double for consistent type
         if ((parameterType[i] == TYPE_F_64 || parameterType[i] == TYPE_F_64_NULL) &&
@@ -1513,7 +1531,14 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
                 return reduceExpression(left, right, node);
             }
 
-            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
+            if (isRelationalOperator(operator)) {
+                result.type = TYPE_BOOL;
+                return result;
+            }
+
+            result.type = TYPE_F_64;
+            left.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            left.token->attribute.decimal = (float)left.token->attribute.integer;
             return result;
         }
         break;
@@ -1533,7 +1558,14 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
                 return reduceExpression(left, right, node);
             }
 
-            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
+            if (isRelationalOperator(operator)) {
+                result.type = TYPE_BOOL;
+                return result;
+            }
+
+            result.type = TYPE_F_64;
+            right.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            right.token->attribute.decimal = (float)right.token->attribute.integer;
             return result;
         }
         break;
