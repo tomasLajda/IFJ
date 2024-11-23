@@ -17,43 +17,50 @@ int main() {
 
     ASTNode *discard = mockASTProgramStructure(1);
     currentNode->left->left->right = discard;
+    discard->parent = currentNode->left->left;
     currentNode = discard;
 
     ASTNode *variableDefinition = mockASTProgramStructure(8);
     currentNode->right = variableDefinition;
+    variableDefinition->parent = currentNode;
     currentNode = variableDefinition;
 
     ASTNode *ifStatement = mockASTProgramStructure(4);
     currentNode->right = ifStatement;
+    ifStatement->parent = currentNode;
     currentNode = ifStatement;
 
     ASTNode *nullIfStatement = mockASTProgramStructure(5);
     currentNode->left->left = nullIfStatement;
+    nullIfStatement->parent = currentNode->left;
     currentNode = nullIfStatement;
 
     ASTNode *whileStatement = mockASTProgramStructure(6);
     currentNode->right = whileStatement;
+    whileStatement->parent = currentNode;
     currentNode = whileStatement;
 
     // ASTNode *functionCall = mockASTProgramStructure(2);
     // currentNode->right = functionCall;
+    // functionCall->parent = currentNode;
     // currentNode = functionCall;
 
-    ASTNode *variableAssignment = mockASTProgramStructure(9);
-    variableAssignment->left->exprTree = initAST();
-    variableAssignment->left->exprTree->root = mockASTProgramStructure(2);
-    variableAssignment->left->exprTree->isExpression = false;
-    currentNode->right = variableAssignment;
-    currentNode = variableAssignment;
+    // ASTNode *variableAssignment = mockASTProgramStructure(9);
+    // variableAssignment->left->exprTree = initAST();
+    // variableAssignment->left->exprTree->root = mockASTProgramStructure(2);
+    // variableAssignment->left->exprTree->isExpression = false;
+    // currentNode->right = variableAssignment;
+    // variableAssignment->parent = currentNode;
+    // currentNode = variableAssignment;
 
     currentNode = mockASTProgramStructure(3);
     currentNode->parent = previousNode->right;
     previousNode->right->right = currentNode;
 
-    // displayEntireAST(ast);
+    displayEntireAST(ast);
 
     semanticAnalysis();
-    // displayEntireAST(ast);
+    displayEntireAST(ast);
     // displayAST(ast->root->right->exprTree);
     return 0;
 }
