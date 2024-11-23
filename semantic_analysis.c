@@ -225,6 +225,112 @@ Operand expressionAnalysis(ASTNode *node);
  */
 Operand buildInFunctionAnalysis(ASTNode *node);
 
+/**
+ * @brief Creates a new unique variable name.
+ * @return The new variable name.
+ */
+char *createNewVariableName();
+
+/**
+ * @brief Adds a variable to the AST list.
+ * @param oldId The old token representing the variable.
+ * @return The new AST node representing the variable.
+ */
+ASTNode *addVariableToASTList(Token *oldId);
+
+/**
+ * @brief Inserts function parameters into the AST list.
+ * @param params The list of function parameters.
+ */
+void insertParamsToASTList(List *params);
+
+/**
+ * @brief Finds a variable in the AST list.
+ * @param oldId The old variable name.
+ * @return The AST node representing the variable.
+ */
+ASTNode *findVariableInASTList(char *oldId);
+
+/**
+ * @brief Analyzes a function body.
+ * @param node The AST node representing the function body.
+ */
+void functionBodyAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes an if statement.
+ * @param node The AST node representing the if statement.
+ */
+void ifAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a while statement.
+ * @param node The AST node representing the while statement.
+ */
+void whileAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a variable definition.
+ * @param node The AST node representing the variable definition.
+ */
+void variableDefinitionAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a variable assignment.
+ * @param node The AST node representing the variable assignment.
+ */
+void variableAssignmentAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a return statement.
+ * @param node The AST node representing the return statement.
+ */
+void returnAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a function call.
+ * @param node The AST node representing the function call.
+ * @return The operand representing the result of the function call.
+ */
+Operand functionCallAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a built-in function call.
+ * @param node The AST node representing the built-in function call.
+ * @return The operand representing the result of the built-in function call.
+ */
+Operand buildInFunctionAnalysis(ASTNode *node);
+
+/**
+ * @brief Reduces an expression to a single operand.
+ * @param left The left operand.
+ * @param right The right operand.
+ * @param node The AST node representing the operator.
+ * @return The operand representing the result of the reduction.
+ */
+Operand reduceExpression(Operand left, Operand right, ASTNode *node);
+
+/**
+ * @brief Determines the next operand in an expression.
+ * @param left The left operand.
+ * @param right The right operand.
+ * @param node The AST node representing the operator.
+ * @return The operand representing the result of the operation.
+ */
+Operand determineNextOperand(Operand left, Operand right, ASTNode *node);
+
+/**
+ * @brief Analyzes an expression.
+ * @param node The AST node representing the expression.
+ * @return The operand representing the result of the expression.
+ */
+Operand expressionAnalysis(ASTNode *node);
+
+/**
+ * @brief Performs semantic analysis on the AST.
+ */
+void semanticAnalysis();
+
 char *createNewVariableName() {
     char *baseString = "var_";
 
@@ -240,7 +346,7 @@ char *createNewVariableName() {
     return newVariable;
 }
 
-void addVariableToASTList(Token *oldId) {
+ASTNode *addVariableToASTList(Token *oldId) {
     if (oldId == NULL) {
         HANDLE_ERROR("Token is NULL", INTERNAL_ERROR);
     }
@@ -274,6 +380,8 @@ void addVariableToASTList(Token *oldId) {
     }
 
     variableCount++;
+
+    return nodeCopy;
 }
 
 void insertParamsToASTList(List *params) {
@@ -296,18 +404,21 @@ void insertParamsToASTList(List *params) {
     }
 }
 
-ASTNode *findVariableInASTList(char *id) {
+ASTNode *findVariableInASTList(char *oldId) {
     ASTNode *current = listOfVariables->root;
     while (current != NULL) {
+        if (current->left == NULL) {
+            HANDLE_ERROR("Old variable name in AST list is NULL", INTERNAL_ERROR);
+        }
         char *currentId = current->left->token->attribute.string;
 
-        if (strcmp(currentId, id) == 0) {
+        if (strcmp(currentId, oldId) == 0) {
             return current;
         }
         current = current->right;
     }
 
-    return NULL;
+    HANDLE_ERROR("Variable not found in AST list", INTERNAL_ERROR);
 }
 
 bool isFloatInteger(float number) { return number - (int)number > 0 ? false : true; }
@@ -566,6 +677,18 @@ void statementAnalysis(ASTNode *node) {
     case KEYWORD_CONST:
     case KEYWORD_VAR:
         variableDefinitionAnalysis(node);
+
+        if (currentSymbol.compileTime) {
+            ASTNode *temp = node->parent;
+            node->parent->right = node->right;
+            if (node->right != NULL) {
+                node->right->parent = node->parent;
+            }
+            node->right = NULL;
+            disposeSubtree(node);
+            node = temp;
+        }
+        symbolResetValues(&currentSymbol);
         break;
 
     case KEYWORD_UNDERSCORE:
@@ -611,11 +734,27 @@ void functionBodyAnalysis(ASTNode *node) {
     if (node->token->type == TOKEN_TYPE_KEYWORD) {
         symbolTableSetFunctionKey(table, "main");
     } else {
+        List *params = symbolTableGetSymbol(table, node->token->attribute.string)->params;
         symbolTableSetFunctionKey(table, node->token->attribute.string);
-        symbolTableCopyFunctionParams(
-            table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
+        symbolTableCopyFunctionParams(table, params);
+        insertParamsToASTList(params);
     }
 
+    // renaming of parameters
+    ASTNode *temp = node->left;
+    while (temp != NULL) {
+        ASTNode *newParam = findVariableInASTList(temp->token->attribute.string);
+        if (newParam == NULL) {
+            HANDLE_ERROR("Parameter not found", INTERNAL_ERROR);
+        }
+
+        // Memory leak but we don't care yet
+        // free(temp->token->attribute.string);
+        free(temp->token);
+        temp->token = copyToken(newParam->token);
+
+        temp = temp->right;
+    }
     statementAnalysis(node->right);
 
     symbolTableCheckUsed(table);
@@ -637,12 +776,14 @@ void ifAnalysis(ASTNode *node) {
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
+        // Todo why this is working
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
             HANDLE_ERROR("Variable is not defined", UNDEFINED_ERROR);
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
+        currentSymbol.key = stringDuplicate(node->right->token->attribute.string);
         currentSymbol.compileTime = false;
 
         nullCond = true;
@@ -667,21 +808,10 @@ void ifAnalysis(ASTNode *node) {
         }
         currentSymbol.type = convertNullableType(type);
 
-        ASTNode *nodeCopy = initASTNode();
-        Token *tokenCopy = malloc(sizeof(Token));
-        if (tokenCopy == NULL) {
-            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
-        }
-        tokenCopy->type = TOKEN_TYPE_IDENTIFIER;
-        tokenCopy->attribute.string = currentSymbol.key;
-        nodeCopy->token = tokenCopy;
-
-        ASTNode *temp = listOfVariables->root;
-        listOfVariables->root = nodeCopy;
-        nodeCopy->right = temp;
-        if (temp != NULL) {
-            temp->parent = nodeCopy;
-        }
+        ASTNode *newNameNode = addVariableToASTList(node->parent->right->token);
+        free(node->parent->right->token->attribute.string);
+        free(node->parent->right->token);
+        node->parent->right->token = copyToken(newNameNode->token);
 
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
@@ -726,6 +856,7 @@ void whileAnalysis(ASTNode *node) {
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
+        currentSymbol.key = stringDuplicate(node->right->token->attribute.string);
         currentSymbol.compileTime = false;
 
         nullCond = true;
@@ -750,21 +881,10 @@ void whileAnalysis(ASTNode *node) {
         }
         currentSymbol.type = convertNullableType(type);
 
-        ASTNode *nodeCopy = initASTNode();
-        Token *tokenCopy = malloc(sizeof(Token));
-        if (tokenCopy == NULL) {
-            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
-        }
-        tokenCopy->type = TOKEN_TYPE_IDENTIFIER;
-        tokenCopy->attribute.string = currentSymbol.key;
-        nodeCopy->token = tokenCopy;
-
-        ASTNode *temp = listOfVariables->root;
-        listOfVariables->root = nodeCopy;
-        nodeCopy->right = temp;
-        if (temp != NULL) {
-            temp->parent = nodeCopy;
-        }
+        ASTNode *newNameNode = addVariableToASTList(node->parent->right->token);
+        free(node->parent->right->token->attribute.string);
+        free(node->parent->right->token);
+        node->parent->right->token = copyToken(newNameNode->token);
 
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
@@ -789,18 +909,12 @@ void variableDefinitionAnalysis(ASTNode *node) {
     if (node == NULL || node->token->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected variable id", INTERNAL_ERROR);
     }
-    currentSymbol.key = node->token->attribute.string;
+    currentSymbol.key = stringDuplicate(node->token->attribute.string);
 
-    ASTNode *nodeCopy = initASTNode();
-    Token *tokenCopy = copyToken(node->token);
-    nodeCopy->token = tokenCopy;
-
-    ASTNode *temp = listOfVariables->root;
-    listOfVariables->root = nodeCopy;
-    nodeCopy->right = temp;
-    if (temp != NULL) {
-        temp->parent = nodeCopy;
-    }
+    ASTNode *newNameNode = addVariableToASTList(node->token);
+    free(node->token->attribute.string);
+    free(node->token);
+    node->token = copyToken(newNameNode->token);
 
     if (node->left != NULL) {
         currentSymbol.type = (DataType)node->left->token->attribute.keyword;
@@ -851,8 +965,15 @@ void variableDefinitionAnalysis(ASTNode *node) {
         currentSymbol.type = expressionResult.type;
     }
 
+    // Sets up compile time const to be removed from AST and replaced with value
+    if (expressionResult.compileTime && currentSymbol.constant) {
+        free(newNameNode->token->attribute.string);
+        free(newNameNode->token);
+        newNameNode->token = copyToken(expressionResult.token);
+        currentSymbol.compileTime = true;
+    }
+
     symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
-    symbolResetValues(&currentSymbol);
 }
 
 void variableAssignmentAnalysis(ASTNode *node) {
@@ -875,6 +996,11 @@ void variableAssignmentAnalysis(ASTNode *node) {
 
         valueType =
             getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
+
+        ASTNode *newNameNode = findVariableInASTList(node->token->attribute.string);
+        free(node->token->attribute.string);
+        free(node->token);
+        node->token = copyToken(newNameNode->token);
     }
 
     if (node->token->type == TOKEN_TYPE_KEYWORD &&
@@ -1460,11 +1586,22 @@ Operand expressionAnalysis(ASTNode *node) {
             symbolTableSetUsed(symbolTableTop(&symbolTableStack), node->token->attribute.string);
 
             // TODO doesn't support compile time variables yet
-            // .compileTime = checkVariableCompileTime(symbolTableTop(&symbolTableStack),
-            return (Operand){.type = getVariableType(symbolTableTop(&symbolTableStack),
-                                                     node->token->attribute.string),
-                             .compileTime = false,
-                             .token = node->token};
+            Operand varOperand;
+            varOperand.compileTime = checkVariableCompileTime(symbolTableTop(&symbolTableStack),
+                                                              node->token->attribute.string);
+            varOperand.type =
+                getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
+
+            ASTNode *newNameNode = findVariableInASTList(node->token->attribute.string);
+            // can't free the string because it is invalid pointer free
+            // it might be because string is not allocated dynamically ???
+            // it's not allocated in tests you moron
+            // free(node->token->attribute.string);
+            free(node->token);
+            node->token = copyToken(newNameNode->token);
+
+            varOperand.token = node->token;
+            return varOperand;
         }
 
         if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
