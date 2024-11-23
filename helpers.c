@@ -357,8 +357,8 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->parent = root;
         AST *exprTree1 = initAST();
         ASTNode *exprTreeRoot = initASTNode();
-        exprTreeRoot->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot->token->attribute.integer = 3;
+        exprTreeRoot->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        exprTreeRoot->token->attribute.decimal = 3.0;
         exprTreeRoot->parent = root->left;
         exprTree1->root = exprTreeRoot;
         exprTree1->isExpression = true;
