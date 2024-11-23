@@ -6,15 +6,32 @@
  *
  */
 
-#include "semantic_analysis.h"
+#include <math.h>
+
 #include "ast.h"
 #include "helpers.h"
+#include "semantic_analysis.h"
 
 extern AST *ast;
 AST *listOfVariables;
 unsigned variableCount = 0;
 Stack symbolTableStack;
 Symbol currentSymbol;
+
+#include <math.h>
+#include <stdio.h>
+
+#define EPSILON 1e-9
+
+/**
+ * @brief Checks if the given integer value is zero to prevent division by zero.
+ *
+ * This function is used to ensure that an integer value is not zero before performing
+ * a division operation, which would result in a runtime error.
+ *
+ * @param value The integer value to be checked.
+ */
+void checkDivisionByZeroInt(int value);
 
 /**
  * @brief Checks if a double is an integer.
@@ -326,10 +343,11 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node);
  */
 Operand expressionAnalysis(ASTNode *node);
 
-/**
- * @brief Performs semantic analysis on the AST.
- */
-void semanticAnalysis();
+void checkDivisionByZero(float value) {
+    if (fabs(value) < EPSILON) {
+        HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
+    }
+}
 
 char *createNewVariableName() {
     char *baseString = "var_";
@@ -421,7 +439,7 @@ ASTNode *findVariableInASTList(char *oldId) {
     HANDLE_ERROR("Variable not found in AST list", INTERNAL_ERROR);
 }
 
-bool isFloatInteger(float number) { return number - (int)number > 0 ? false : true; }
+bool isFloatInteger(float number) { return floorf(number) == number; }
 
 bool isEqualOperator(TokenType operator) {
     return operator== TOKEN_TYPE_EQ || operator== TOKEN_TYPE_NEQ;
@@ -1338,11 +1356,9 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
             break;
 
         case TOKEN_TYPE_DIV:
-            // TODO fix float division by zero
-            if (right.token->attribute.decimal == 0) {
-                HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
-            }
+            checkDivisionByZero(right.token->attribute.decimal);
             result = left.token->attribute.decimal / right.token->attribute.decimal;
+
             if (isFloatInteger(result)) {
                 node->token->type = TOKEN_TYPE_INTEGER_VALUE;
                 node->token->attribute.integer = (int)result;
@@ -1405,11 +1421,9 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
             break;
 
         case TOKEN_TYPE_DIV:
-            // TODO fix float division by zero
-            if (right.token->attribute.decimal == 0) {
-                HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
-            }
+            checkDivisionByZero(right.token->attribute.decimal);
             result = left.token->attribute.integer / right.token->attribute.decimal;
+
             if (isFloatInteger(result)) {
                 node->token->type = TOKEN_TYPE_INTEGER_VALUE;
                 node->token->attribute.integer = (int)result;
@@ -1522,6 +1536,11 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
                 return reduceExpression(left, right, node);
             }
 
+            if (right.compileTime && node->token->type == TOKEN_TYPE_DIV &&
+                right.token->attribute.integer == 0) {
+                HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
+            }
+
             result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_I_32;
             return result;
         }
@@ -1534,6 +1553,10 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
             if (isRelationalOperator(operator)) {
                 result.type = TYPE_BOOL;
                 return result;
+            }
+
+            if (right.compileTime && node->token->type == TOKEN_TYPE_DIV) {
+                checkDivisionByZero(right.token->attribute.decimal);
             }
 
             result.type = TYPE_F_64;
@@ -1549,6 +1572,10 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
                 return reduceExpression(left, right, node);
             }
 
+            if (right.compileTime && node->token->type == TOKEN_TYPE_DIV) {
+                checkDivisionByZero(right.token->attribute.decimal);
+            }
+
             result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
             return result;
         }
@@ -1561,6 +1588,11 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
             if (isRelationalOperator(operator)) {
                 result.type = TYPE_BOOL;
                 return result;
+            }
+
+            if (right.compileTime && node->token->type == TOKEN_TYPE_DIV &&
+                right.token->attribute.integer == 0) {
+                HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
             }
 
             result.type = TYPE_F_64;

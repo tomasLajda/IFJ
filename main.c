@@ -57,10 +57,10 @@ int main() {
     currentNode->parent = previousNode->right;
     previousNode->right->right = currentNode;
 
-    displayEntireAST(ast);
+    // displayEntireAST(ast);
 
     semanticAnalysis();
-    displayEntireAST(ast);
+    // displayEntireAST(ast);
     // displayAST(ast->root->right->exprTree);
     return 0;
 }
