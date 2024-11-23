@@ -794,10 +794,9 @@ void ifAnalysis(ASTNode *node) {
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
-        // Todo why this is working ????
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
-            HANDLE_ERROR("Variable is not defined", UNDEFINED_ERROR);
+            HANDLE_ERROR("Variable redefinition in null cond", REDEFINITION_ERROR);
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
@@ -871,7 +870,7 @@ void whileAnalysis(ASTNode *node) {
         // Todo why this is working ????
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
-            HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
+            HANDLE_ERROR("Variable redefinition in null cond", REDEFINITION_ERROR);
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
