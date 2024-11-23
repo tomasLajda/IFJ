@@ -14,7 +14,6 @@
 
 extern AST *ast;
 AST *listOfVariables;
-unsigned variableCount = 0;
 Stack symbolTableStack;
 Symbol currentSymbol;
 
@@ -352,6 +351,8 @@ void checkDivisionByZero(float value) {
 char *createNewVariableName() {
     char *baseString = "var_";
 
+    static unsigned variableCount = 0;
+
     int newVariableLength = snprintf(NULL, 0, "%u", variableCount) + strlen(baseString) + 1;
 
     char *newVariable = malloc(newVariableLength * sizeof(char));
@@ -360,6 +361,7 @@ char *createNewVariableName() {
     }
 
     sprintf(newVariable, "%s%u", baseString, variableCount);
+    variableCount++;
 
     return newVariable;
 }
@@ -396,8 +398,6 @@ ASTNode *addVariableToASTList(Token *oldId) {
         current->right = nodeCopy;
         nodeCopy->parent = current;
     }
-
-    variableCount++;
 
     return nodeCopy;
 }
@@ -744,7 +744,6 @@ void functionBodyAnalysis(ASTNode *node) {
     AST *newAST = initAST();
     node->exprTree = newAST;
     listOfVariables = newAST;
-    variableCount = 0;
 
     node = node->left;
     node = node->left;
