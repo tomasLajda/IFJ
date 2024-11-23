@@ -867,7 +867,6 @@ void whileAnalysis(ASTNode *node) {
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
-        // Todo why this is working ????
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
             HANDLE_ERROR("Variable redefinition in null cond", REDEFINITION_ERROR);
@@ -1639,7 +1638,6 @@ Operand expressionAnalysis(ASTNode *node) {
         HANDLE_ERROR("Expected expression", INTERNAL_ERROR);
     }
 
-    // TODO redo to reduce compile time expressions
     if (node->left == NULL && node->right == NULL) {
         if (node->token->type == TOKEN_TYPE_IDENTIFIER) {
             if (!checkDeclaration(symbolTableTop(&symbolTableStack),
@@ -1648,7 +1646,6 @@ Operand expressionAnalysis(ASTNode *node) {
             }
             symbolTableSetUsed(symbolTableTop(&symbolTableStack), node->token->attribute.string);
 
-            // TODO doesn't support compile time variables yet
             Operand varOperand;
             varOperand.compileTime = checkVariableCompileTime(symbolTableTop(&symbolTableStack),
                                                               node->token->attribute.string);
