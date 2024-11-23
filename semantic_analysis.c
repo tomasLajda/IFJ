@@ -7,20 +7,18 @@
  */
 
 #include <math.h>
+#include <stdio.h>
 
 #include "ast.h"
 #include "helpers.h"
 #include "semantic_analysis.h"
 
+#define EPSILON 1e-9
+
 extern AST *ast;
 AST *listOfVariables;
 Stack symbolTableStack;
 Symbol currentSymbol;
-
-#include <math.h>
-#include <stdio.h>
-
-#define EPSILON 1e-9
 
 /**
  * @brief Checks if the given integer value is zero to prevent division by zero.
