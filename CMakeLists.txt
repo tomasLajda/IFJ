@@ -7,7 +7,7 @@ project(IFJ C)
 set(CMAKE_C_STANDARD 99)
 
 # Enable all warnings and debugging symbols
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g -lm")
 
 # Find all source files
 file(GLOB SRCS "*.c")
