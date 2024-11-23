@@ -12,6 +12,7 @@
 
 extern AST *ast;
 AST *listOfVariables;
+unsigned variableCount = 0;
 Stack symbolTableStack;
 Symbol currentSymbol;
 
@@ -223,6 +224,91 @@ Operand expressionAnalysis(ASTNode *node);
  * @return The operand representing the result of the built-in function call.
  */
 Operand buildInFunctionAnalysis(ASTNode *node);
+
+char *createNewVariableName() {
+    char *baseString = "var_";
+
+    int newVariableLength = snprintf(NULL, 0, "%u", variableCount) + strlen(baseString) + 1;
+
+    char *newVariable = malloc(newVariableLength * sizeof(char));
+    if (newVariable == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+
+    sprintf(newVariable, "%s%u", baseString, variableCount);
+
+    return newVariable;
+}
+
+void addVariableToASTList(Token *oldId) {
+    if (oldId == NULL) {
+        HANDLE_ERROR("Token is NULL", INTERNAL_ERROR);
+    }
+
+    if (listOfVariables == NULL) {
+        HANDLE_ERROR("List of variables is NULL", INTERNAL_ERROR);
+    }
+
+    ASTNode *nodeCopy = initASTNode();
+    Token *tokenCopy = malloc(sizeof(Token));
+    if (tokenCopy == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    tokenCopy->type = TOKEN_TYPE_IDENTIFIER;
+    tokenCopy->attribute.string = createNewVariableName();
+    nodeCopy->token = tokenCopy;
+
+    nodeCopy->left = initASTNode();
+    nodeCopy->left->token = copyToken(oldId);
+    nodeCopy->left->parent = nodeCopy;
+
+    if (listOfVariables->root == NULL) {
+        listOfVariables->root = nodeCopy;
+    } else {
+        ASTNode *current = listOfVariables->root;
+        while (current->right != NULL) {
+            current = current->right;
+        }
+        current->right = nodeCopy;
+        nodeCopy->parent = current;
+    }
+
+    variableCount++;
+}
+
+void insertParamsToASTList(List *params) {
+    if (params == NULL) {
+        return;
+    }
+
+    listFirst(params);
+    while (listIsActive(params)) {
+        ListData data;
+        listGetValue(params, &data);
+
+        Token oldId;
+        oldId.type = TOKEN_TYPE_IDENTIFIER;
+        oldId.attribute.string = data.key;
+
+        addVariableToASTList(&oldId);
+
+        listNext(params);
+    }
+}
+
+ASTNode *findVariableInASTList(char *id) {
+    ASTNode *current = listOfVariables->root;
+    while (current != NULL) {
+        char *currentId = current->left->token->attribute.string;
+
+        if (strcmp(currentId, id) == 0) {
+            return current;
+        }
+        current = current->right;
+    }
+
+    return NULL;
+}
 
 bool isFloatInteger(float number) { return number - (int)number > 0 ? false : true; }
 
@@ -517,6 +603,7 @@ void functionBodyAnalysis(ASTNode *node) {
     AST *newAST = initAST();
     node->exprTree = newAST;
     listOfVariables = newAST;
+    variableCount = 0;
 
     node = node->left;
     node = node->left;
