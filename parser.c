@@ -1064,6 +1064,10 @@ void parseDiscardCall() {
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε
 void parseArgs() {
+    if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
+        return;
+    }
+
     tokenBuffer.first = copyToken(currentToken);
 
     ASTNode *argNode = initASTNode();
