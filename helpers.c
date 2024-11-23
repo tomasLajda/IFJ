@@ -311,6 +311,21 @@ char *TokenKeywordToString(Keyword keyword) {
     }
 }
 
+char *stringDuplicate(const char *string) {
+    if (string == NULL) {
+        return NULL;
+    }
+
+    char *copy = malloc(strlen(string) + 1);
+    if (copy == NULL) {
+        return NULL;
+    }
+
+    strcpy(copy, string);
+
+    return copy;
+}
+
 ASTNode *mockASTProgramStructure(int type) {
     ASTNode *root = initASTNode();
     switch (type) {
@@ -466,8 +481,14 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->left->right->exprTree->root->token = createToken(TOKEN_TYPE_PLUS);
         root->left->left->right->exprTree->root->parent = root->left->left->right->exprTree->root;
         root->left->left->right->exprTree->root->left = initASTNode();
-        root->left->left->right->exprTree->root->left->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
-        root->left->left->right->exprTree->root->left->token->attribute.decimal = 3.14;
+        // root->left->left->right->exprTree->root->left->token =
+        // createToken(TOKEN_TYPE_IDENTIFIER);
+        // root->left->left->right->exprTree->root->left->token->attribute.string = malloc(10);
+        // strcpy(root->left->left->right->exprTree->root->left->token->attribute.string,
+        // "premenna");
+        root->left->left->right->exprTree->root->left->token =
+            createToken(TOKEN_TYPE_INTEGER_VALUE);
+        root->left->left->right->exprTree->root->left->token->attribute.integer = 3;
         root->left->left->right->exprTree->root->left->parent =
             root->left->left->right->exprTree->root;
 
@@ -629,26 +650,30 @@ ASTNode *mockASTProgramStructure(int type) {
 
         // VARIABLE TYPE
         root->token = createToken(TOKEN_TYPE_KEYWORD);
-        root->token->attribute.keyword = KEYWORD_VAR;
+        root->token->attribute.keyword = KEYWORD_CONST;
 
         // VARIABLE NAME
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
         root->left->token->attribute.string = malloc(10);
         strcpy(root->left->token->attribute.string, "premenna");
+        root->left->parent = root;
 
         // TYPE
         root->left->left = initASTNode();
         root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->left->token->attribute.keyword = KEYWORD_F_64_NULL;
+        root->left->left->parent = root->left;
 
         // VALUE (currently 3.14)
         root->left->right = initASTNode();
         root->left->right->token = createToken(TOKEN_TYPE_EXPR);
+        root->left->right->parent = root->left;
         AST *exprTree8 = initAST();
         ASTNode *exprTreeRoot8 = initASTNode();
-        exprTreeRoot8->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
-        exprTreeRoot8->token->attribute.decimal = 3.14;
+        exprTreeRoot8->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot8->token->attribute.integer = 3.0;
+        exprTreeRoot8->parent = root->left->right;
         exprTree8->root = exprTreeRoot8;
         exprTree8->isExpression = true;
         root->left->right->exprTree = exprTree8;

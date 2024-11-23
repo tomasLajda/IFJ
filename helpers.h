@@ -82,6 +82,17 @@ int isDelimiter(Token *token);
 int isRelOperator(Token *token);
 
 /**
+ * @brief Duplicates a given string.
+ *
+ * This function allocates memory and creates a duplicate of the input string.
+ * The caller is responsible for freeing the allocated memory.
+ *
+ * @param string The input string to be duplicated.
+ * @return A pointer to the newly allocated duplicate string, or NULL if memory allocation fails.
+ */
+char *stringDuplicate(const char *string);
+
+/**
  * @brief Function that returns a pointer to the appropriate ASTNode structure based on the given
  * type
  *
