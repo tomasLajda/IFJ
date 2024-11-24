@@ -980,7 +980,8 @@ void variableDefinitionAnalysis(ASTNode *node) {
     }
 
     // Sets up compile time const to be removed from AST and replaced with value
-    if (expressionResult.compileTime && currentSymbol.constant) {
+    if (expressionResult.compileTime && currentSymbol.constant &&
+        !isNullableType(currentSymbol.type)) {
         free(newNameNode->token->attribute.string);
         free(newNameNode->token);
         newNameNode->token = copyToken(expressionResult.token);
@@ -1297,7 +1298,10 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
             if (right.token->attribute.integer == 0) {
                 HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
             }
-            result = left.token->attribute.integer / right.token->attribute.integer;
+            // TAK TOTO JE EDGE CASE JAKO PRASE
+            double divisionResult =
+                (double)left.token->attribute.integer / (double)right.token->attribute.integer;
+            result = floor(divisionResult);
             node->token->type = TOKEN_TYPE_INTEGER_VALUE;
             node->token->attribute.integer = result;
             break;
