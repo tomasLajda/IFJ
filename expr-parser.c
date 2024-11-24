@@ -240,11 +240,9 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
     int providedTokens = 0;
 
     if (firstToken != NULL) {
-        printf("firsttoken nie je null\n");
         providedTokens++;
     }
     if (secondToken != NULL) {
-        printf("secondtoken nie je null\n");
         providedTokens++;
     }
 
@@ -275,7 +273,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
     }
 
     while (isOperand(token) || isOperator(token) || isParentheses(token)) {
-        printf("getting token %s\n", TokenTypeToString(token->type));
+
         // Track parentheses balance
         if (token->type == TOKEN_TYPE_LEFT_BR) {
             openingParentheses++;
@@ -318,7 +316,6 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
 
     // Assign the delimiter token and check if its valid
     *delimiterToken = *token;
-    printf("DELIM: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA %s\n", TokenTypeToString(delimiterToken->type));
     if (!isDelimiter(token)) {
         cleanupStack(&tempStack);
         return NULL; // Token doesn't belong in the expression - a syntax error occured
@@ -522,7 +519,6 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        printf("PARSING SUCCESSFUL\n");
         return 0; // Indicate successful parsing
     } else {
         // Parsing incomplete or incorrect
