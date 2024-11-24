@@ -383,7 +383,12 @@ ASTNode *addVariableToASTList(Token *oldId) {
     nodeCopy->token = tokenCopy;
 
     nodeCopy->left = initASTNode();
-    nodeCopy->left->token = copyToken(oldId);
+    nodeCopy->left->token = malloc(sizeof(Token));
+    if (nodeCopy->left->token == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    nodeCopy->left->token->type = TOKEN_TYPE_IDENTIFIER;
+    nodeCopy->left->token->attribute.string = oldId->attribute.string;
     nodeCopy->left->parent = nodeCopy;
 
     if (listOfVariables->root == NULL) {
@@ -763,8 +768,6 @@ void functionBodyAnalysis(ASTNode *node) {
             HANDLE_ERROR("Parameter not found", INTERNAL_ERROR);
         }
 
-        // Memory leak but we don't care yet
-        // free(temp->token->attribute.string);
         free(temp->token);
         temp->token = copyToken(newParam->token);
 
@@ -797,7 +800,7 @@ void ifAnalysis(ASTNode *node) {
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
-        currentSymbol.key = stringDuplicate(node->right->token->attribute.string);
+        currentSymbol.key = node->right->token->attribute.string;
         currentSymbol.compileTime = false;
 
         nullCond = true;
@@ -823,7 +826,6 @@ void ifAnalysis(ASTNode *node) {
         currentSymbol.type = convertNullableType(type);
 
         ASTNode *newNameNode = addVariableToASTList(node->parent->right->token);
-        free(node->parent->right->token->attribute.string);
         free(node->parent->right->token);
         node->parent->right->token = copyToken(newNameNode->token);
 
@@ -870,7 +872,7 @@ void whileAnalysis(ASTNode *node) {
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
-        currentSymbol.key = stringDuplicate(node->right->token->attribute.string);
+        currentSymbol.key = node->right->token->attribute.string;
         currentSymbol.compileTime = false;
 
         nullCond = true;
@@ -896,7 +898,6 @@ void whileAnalysis(ASTNode *node) {
         currentSymbol.type = convertNullableType(type);
 
         ASTNode *newNameNode = addVariableToASTList(node->parent->right->token);
-        free(node->parent->right->token->attribute.string);
         free(node->parent->right->token);
         node->parent->right->token = copyToken(newNameNode->token);
 
@@ -923,10 +924,9 @@ void variableDefinitionAnalysis(ASTNode *node) {
     if (node == NULL || node->token->type != TOKEN_TYPE_IDENTIFIER) {
         HANDLE_ERROR("Expected variable id", INTERNAL_ERROR);
     }
-    currentSymbol.key = stringDuplicate(node->token->attribute.string);
+    currentSymbol.key = node->token->attribute.string;
 
     ASTNode *newNameNode = addVariableToASTList(node->token);
-    free(node->token->attribute.string);
     free(node->token);
     node->token = copyToken(newNameNode->token);
 
