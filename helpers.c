@@ -671,11 +671,25 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->right->parent = root->left;
         AST *exprTree8 = initAST();
         ASTNode *exprTreeRoot8 = initASTNode();
-        exprTreeRoot8->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot8->token->attribute.integer = 3.0;
+        exprTreeRoot8->token = createToken(TOKEN_TYPE_DIV);
         exprTreeRoot8->parent = root->left->right;
         exprTree8->root = exprTreeRoot8;
         exprTree8->isExpression = true;
+        exprTreeRoot8->left = initASTNode();
+        exprTreeRoot8->left->token = createToken(TOKEN_TYPE_MINUS);
+        exprTreeRoot8->left->parent = exprTreeRoot8;
+        exprTreeRoot8->left->left = initASTNode();
+        exprTreeRoot8->left->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot8->left->left->token->attribute.integer = 0;
+        exprTreeRoot8->left->left->parent = exprTreeRoot8->left;
+        exprTreeRoot8->left->right = initASTNode();
+        exprTreeRoot8->left->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot8->left->right->token->attribute.integer = 12;
+        exprTreeRoot8->left->right->parent = exprTreeRoot8->left;
+        exprTreeRoot8->right = initASTNode();
+        exprTreeRoot8->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot8->right->token->attribute.integer = 7;
+        exprTreeRoot8->right->parent = exprTreeRoot8;
         root->left->right->exprTree = exprTree8;
 
         return root;
