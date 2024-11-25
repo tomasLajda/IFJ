@@ -17,7 +17,7 @@ all: $(EXEC)
 
 # Link all object files into a single executable
 $(EXEC): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # Clean up build files
 clean:

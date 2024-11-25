@@ -12,7 +12,7 @@
 #include <string.h>
 
 // Token* currentToken = NULL;
-AST *ast = NULL;
+extern AST *ast;
 ASTNode *mainParent = NULL;
 ASTNode *currentParent = NULL;
 TokenBuffer tokenBuffer = {NULL, NULL};

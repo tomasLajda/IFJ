@@ -2,12 +2,14 @@
 #include "error_codes.h"
 #include "parser.h"
 #include "scanner.h"
+#include "semantic_analysis.h"
 #include "testing_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 FILE *sourceFile;
 Token *currentToken = NULL;
+AST *ast = NULL;
 
 int main() {
     sourceFile = fopen("test_input.txt", "r");
@@ -53,6 +55,8 @@ int main() {
 
     int parseResult = parse();
     printf("\nRESULT: %d\n", parseResult);
+
+    semanticAnalysis();
 
     free(currentToken);
     fclose(sourceFile);
