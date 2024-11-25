@@ -84,38 +84,38 @@ void parseProg() {
     parseFuncDefs();
 
     if (currentToken->type != TOKEN_TYPE_EOF) {
-        HANDLE_ERROR("Unexpected token after function definitions", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Unexpected token after function definitions", SYNTAX_ERROR);
     }
 }
 
 // PROLOG ::= token_const token_ifj token_equals token_@import("ifj24.zig");
 void parseProlog() {
     if (!isTokenKeyword(currentToken, KEYWORD_CONST)) {
-        HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'const' in prolog", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_IFJ)) {
-        HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'ifj' in prolog", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
-        HANDLE_ERROR("Expected '=' in prolog", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '=' in prolog", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_IMPORT)) {
-        HANDLE_ERROR("Expected '@import' in prolog", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '@import' in prolog", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-        HANDLE_ERROR("Expected ';' in prolog", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected ';' in prolog", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -135,7 +135,7 @@ void parseFuncDef() {
     paramCounter = 0;
 
     if (!isTokenKeyword(currentToken, KEYWORD_PUB)) {
-        HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'pub' in function definition", SYNTAX_ERROR);
     }
 
     ASTNode *pubNode = initASTNode();
@@ -147,7 +147,7 @@ void parseFuncDef() {
     getNextToken(currentToken);
 
     if (!isTokenKeyword(currentToken, KEYWORD_FN)) {
-        HANDLE_ERROR("Expected 'fn' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'fn' in function definition", SYNTAX_ERROR);
     }
 
     ASTNode *fnNode = initASTNode();
@@ -175,7 +175,7 @@ void parseFuncDef() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-        HANDLE_ERROR("Expected '(' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '(' in function definition", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -183,7 +183,7 @@ void parseFuncDef() {
     parseParams();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
-        HANDLE_ERROR("Expected ')' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected ')' in function definition", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -208,7 +208,7 @@ void parseFunc() {
     parseType();
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
-        HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -216,7 +216,7 @@ void parseFunc() {
     parseStatements();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
-        HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -225,7 +225,7 @@ void parseFunc() {
 // V_FUNC ::= token_void token_Ocb ` token_Ccb
 void parseVoidFunc() {
     if (!isTokenKeyword(currentToken, KEYWORD_VOID)) {
-        HANDLE_ERROR("Expected 'void' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'void' in function definition", SYNTAX_ERROR);
     }
 
     ASTNode *returnTypeNode = initASTNode();
@@ -244,7 +244,7 @@ void parseVoidFunc() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
-        HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '{' in function definition", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -252,7 +252,7 @@ void parseVoidFunc() {
     parseStatements();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
-        HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -283,7 +283,7 @@ void parseType() {
         getNextToken(currentToken);
     } else {
         printTokenInfo(currentToken);
-        HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR);
     }
 }
 
@@ -292,7 +292,7 @@ void parseType() {
 void parseReturn() {
     if (!isTokenKeyword(currentToken, KEYWORD_RETURN)) {
         if (!voidFuncType) {
-            HANDLE_ERROR("Expected 'return' keyword", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected 'return' keyword", SYNTAX_ERROR);
         }
         return;
     }
@@ -383,7 +383,7 @@ void parseReturn() {
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             printTokenInfo(currentToken);
-            HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -397,7 +397,7 @@ void parseParams() {
     }
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
-        HANDLE_ERROR("Expected parameter identifier", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected parameter identifier", SYNTAX_ERROR);
     }
     paramCounter++;
 
@@ -415,7 +415,7 @@ void parseParams() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_COLON) {
-        HANDLE_ERROR("Expected ':' after parameter identifier", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected ':' after parameter identifier", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -477,7 +477,7 @@ void parseStatement() {
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_DOT) {
-                HANDLE_ERROR("Unexpected token in built-in function", SYNTAX_ERROR, currentToken);
+                HANDLE_ERROR("Unexpected token in built-in function", SYNTAX_ERROR);
             }
             printTokenInfo(currentToken);
             getNextToken(currentToken);
@@ -492,13 +492,13 @@ void parseStatement() {
             getNextToken(currentToken);
 
             if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-                HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+                HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR);
             }
             parseFuncCall();
 
         } else {
             printTokenInfo(currentToken);
-            HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR);
         }
         break;
 
@@ -523,12 +523,12 @@ void parseStatement() {
             parseVarAss();
         } else {
             printTokenInfo(currentToken);
-            HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR);
         }
         break;
     default:
         printTokenInfo(currentToken);
-        HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR);
         break;
     }
 }
@@ -560,7 +560,7 @@ void parseVarDef() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
-        HANDLE_ERROR("Expected variable identifier", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected variable identifier", SYNTAX_ERROR);
     }
 
     ASTNode *varIdNode = initASTNode();
@@ -574,7 +574,7 @@ void parseVarDef() {
     parseTypeSpec();
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
-        HANDLE_ERROR("Expected '=' in variable definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '=' in variable definition", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -589,7 +589,7 @@ void parseVarDef() {
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_DOT) {
-            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -603,7 +603,7 @@ void parseVarDef() {
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR);
         }
         parseFuncCall();
         currentParent = varIdNode;
@@ -667,7 +667,7 @@ void parseVarDef() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
-        HANDLE_ERROR("Unexpected token in variable definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Unexpected token in variable definition", SYNTAX_ERROR);
     }
 }
 
@@ -685,6 +685,7 @@ void parseTypeSpec() {
 // VAR_ASS ::= token_id token_equals EXPR token_semicolon
 void parseVarAss() {
     ASTNode *varIdNode = initASTNode();
+    varIdNode->isAssignment = true;
     varIdNode->token = copyToken(decider);
 
     // FIRST STATEMENT IN IF
@@ -707,8 +708,7 @@ void parseVarAss() {
            currentParent->token->attribute.string);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
-        HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR,
-                     currentToken);
+        HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -722,13 +722,13 @@ void parseVarAss() {
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_DOT) {
-            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (!isTokenBuiltInFunction(currentToken)) {
-            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR);
         }
         decider = copyToken(currentToken);
 
@@ -736,7 +736,7 @@ void parseVarAss() {
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR);
         }
         parseFuncCall();
         currentParent = varIdNode;
@@ -778,8 +778,7 @@ void parseVarAss() {
             parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
 
             if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-                HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR,
-                             currentToken);
+                HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR);
             }
 
             addLeftNode(ast, currentParent, exprNode);
@@ -800,8 +799,7 @@ void parseVarAss() {
 
         parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR,
-                         currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR);
         }
 
         addLeftNode(ast, currentParent, exprNode);
@@ -809,14 +807,14 @@ void parseVarAss() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
-        HANDLE_ERROR("Unexpected token in variable assignment", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Unexpected token in variable assignment", SYNTAX_ERROR);
     }
 }
 
 // While ::= token_while token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb
 void parseWhile() {
     if (!isTokenKeyword(currentToken, KEYWORD_WHILE)) {
-        HANDLE_ERROR("Expected 'while' at the beginning of while loop", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'while' at the beginning of while loop", SYNTAX_ERROR);
     }
 
     ASTNode *whileNode = initASTNode();
@@ -838,7 +836,7 @@ void parseWhile() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-        HANDLE_ERROR("Expected '(' after 'while'", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '(' after 'while'", SYNTAX_ERROR);
     }
 
     AST *exprTree = initAST();
@@ -854,7 +852,7 @@ void parseWhile() {
     currentParent = exprNode;
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
-        HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected ')' after expression in while loop", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -864,7 +862,7 @@ void parseWhile() {
     }
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
-        HANDLE_ERROR("Expected '{' to start the body of while loop", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '{' to start the body of while loop", SYNTAX_ERROR);
     }
     isFirstStatement = true;
     printTokenInfo(currentToken);
@@ -874,7 +872,7 @@ void parseWhile() {
     goBack(currentParent);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
-        HANDLE_ERROR("Expected '}' to end the body of while loop", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '}' to end the body of while loop", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -886,7 +884,7 @@ void parseNullCond() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
-        HANDLE_ERROR("Expected identifier in null condition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected identifier in null condition", SYNTAX_ERROR);
     }
 
     ASTNode *nullNode = initASTNode();
@@ -902,7 +900,7 @@ void parseNullCond() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_VB) {
-        HANDLE_ERROR("Expected '|' after identifier in null condition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '|' after identifier in null condition", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -911,7 +909,7 @@ void parseNullCond() {
 // IF ::= token_if token_Orb EXPR token_Crb NULL_COND token_Ocb STATEMENTS token_Ccb ELSE
 void parseIf() {
     if (!isTokenKeyword(currentToken, KEYWORD_IF)) {
-        HANDLE_ERROR("Expected 'if' at the beginning of if statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'if' at the beginning of if statement", SYNTAX_ERROR);
     }
 
     ASTNode *ifNode = initASTNode();
@@ -933,7 +931,7 @@ void parseIf() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-        HANDLE_ERROR("Expected '(' after 'if'", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '(' after 'if'", SYNTAX_ERROR);
     }
 
     AST *exprTree = initAST();
@@ -949,7 +947,7 @@ void parseIf() {
     currentParent = exprNode;
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
-        HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected ')' after expression in if statement", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -959,7 +957,7 @@ void parseIf() {
     }
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
-        HANDLE_ERROR("Expected '{' to start the body of if statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '{' to start the body of if statement", SYNTAX_ERROR);
     }
     isFirstStatement = true;
     printTokenInfo(currentToken);
@@ -968,7 +966,7 @@ void parseIf() {
     parseStatements();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
-        HANDLE_ERROR("Expected '}' to end the body of if statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '}' to end the body of if statement", SYNTAX_ERROR);
     }
     currentParent = exprNode;
     printTokenInfo(currentToken);
@@ -980,14 +978,13 @@ void parseIf() {
 // ELSE ::= token_else token_Ocb STATEMENTS token_Ccb | ε
 void parseElse() {
     if (!isTokenKeyword(currentToken, KEYWORD_ELSE)) {
-        HANDLE_ERROR("Expected 'else' to start the else statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'else' to start the else statement", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
-        HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR,
-                     currentToken);
+        HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -995,7 +992,7 @@ void parseElse() {
     parseStatements();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
-        HANDLE_ERROR("Expected '}' to end the body of else statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '}' to end the body of else statement", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -1006,7 +1003,7 @@ void parseElse() {
 // FUNC_CALL ::= token_Orb ARGS token_Crb token_semicolon
 void parseFuncCall() {
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-        HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR);
     }
 
     ASTNode *funcCallNode = initASTNode();
@@ -1038,13 +1035,13 @@ void parseFuncCall() {
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         printTokenInfo(currentToken);
-        HANDLE_ERROR("Expected ')' after arguments in function call", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected ')' after arguments in function call", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-        HANDLE_ERROR("Expected ';' at the end of function call", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected ';' at the end of function call", SYNTAX_ERROR);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -1054,7 +1051,7 @@ void parseFuncCall() {
 void parseDiscardCall() {
     // TODO: IMPLEMENT: EXPR = FUNC_CALL
     if (!isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
-        HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR);
     }
 
     ASTNode *underscoreNode = initASTNode();
@@ -1075,7 +1072,7 @@ void parseDiscardCall() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
-        HANDLE_ERROR("Expected '=' after '_' in discard call", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '=' after '_' in discard call", SYNTAX_ERROR);
     }
     initTokenBuffer();
 
@@ -1090,13 +1087,13 @@ void parseDiscardCall() {
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_DOT) {
-            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected '.' after ifj", SYNTAX_ERROR);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
 
         if (!isTokenBuiltInFunction(currentToken)) {
-            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR);
         }
         decider = copyToken(currentToken);
 
@@ -1104,7 +1101,7 @@ void parseDiscardCall() {
         getNextToken(currentToken);
 
         if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR);
         }
         parseFuncCall();
         currentParent = underscoreNode;
@@ -1146,7 +1143,7 @@ void parseDiscardCall() {
             parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
 
             if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-                HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
+                HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR);
             }
 
             addLeftNode(ast, currentParent, valueNode);
@@ -1167,7 +1164,7 @@ void parseDiscardCall() {
 
         parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR);
         }
 
         addLeftNode(ast, currentParent, valueNode);

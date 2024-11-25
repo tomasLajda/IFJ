@@ -70,7 +70,7 @@ void freeAST(AST *ast) {
 
 void addLeftNode(AST *ast, ASTNode *parent, ASTNode *node) {
     if (ast == NULL || parent == NULL || node == NULL) {
-        HANDLE_ERROR("NULL pointer passed to addLeftNode", INTERNAL_ERROR, NULL);
+        HANDLE_ERROR("NULL pointer passed to addLeftNode", INTERNAL_ERROR);
     }
 
     if (ast->root == NULL) {
@@ -83,13 +83,13 @@ void addLeftNode(AST *ast, ASTNode *parent, ASTNode *node) {
         parent->left = node;
         node->parent = parent;
     } else {
-        HANDLE_ERROR("Left child node is already occupied", INTERNAL_ERROR, NULL);
+        HANDLE_ERROR("Left child node is already occupied", INTERNAL_ERROR);
     }
 }
 
 void addRightNode(AST *ast, ASTNode *parent, ASTNode *node) {
     if (ast == NULL || parent == NULL || node == NULL) {
-        HANDLE_ERROR("NULL pointer passed to addRightNode", INTERNAL_ERROR, NULL);
+        HANDLE_ERROR("NULL pointer passed to addRightNode", INTERNAL_ERROR);
     }
 
     if (ast->root == NULL) {
@@ -102,7 +102,7 @@ void addRightNode(AST *ast, ASTNode *parent, ASTNode *node) {
         parent->right = node;
         node->parent = parent;
     } else {
-        HANDLE_ERROR("Right child node is already occupied", INTERNAL_ERROR, NULL);
+        HANDLE_ERROR("Right child node is already occupied", INTERNAL_ERROR);
     }
 }
 
