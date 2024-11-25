@@ -60,7 +60,7 @@ int generateCode(FILE *outputFile, AST *ast) {
     generateCodeHeader();
 
     // Traverse all nodes to the right of the root - functions and generate code for them
-    ASTNode *currentNode = ast->root;
+    ASTNode *currentNode = ast->root->right;
     // currentnode - pub
     // currentnode->left - fn
     // currentnode->left->left - function name
