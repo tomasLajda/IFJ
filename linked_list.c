@@ -18,10 +18,6 @@ void listDispose(List *list) {
     while (list->firstElement != NULL) {
         ListElementPtr temp = list->firstElement->nextElement;
 
-        if (list->firstElement->data.params != NULL) {
-            listDispose(list->firstElement->data.params);
-        }
-
         free(list->firstElement);
 
         list->firstElement = temp;
@@ -64,10 +60,6 @@ void listDeleteFirst(List *list) {
 
     ListElementPtr temp = list->firstElement->nextElement;
 
-    if (list->firstElement->data.params != NULL) {
-        listDispose(list->firstElement->data.params);
-    }
-
     free(list->firstElement);
 
     list->firstElement = temp;
@@ -79,10 +71,6 @@ void listDeleteAfter(List *list) {
         return;
 
     ListElementPtr temp = list->activeElement->nextElement->nextElement;
-
-    if (list->activeElement->nextElement->data.params != NULL) {
-        listDispose(list->activeElement->nextElement->data.params);
-    }
 
     free(list->activeElement->nextElement);
 
