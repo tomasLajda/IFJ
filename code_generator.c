@@ -504,9 +504,6 @@ int generateParam(ASTNode *node, int paramID) {
     }
     char *paramName = node->token->attribute.string;
 
-    ADD_TO_BUFFER("DEFVAR LF@");
-    ADD_TO_BUFFER(paramName);
-    ADD_TO_BUFFER("\n");
     ADD_TO_BUFFER("MOVE LF@");
     ADD_TO_BUFFER(paramName);
     ADD_TO_BUFFER(" LF@%%arg");
