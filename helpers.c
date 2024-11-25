@@ -684,11 +684,11 @@ ASTNode *mockASTProgramStructure(int type) {
         exprTreeRoot8->left->left->parent = exprTreeRoot8->left;
         exprTreeRoot8->left->right = initASTNode();
         exprTreeRoot8->left->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot8->left->right->token->attribute.integer = 12;
+        exprTreeRoot8->left->right->token->attribute.integer = 0;
         exprTreeRoot8->left->right->parent = exprTreeRoot8->left;
         exprTreeRoot8->right = initASTNode();
         exprTreeRoot8->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot8->right->token->attribute.integer = 7;
+        exprTreeRoot8->right->token->attribute.integer = 0;
         exprTreeRoot8->right->parent = exprTreeRoot8;
         root->left->right->exprTree = exprTree8;
 
