@@ -989,8 +989,6 @@ void parseIf() {
     parseElse();
     isFirstStatement = false;
     currentParent = ifNode;
-    printf("CURERNTPARNT %s %s\n", TokenTypeToString(currentParent->token->type),
-           TokenKeywordToString(currentParent->token->attribute.keyword));
 }
 
 // ELSE ::= token_else token_Ocb STATEMENTS token_Ccb | ε
