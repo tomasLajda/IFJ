@@ -324,9 +324,7 @@ int getNextToken(Token *token) {
             } else {
                 ungetc(current, sourceFile);
                 token->attribute.decimal = atof(dynamicStringToCString(&buffer));
-                HANDLE_ERROR("Invalid character after float. (Expected number or exponent).",
-                             LEXICAL_ERROR, LEXICAL_ERROR);
-                return freeAndReturn(&buffer, LEXICAL_ERROR);
+                return freeAndReturn(&buffer, TOKEN_OK);
             }
             break;
 
