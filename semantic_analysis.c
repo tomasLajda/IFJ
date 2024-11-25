@@ -146,7 +146,7 @@ bool checkFunctionDefined(SymbolTable *table, const char *key);
  * @param key The keyword representing the function.
  * @return True if the function is a built-in function, false otherwise.
  */
-bool checkBuildInFunction(Keyword key);
+bool checkBuiltInFunction(Keyword key);
 
 /**
  * @brief Converts a nullable type to its non-nullable counterpart.
@@ -237,7 +237,7 @@ Operand expressionAnalysis(ASTNode *node);
  * @param node The AST node representing the built-in function call.
  * @return The operand representing the result of the built-in function call.
  */
-Operand buildInFunctionAnalysis(ASTNode *node);
+Operand builtInFunctionAnalysis(ASTNode *node);
 
 /**
  * @brief Creates a new unique variable name.
@@ -313,7 +313,7 @@ Operand functionCallAnalysis(ASTNode *node);
  * @param node The AST node representing the built-in function call.
  * @return The operand representing the result of the built-in function call.
  */
-Operand buildInFunctionAnalysis(ASTNode *node);
+Operand builtInFunctionAnalysis(ASTNode *node);
 
 /**
  * @brief Reduces an expression to a single operand.
@@ -555,7 +555,7 @@ bool checkFunctionDefined(SymbolTable *table, const char *key) {
     return symbol != NULL && symbol->function;
 }
 
-bool checkBuildInFunction(Keyword key) {
+bool checkBuiltInFunction(Keyword key) {
     return key == KEYWORD_STRING || key == KEYWORD_LENGTH || key == KEYWORD_CONCAT ||
            key == KEYWORD_SUBSTRING || key == KEYWORD_STRCMP || key == KEYWORD_ORD ||
            key == KEYWORD_CHR || key == KEYWORD_WRITE || key == KEYWORD_READSTR ||
@@ -1097,7 +1097,7 @@ Operand functionCallAnalysis(ASTNode *node) {
     }
 
     if (node->token->type == TOKEN_TYPE_KEYWORD) {
-        return buildInFunctionAnalysis(node);
+        return builtInFunctionAnalysis(node);
     }
 
     char *functionKey = node->token->attribute.string;
@@ -1153,7 +1153,7 @@ Operand functionCallAnalysis(ASTNode *node) {
     return functionReturn;
 }
 
-Operand buildInFunctionAnalysis(ASTNode *node) {
+Operand builtInFunctionAnalysis(ASTNode *node) {
     DataType parameterType[] = {TYPE_VOID, TYPE_VOID, TYPE_VOID, TYPE_VOID};
     DataType returnType = TYPE_VOID;
     Keyword key = node->token->attribute.keyword;
@@ -1261,7 +1261,7 @@ Operand buildInFunctionAnalysis(ASTNode *node) {
         }
 
         if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime &&
-            key != KEYWORD_STRING) {
+            key != KEYWORD_STRING && key != KEYWORD_WRITE) {
             HANDLE_ERROR("Cannot assign compile time string to parameter", PARAMETER_ERROR);
         }
 
