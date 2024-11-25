@@ -12,11 +12,7 @@ Token *currentToken = NULL;
 AST *ast = NULL;
 
 int main() {
-    sourceFile = fopen("test_input.txt", "r");
-    if (sourceFile == NULL) {
-        fprintf(stderr, "Error: Cannot open input file.\n");
-        return INTERNAL_ERROR;
-    }
+    sourceFile = stdin;
 
     currentToken = malloc(sizeof(Token));
     if (currentToken == NULL) {
@@ -53,8 +49,7 @@ int main() {
     // printf("--------------------------------\n");
     // printf("Finished scanning tokens\n");
 
-    int parseResult = parse();
-    printf("\nRESULT: %d\n", parseResult);
+    parse();
 
     semanticAnalysis();
 
