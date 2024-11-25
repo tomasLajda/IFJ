@@ -125,7 +125,9 @@ void parseProlog() {
 void parseFuncDefs() {
     if (isTokenKeyword(currentToken, KEYWORD_PUB)) {
         parseFuncDef();
-        currentParent = mainParent->parent->parent;
+        if (currentParent->parent->parent != NULL) {
+            currentParent = mainParent->parent->parent;
+        }
         parseFuncDefs();
     }
 }
@@ -187,7 +189,6 @@ void parseFuncDef() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
     parseFuncType();
 }
 
@@ -234,11 +235,6 @@ void parseVoidFunc() {
 
     mainParent = mainParent->left;
     currentParent = mainParent;
-    // displayEntireAST(ast);
-    // printf("Main parent: %s %s\n", getTokenTypeName(mainParent->token->type),
-    //        TokenKeywordToString(mainParent->token->attribute.keyword));
-    // printf("Current parent: %s %s\n", getTokenTypeName(currentParent->token->type),
-    //        TokenKeywordToString(currentParent->token->attribute.keyword));
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -300,25 +296,11 @@ void parseReturn() {
     ASTNode *returnNode = initASTNode();
     printTokenInfo(currentToken);
     returnNode->token = copyToken(currentToken);
-
     if (currentParent && currentParent->token->type == TOKEN_TYPE_EXPR &&
         currentParent->left == NULL && isFirstStatement == true) {
         addLeftNode(ast, currentParent, returnNode);
         isFirstStatement = false;
     } else {
-        // printf("Main parent: %s, %s\n", getTokenTypeName(mainParent->token->type),
-        //        TokenKeywordToString(mainParent->token->attribute.keyword));
-        // printf("Current parent: %s, %s\n", getTokenTypeName(currentParent->token->type),
-        //        TokenKeywordToString(currentParent->token->attribute.keyword));
-        // printf("Current parent left: %s, %s, %s\n",
-        //        getTokenTypeName(currentParent->left->token->type),
-        //        TokenTypeToString(currentParent->left->token->type),
-        //        currentParent->left->token->attribute.string);
-        // printf("Current parent right: %s, %s, %s\n",
-        //        getTokenTypeName(currentParent->right->token->type),
-        //        TokenTypeToString(currentParent->right->token->type),
-        //        currentParent->right->token->attribute.string);
-        displayEntireAST(ast);
         addRightNode(ast, currentParent, returnNode);
     }
     currentParent = returnNode;
@@ -454,9 +436,7 @@ void parseStatements() {
 void parseStatement() {
     parsingReturnType = false;
     argCounter = 0;
-    // printf("CURRENT PARENT: %s %s\n", TokenTypeToString(currentParent->token->type),
-    //        TokenKeywordToString(currentParent->token->attribute.keyword));
-
+    
     switch (currentToken->type) {
     case TOKEN_TYPE_KEYWORD:
         if (isTokenKeyword(currentToken, KEYWORD_VAR) ||
@@ -508,18 +488,9 @@ void parseStatement() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
 
-        displayEntireAST(ast);
-
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
-            printf("CURRENT PARENT before funccall: %s %s\n",
-                   TokenTypeToString(currentParent->token->type),
-                   TokenKeywordToString(currentParent->token->attribute.keyword));
-
             parseFuncCall();
         } else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
-            printf("CURRENT PARENT before : %s %s\n", TokenTypeToString(currentParent->token->type),
-                   TokenKeywordToString(currentParent->token->attribute.keyword));
-
             parseVarAss();
         } else {
             printTokenInfo(currentToken);
@@ -554,7 +525,6 @@ void parseVarDef() {
         addRightNode(ast, currentParent, varTypeNode);
     }
     currentParent = varTypeNode;
-    mainParent = varTypeNode;
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -564,6 +534,7 @@ void parseVarDef() {
     }
 
     ASTNode *varIdNode = initASTNode();
+    varIdNode->isAssignment = true;
     varIdNode->token = copyToken(currentToken);
     addLeftNode(ast, currentParent, varIdNode);
     currentParent = varIdNode;
@@ -580,7 +551,6 @@ void parseVarDef() {
     getNextToken(currentToken);
 
     initTokenBuffer();
-
     tokenBuffer.first = copyToken(currentToken);
 
     // BUILT-IN FUNCTION
@@ -612,9 +582,9 @@ void parseVarDef() {
     else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         ASTNode *funcIdNode = initASTNode();
         funcIdNode->token = copyToken(currentToken);
-        funcIdNode->isAssignment = false;
+        funcIdNode->isAssignment = true; // todo study
 
-        currentParent = funcIdNode;
+        displayEntireAST(ast);
 
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -627,26 +597,35 @@ void parseVarDef() {
             exprTree->root = funcIdNode;
             ASTNode *valueNode = initASTNode();
             valueNode->token = createToken(TOKEN_TYPE_EXPR);
-
-            mainParent->left->right = valueNode;
-            mainParent->left->right->exprTree = exprTree;
+            valueNode->exprTree = exprTree;
             exprTree->isExpression = false;
 
+            addRightNode(ast, currentParent, valueNode);
+            currentParent = funcIdNode;
+
             parseFuncCall();
-            currentParent = varIdNode;
+            currentParent = varTypeNode;
         }
         // VARIABLE
         else {
             AST *exprTree = initAST();
             ASTNode *exprNode = initASTNode();
             exprTree->root = exprNode;
-            parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
             exprNode->token = createToken(TOKEN_TYPE_EXPR);
+            exprNode->exprTree = exprTree;
+            exprTree->isExpression = true;
 
-            currentParent->exprTree = exprTree;
-            currentParent->exprTree->isExpression = true;
+            parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
 
-            addLeftNode(ast, currentParent, exprNode);
+            if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+                HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR);
+            }
+
+            addRightNode(ast, currentParent, exprNode);
+
+            currentParent = varTypeNode;
+
+            printTokenInfo(currentToken);
             getNextToken(currentToken);
         }
     }
@@ -655,15 +634,19 @@ void parseVarDef() {
         AST *exprTree = initAST();
         ASTNode *exprNode = initASTNode();
         exprTree->root = exprNode;
-        parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
+        exprNode->token = createToken(TOKEN_TYPE_EXPR);
+        exprNode->exprTree = exprTree;
+        exprTree->isExpression = true;
 
-        currentParent->exprTree = exprTree;
-        currentParent->exprTree->isExpression = true;
+        parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR,
                          currentToken);
         }
+
+        addRightNode(ast, currentParent, exprNode);
+        currentParent = varTypeNode;
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     } else {
@@ -697,16 +680,7 @@ void parseVarAss() {
     else {
         addRightNode(ast, currentParent, varIdNode);
     }
-    displayEntireAST(ast);
-    printf("CURRENT PARENT after varass: %s %s\n", TokenTypeToString(currentParent->token->type),
-           TokenKeywordToString(currentParent->token->attribute.keyword));
-
     currentParent = varIdNode;
-    printf("CURRENT PARENT after varass2: %s %s %s\n",
-           TokenTypeToString(currentParent->token->type),
-           TokenKeywordToString(currentParent->token->attribute.keyword),
-           currentParent->token->attribute.string);
-
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
         HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR);
     }
@@ -751,7 +725,7 @@ void parseVarAss() {
 
         tokenBuffer.second = copyToken(currentToken);
 
-        // FUNC_CALL - NEEDS FIX
+        // FUNC_CALL
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
             AST *exprTree = initAST();
             exprTree->root = funcIdNode;
@@ -782,7 +756,6 @@ void parseVarAss() {
             }
 
             addLeftNode(ast, currentParent, exprNode);
-            displayEntireAST(ast);
 
             printTokenInfo(currentToken);
             getNextToken(currentToken);
@@ -1025,13 +998,7 @@ void parseFuncCall() {
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-    printf("in funccall\n");
-    displayEntireAST(ast);
-    printf("current parent before args: %s %s\n", TokenTypeToString(currentParent->token->type),
-           currentParent->token->attribute.string);
     parseArgs();
-    printf("current parent after args: %s %s\n", TokenTypeToString(currentParent->token->type),
-           currentParent->token->attribute.string);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         printTokenInfo(currentToken);
@@ -1081,7 +1048,7 @@ void parseDiscardCall() {
 
     tokenBuffer.first = copyToken(currentToken);
 
-    // BUILT-IN FUNCTION
+    // BUILT-IN FUNCTION // TODO: semanticky error - pozriet ci to je kw
     if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -1093,7 +1060,7 @@ void parseDiscardCall() {
         getNextToken(currentToken);
 
         if (!isTokenBuiltInFunction(currentToken)) {
-            HANDLE_ERROR("Expected built-in function after '.'", SYNTAX_ERROR);
+            HANDLE_ERROR("Expected built-in function after '.'", UNDEFINED_ERROR);
         }
         decider = copyToken(currentToken);
 
@@ -1147,7 +1114,6 @@ void parseDiscardCall() {
             }
 
             addLeftNode(ast, currentParent, valueNode);
-            displayEntireAST(ast);
 
             printTokenInfo(currentToken);
             getNextToken(currentToken);
@@ -1176,7 +1142,7 @@ void parseDiscardCall() {
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε
 void parseArgs() {
-    printf("in args\n");
+
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         return;
     }
@@ -1194,18 +1160,8 @@ void parseArgs() {
 
     parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
     if (argCounter == 0) {
-
-        printf("adding left child to parent: %s %s\n",
-               TokenTypeToString(currentParent->token->type),
-               TokenKeywordToString(currentParent->token->attribute.keyword));
-
         addLeftNode(ast, currentParent, argNode);
     } else {
-
-        printf("adding right child to parent: %s %s\n",
-               TokenTypeToString(currentParent->token->type),
-               TokenKeywordToString(currentParent->token->attribute.keyword));
-
         addRightNode(ast, currentParent, argNode);
     }
     currentParent = argNode;
