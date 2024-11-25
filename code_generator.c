@@ -115,12 +115,14 @@ void generateBuiltInFunctions() {
 void generateFuncBody(ASTNode *node) {
 
     // DEFVAR for all variables
-    ASTNode *currentVarible = node->exprTree->root;
-    while (currentVarible != NULL) {
-        ADD_TO_BUFFER("DEFVAR LF@");
-        ADD_TO_BUFFER(currentVarible->token->attribute.string);
-        ADD_TO_BUFFER("\n");
-        currentVarible = currentVarible->right;
+    if (node->exprTree != NULL) {
+        ASTNode *currentVarible = node->exprTree->root;
+        while (currentVarible != NULL && currentVarible->token->type == TOKEN_TYPE_IDENTIFIER) {
+            ADD_TO_BUFFER("DEFVAR LF@");
+            ADD_TO_BUFFER(currentVarible->token->attribute.string);
+            ADD_TO_BUFFER("\n");
+            currentVarible = currentVarible->right;
+        }
     }
 
     // FUNCTION PARAMETERS
