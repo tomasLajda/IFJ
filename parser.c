@@ -3,6 +3,7 @@
  * @brief Implementation file for parser
  *
  * @author Martin Valapka - xvalapm00
+ * @author Matúš Csirik - xcsirim00
  */
 
 #include "parser.h"
@@ -42,10 +43,9 @@ void goBack(ASTNode *startNode) {
     ASTNode *currentNode = startNode;
 
     while (currentNode != NULL) {
-        if ((currentNode != startNode) &&
-            (isTokenKeyword(currentNode->token, KEYWORD_IF) ||
-             isTokenKeyword(currentNode->token, KEYWORD_WHILE) ||
-             isTokenKeyword(currentNode->token, KEYWORD_PUB))) {
+        if ((currentNode != startNode) && (isTokenKeyword(currentNode->token, KEYWORD_IF) ||
+                                           isTokenKeyword(currentNode->token, KEYWORD_WHILE) ||
+                                           isTokenKeyword(currentNode->token, KEYWORD_PUB))) {
             currentParent = currentNode;
             mainParent = currentNode;
             break;
@@ -60,21 +60,21 @@ bool isTokenKeyword(Token *token, Keyword keyword) {
 
 bool isTokenBuiltInFunction(Token *token) {
     switch (token->attribute.keyword) {
-        case KEYWORD_READSTR:
-        case KEYWORD_READI32:
-        case KEYWORD_READF64:
-        case KEYWORD_STRING:
-        case KEYWORD_LENGTH:
-        case KEYWORD_CHR:
-        case KEYWORD_I2F:
-        case KEYWORD_F2I:
-        case KEYWORD_CONCAT:
-        case KEYWORD_STRCMP:
-        case KEYWORD_ORD:
-        case KEYWORD_SUBSTRING:
-            return true;
-        default:
-            return false;
+    case KEYWORD_READSTR:
+    case KEYWORD_READI32:
+    case KEYWORD_READF64:
+    case KEYWORD_STRING:
+    case KEYWORD_LENGTH:
+    case KEYWORD_CHR:
+    case KEYWORD_I2F:
+    case KEYWORD_F2I:
+    case KEYWORD_CONCAT:
+    case KEYWORD_STRCMP:
+    case KEYWORD_ORD:
+    case KEYWORD_SUBSTRING:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -125,6 +125,7 @@ void parseProlog() {
 void parseFuncDefs() {
     if (isTokenKeyword(currentToken, KEYWORD_PUB)) {
         parseFuncDef();
+        currentParent = mainParent->parent->parent;
         parseFuncDefs();
     }
 }
@@ -161,7 +162,8 @@ void parseFuncDef() {
     if (currentToken->type != TOKEN_TYPE_IDENTIFIER &&
         !isTokenKeyword(currentToken, KEYWORD_MAIN)) {
         printTokenInfo(currentToken);
-        HANDLE_ERROR("Expected function identifier in function definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected function identifier in function definition", SYNTAX_ERROR,
+                     currentToken);
     }
 
     ASTNode *funcIdNode = initASTNode();
@@ -194,8 +196,7 @@ void parseFuncType() {
     if (isTokenKeyword(currentToken, KEYWORD_VOID)) {
         voidFuncType = true;
         parseVoidFunc();
-    } 
-    else {
+    } else {
         voidFuncType = false;
         parseFunc();
     }
@@ -233,6 +234,11 @@ void parseVoidFunc() {
 
     mainParent = mainParent->left;
     currentParent = mainParent;
+    // displayEntireAST(ast);
+    // printf("Main parent: %s %s\n", getTokenTypeName(mainParent->token->type),
+    //        TokenKeywordToString(mainParent->token->attribute.keyword));
+    // printf("Current parent: %s %s\n", getTokenTypeName(currentParent->token->type),
+    //        TokenKeywordToString(currentParent->token->attribute.keyword));
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -264,20 +270,18 @@ void parseType() {
             ASTNode *typeNode = initASTNode();
             typeNode->token = copyToken(currentToken);
             addLeftNode(ast, currentParent, typeNode);
-        } 
-        else {
+        } else {
             ASTNode *returnTypeNode = initASTNode();
             returnTypeNode->token = copyToken(currentToken);
             addRightNode(ast, mainParent, returnTypeNode);
-            
+
             mainParent = mainParent->left;
             currentParent = mainParent;
         }
 
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } 
-    else {
+    } else {
         printTokenInfo(currentToken);
         HANDLE_ERROR("Expected type in function definition", SYNTAX_ERROR, currentToken);
     }
@@ -301,8 +305,20 @@ void parseReturn() {
         currentParent->left == NULL && isFirstStatement == true) {
         addLeftNode(ast, currentParent, returnNode);
         isFirstStatement = false;
-    } 
-    else {
+    } else {
+        // printf("Main parent: %s, %s\n", getTokenTypeName(mainParent->token->type),
+        //        TokenKeywordToString(mainParent->token->attribute.keyword));
+        // printf("Current parent: %s, %s\n", getTokenTypeName(currentParent->token->type),
+        //        TokenKeywordToString(currentParent->token->attribute.keyword));
+        // printf("Current parent left: %s, %s, %s\n",
+        //        getTokenTypeName(currentParent->left->token->type),
+        //        TokenTypeToString(currentParent->left->token->type),
+        //        currentParent->left->token->attribute.string);
+        // printf("Current parent right: %s, %s, %s\n",
+        //        getTokenTypeName(currentParent->right->token->type),
+        //        TokenTypeToString(currentParent->right->token->type),
+        //        currentParent->right->token->attribute.string);
+        displayEntireAST(ast);
         addRightNode(ast, currentParent, returnNode);
     }
     currentParent = returnNode;
@@ -313,12 +329,13 @@ void parseReturn() {
     // FUNCTION RETURN TYPE IS VOID
     if (voidFuncType) {
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR,
+                         currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
     }
-    // FUNCTION RETURN TYPE IS NOT VOID 
+    // FUNCTION RETURN TYPE IS NOT VOID
     else {
         initTokenBuffer();
 
@@ -333,7 +350,8 @@ void parseReturn() {
 
             // FUNC_CALL - MAYBE IN THE FUTURE
             if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
-                HANDLE_ERROR("Unexpected '(' after identifier in return expression", SYNTAX_ERROR, currentToken);
+                HANDLE_ERROR("Unexpected '(' after identifier in return expression", SYNTAX_ERROR,
+                             currentToken);
             }
 
             // VARIABLE
@@ -341,15 +359,15 @@ void parseReturn() {
             ASTNode *exprNode = initASTNode();
             exprTree->root = exprNode;
             parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
-            
+
             exprNode->exprTree = exprTree;
             exprNode->exprTree->isExpression = true;
             currentParent->exprTree = exprTree;
 
             goBack(currentParent);
-            
+
         }
-        // NUMERICAL VALUE 
+        // NUMERICAL VALUE
         else {
             AST *exprTree = initAST();
             ASTNode *exprNode = initASTNode();
@@ -388,8 +406,7 @@ void parseParams() {
 
     if (paramCounter == 1) {
         addLeftNode(ast, currentParent, paramIdNode);
-    } 
-    else {
+    } else {
         addRightNode(ast, currentParent, paramIdNode);
     }
     currentParent = paramIdNode;
@@ -423,11 +440,12 @@ void parseStatements() {
     if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
         parseReturn();
         if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
-            HANDLE_ERROR("Unreachable code after return statement", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Unreachable code after return statement", SYNTAX_ERROR,
+                         currentToken); // correct error?
         }
         return;
     }
-    
+
     parseStatement();
     parseStatements();
 }
@@ -436,55 +454,53 @@ void parseStatements() {
 void parseStatement() {
     parsingReturnType = false;
     argCounter = 0;
+    // printf("CURRENT PARENT: %s %s\n", TokenTypeToString(currentParent->token->type),
+    //        TokenKeywordToString(currentParent->token->attribute.keyword));
 
     switch (currentToken->type) {
-        case TOKEN_TYPE_KEYWORD:
-            if (isTokenKeyword(currentToken, KEYWORD_VAR) ||
-                isTokenKeyword(currentToken, KEYWORD_CONST)) {
-                parseVarDef();
-            } 
-            else if (isTokenKeyword(currentToken, KEYWORD_IF)) {
-                parseIf();
-            } 
-            else if (isTokenKeyword(currentToken, KEYWORD_WHILE)) {
-                parseWhile();
-            } 
-            else if (isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
-                parseDiscardCall();
-            } 
-            else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
-                parseReturn();
+    case TOKEN_TYPE_KEYWORD:
+        if (isTokenKeyword(currentToken, KEYWORD_VAR) ||
+            isTokenKeyword(currentToken, KEYWORD_CONST)) {
+            parseVarDef();
+        } else if (isTokenKeyword(currentToken, KEYWORD_IF)) {
+            parseIf();
+        } else if (isTokenKeyword(currentToken, KEYWORD_WHILE)) {
+            parseWhile();
+        } else if (isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
+            parseDiscardCall();
+        } else if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
+            parseReturn();
+        }
+        // ifj.write();
+        else if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
+
+            if (currentToken->type != TOKEN_TYPE_DOT) {
+                HANDLE_ERROR("Unexpected token in built-in function", SYNTAX_ERROR, currentToken);
             }
-            // ifj.write(); 
-            else if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
-                printTokenInfo(currentToken);
-                getNextToken(currentToken);
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
 
-                if (currentToken->type != TOKEN_TYPE_DOT) {
-                    HANDLE_ERROR("Unexpected token in built-in function", SYNTAX_ERROR, currentToken);
-                }
-                printTokenInfo(currentToken);
-                getNextToken(currentToken);
-
-                if (!isTokenKeyword(currentToken, KEYWORD_WRITE)) {
-                    HANDLE_ERROR("Unexpected built-in function in function call", SYNTAX_ERROR,
-                                 currentToken);
-                }
-                decider = copyToken(currentToken);
-
-                printTokenInfo(currentToken);
-                getNextToken(currentToken);
-
-                if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
-                    HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
-                }
-                parseFuncCall();
-            } 
-            else {
-                printTokenInfo(currentToken);
-                HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
+            if (!isTokenKeyword(currentToken, KEYWORD_WRITE)) {
+                HANDLE_ERROR("Unexpected built-in function in function call", SYNTAX_ERROR,
+                             currentToken);
             }
-            break;
+            decider = copyToken(currentToken);
+
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
+
+            if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
+                HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
+            }
+            parseFuncCall();
+
+        } else {
+            printTokenInfo(currentToken);
+            HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR, currentToken);
+        }
+        break;
 
     case TOKEN_TYPE_IDENTIFIER:
         decider = copyToken(currentToken);
@@ -492,13 +508,20 @@ void parseStatement() {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
 
+        displayEntireAST(ast);
+
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
+            printf("CURRENT PARENT before funccall: %s %s\n",
+                   TokenTypeToString(currentParent->token->type),
+                   TokenKeywordToString(currentParent->token->attribute.keyword));
+
             parseFuncCall();
-        } 
-        else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
+        } else if (currentToken->type == TOKEN_TYPE_ASSIGN) {
+            printf("CURRENT PARENT before : %s %s\n", TokenTypeToString(currentParent->token->type),
+                   TokenKeywordToString(currentParent->token->attribute.keyword));
+
             parseVarAss();
-        } 
-        else {
+        } else {
             printTokenInfo(currentToken);
             HANDLE_ERROR("Expected '(' or '=' after identifier", SYNTAX_ERROR, currentToken);
         }
@@ -514,7 +537,8 @@ void parseStatement() {
 void parseVarDef() {
     if (!isTokenKeyword(currentToken, KEYWORD_VAR) &&
         !isTokenKeyword(currentToken, KEYWORD_CONST)) {
-        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected 'var' or 'const' in variable definition", SYNTAX_ERROR,
+                     currentToken);
     }
 
     ASTNode *varTypeNode = initASTNode();
@@ -582,7 +606,8 @@ void parseVarDef() {
             HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
         }
         parseFuncCall();
-    } 
+        currentParent = varIdNode;
+    }
     // VARIABLE || FUNC_CALL
     else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         ASTNode *funcIdNode = initASTNode();
@@ -606,12 +631,10 @@ void parseVarDef() {
             mainParent->left->right = valueNode;
             mainParent->left->right->exprTree = exprTree;
             exprTree->isExpression = false;
-            currentParent = funcIdNode;
 
             parseFuncCall();
-
-            currentParent = mainParent;
-        } 
+            currentParent = varIdNode;
+        }
         // VARIABLE
         else {
             AST *exprTree = initAST();
@@ -627,7 +650,7 @@ void parseVarDef() {
             getNextToken(currentToken);
         }
     }
-    // NUMERICAL VALUE 
+    // NUMERICAL VALUE
     else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
         ASTNode *exprNode = initASTNode();
@@ -638,12 +661,12 @@ void parseVarDef() {
         currentParent->exprTree->isExpression = true;
 
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR, currentToken);
+            HANDLE_ERROR("Expected ';' at the end of variable definition", SYNTAX_ERROR,
+                         currentToken);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } 
-    else {
+    } else {
         HANDLE_ERROR("Unexpected token in variable definition", SYNTAX_ERROR, currentToken);
     }
 }
@@ -668,15 +691,24 @@ void parseVarAss() {
     if (isFirstStatement == true) {
         addLeftNode(ast, currentParent, varIdNode);
         isFirstStatement = false;
-    } 
-    // DEFAULT CASE 
+    }
+    // DEFAULT CASE
     else {
         addRightNode(ast, currentParent, varIdNode);
     }
+    displayEntireAST(ast);
+    printf("CURRENT PARENT after varass: %s %s\n", TokenTypeToString(currentParent->token->type),
+           TokenKeywordToString(currentParent->token->attribute.keyword));
+
     currentParent = varIdNode;
+    printf("CURRENT PARENT after varass2: %s %s %s\n",
+           TokenTypeToString(currentParent->token->type),
+           TokenKeywordToString(currentParent->token->attribute.keyword),
+           currentParent->token->attribute.string);
 
     if (currentToken->type != TOKEN_TYPE_ASSIGN) {
-        HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '=' after identifier in variable assignment", SYNTAX_ERROR,
+                     currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -707,7 +739,8 @@ void parseVarAss() {
             HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
         }
         parseFuncCall();
-    } 
+        currentParent = varIdNode;
+    }
     // VARIABLE || FUNC_CALL
     else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         ASTNode *funcIdNode = initASTNode();
@@ -724,50 +757,58 @@ void parseVarAss() {
             exprTree->root = funcIdNode;
             ASTNode *valueNode = initASTNode();
             valueNode->token = createToken(TOKEN_TYPE_EXPR);
-
-            mainParent->left = valueNode;
-            mainParent->left->exprTree = exprTree;
+            valueNode->exprTree = exprTree;
             exprTree->isExpression = false;
+
+            addLeftNode(ast, currentParent, valueNode);
             currentParent = funcIdNode;
 
             parseFuncCall();
-            currentParent = mainParent;
-        } 
+            currentParent = varIdNode;
+        }
         // VARIABLE
         else {
             AST *exprTree = initAST();
             ASTNode *exprNode = initASTNode();
             exprTree->root = exprNode;
+            exprNode->token = createToken(TOKEN_TYPE_EXPR);
+            exprNode->exprTree = exprTree;
+            exprTree->isExpression = true;
+
             parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
 
-            currentParent->exprTree = exprTree;
-            currentParent->exprTree->isExpression = true;
-            exprNode->token = createToken(TOKEN_TYPE_EXPR);
+            if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+                HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR,
+                             currentToken);
+            }
 
             addLeftNode(ast, currentParent, exprNode);
+            displayEntireAST(ast);
+
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
         }
-    } 
+    }
     // NUMERICAL VALUE
     else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
         ASTNode *exprNode = initASTNode();
         exprTree->root = exprNode;
-        parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
-
-        currentParent->exprTree = exprTree;
-        currentParent->exprTree->isExpression = true;
         exprNode->token = createToken(TOKEN_TYPE_EXPR);
+        exprNode->exprTree = exprTree;
+        exprTree->isExpression = true;
+
+        parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
+        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR,
+                         currentToken);
+        }
 
         addLeftNode(ast, currentParent, exprNode);
 
-        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            printTokenInfo(currentToken);
-            HANDLE_ERROR("Expected ';' at the end of variable assignment", SYNTAX_ERROR, currentToken);
-        }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
-    } 
-    else {
+    } else {
         HANDLE_ERROR("Unexpected token in variable assignment", SYNTAX_ERROR, currentToken);
     }
 }
@@ -781,11 +822,11 @@ void parseWhile() {
     ASTNode *whileNode = initASTNode();
     whileNode->token = copyToken(currentToken);
 
-    // FIRST STATEMENT IN IF
+    // FIRST STATEMENT IN WHILE
     if (isFirstStatement == true) {
         addLeftNode(ast, currentParent, whileNode);
         isFirstStatement = false;
-    } 
+    }
     // DEFAULT CASE
     else {
         addRightNode(ast, currentParent, whileNode);
@@ -825,6 +866,7 @@ void parseWhile() {
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
         HANDLE_ERROR("Expected '{' to start the body of while loop", SYNTAX_ERROR, currentToken);
     }
+    isFirstStatement = true;
     printTokenInfo(currentToken);
     getNextToken(currentToken);
 
@@ -879,7 +921,7 @@ void parseIf() {
     if (isFirstStatement == true) {
         addLeftNode(ast, currentParent, ifNode);
         isFirstStatement = false;
-    } 
+    }
     // DEFAULT CASE
     else {
         addRightNode(ast, currentParent, ifNode);
@@ -924,7 +966,6 @@ void parseIf() {
     getNextToken(currentToken);
 
     parseStatements();
-    isFirstStatement = false;
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of if statement", SYNTAX_ERROR, currentToken);
@@ -945,7 +986,8 @@ void parseElse() {
     getNextToken(currentToken);
 
     if (currentToken->type != TOKEN_TYPE_LEFT_CURLY_BR) {
-        HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR, currentToken);
+        HANDLE_ERROR("Expected '{' to start the body of else statement", SYNTAX_ERROR,
+                     currentToken);
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -957,6 +999,8 @@ void parseElse() {
     }
     printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    currentParent = currentParent->parent;
 }
 
 // FUNC_CALL ::= token_Orb ARGS token_Crb token_semicolon
@@ -964,10 +1008,33 @@ void parseFuncCall() {
     if (currentToken->type != TOKEN_TYPE_LEFT_BR) {
         HANDLE_ERROR("Expected '(' after function identifier", SYNTAX_ERROR, currentToken);
     }
+
+    ASTNode *funcCallNode = initASTNode();
+    funcCallNode->token = copyToken(decider);
+
+    // NOT FILLING AST
+    if (currentParent->parent != NULL) {
+        // FIRST STATEMENT IN IF
+        if (isFirstStatement == true) {
+            addLeftNode(ast, currentParent, funcCallNode);
+            isFirstStatement = false;
+        }
+        // DEFAULT CASE
+        else {
+            addRightNode(ast, currentParent, funcCallNode);
+        }
+        currentParent = funcCallNode;
+    }
+
     printTokenInfo(currentToken);
     getNextToken(currentToken);
-
+    printf("in funccall\n");
+    displayEntireAST(ast);
+    printf("current parent before args: %s %s\n", TokenTypeToString(currentParent->token->type),
+           currentParent->token->attribute.string);
     parseArgs();
+    printf("current parent after args: %s %s\n", TokenTypeToString(currentParent->token->type),
+           currentParent->token->attribute.string);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
         printTokenInfo(currentToken);
@@ -990,19 +1057,19 @@ void parseDiscardCall() {
         HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR, currentToken);
     }
 
-    ASTNode *discardNode = initASTNode();
-    discardNode->token = copyToken(currentToken);
+    ASTNode *underscoreNode = initASTNode();
+    underscoreNode->token = copyToken(currentToken);
 
     // FIRST STATEMENT IN IF
     if (isFirstStatement == true) {
-        addLeftNode(ast, currentParent, discardNode);
+        addLeftNode(ast, currentParent, underscoreNode);
         isFirstStatement = false;
-    } 
+    }
     // DEFAULT CASE
     else {
-        addRightNode(ast, currentParent, discardNode);
+        addRightNode(ast, currentParent, underscoreNode);
     }
-    currentParent = discardNode;
+    currentParent = underscoreNode;
 
     printTokenInfo(currentToken);
     getNextToken(currentToken);
@@ -1040,9 +1107,13 @@ void parseDiscardCall() {
             HANDLE_ERROR("Expected '(' after built-in function", SYNTAX_ERROR, currentToken);
         }
         parseFuncCall();
-    } 
+        currentParent = underscoreNode;
+    }
     // VARIABLE || FUNC_CALL
     else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
+        ASTNode *funcIdNode = initASTNode();
+        funcIdNode->token = copyToken(currentToken);
+
         printTokenInfo(currentToken);
         getNextToken(currentToken);
 
@@ -1050,39 +1121,65 @@ void parseDiscardCall() {
 
         // FUNC_CALL
         if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
+            AST *exprTree = initAST();
+            exprTree->root = funcIdNode;
+            ASTNode *valueNode = initASTNode();
+            valueNode->token = createToken(TOKEN_TYPE_EXPR);
+            valueNode->exprTree = exprTree;
+            exprTree->isExpression = false;
+
+            addLeftNode(ast, currentParent, valueNode);
+            currentParent = funcIdNode;
+
             parseFuncCall();
-        } 
+            currentParent = underscoreNode;
+        }
         // VARIABLE
         else {
             AST *exprTree = initAST();
-            ASTNode *exprNode = initASTNode();
-            exprTree->root = exprNode;
+            ASTNode *valueNode = initASTNode();
+            exprTree->root = valueNode;
+            valueNode->token = createToken(TOKEN_TYPE_EXPR);
+            valueNode->exprTree = exprTree;
+            exprTree->isExpression = true;
+
             parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
 
-            currentParent->exprTree = exprTree;
-            currentParent->exprTree->isExpression = true;
+            if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+                HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
+            }
+
+            addLeftNode(ast, currentParent, valueNode);
+            displayEntireAST(ast);
+
+            printTokenInfo(currentToken);
+            getNextToken(currentToken);
         }
-    } 
+    }
     // NUMERICAL VALUE
     else {
         AST *exprTree = initAST();
-        ASTNode *exprNode = initASTNode();
-        exprTree->root = exprNode;
+        ASTNode *valueNode = initASTNode();
+        exprTree->root = valueNode;
+        valueNode->token = createToken(TOKEN_TYPE_EXPR);
+        valueNode->exprTree = exprTree;
+        exprTree->isExpression = true;
+
         parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
+        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
+        }
 
-        currentParent->exprTree = exprTree;
-        currentParent->exprTree->isExpression = true;
-    }
+        addLeftNode(ast, currentParent, valueNode);
 
-    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-        HANDLE_ERROR("Expected ';' at the end of discard call", SYNTAX_ERROR, currentToken);
+        printTokenInfo(currentToken);
+        getNextToken(currentToken);
     }
-    printTokenInfo(currentToken);
-    getNextToken(currentToken);
 }
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε
 void parseArgs() {
+    printf("in args\n");
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         return;
     }
@@ -1099,11 +1196,19 @@ void parseArgs() {
     argNode->token = createToken(TOKEN_TYPE_EXPR);
 
     parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
-
     if (argCounter == 0) {
+
+        printf("adding left child to parent: %s %s\n",
+               TokenTypeToString(currentParent->token->type),
+               TokenKeywordToString(currentParent->token->attribute.keyword));
+
         addLeftNode(ast, currentParent, argNode);
-    } 
-    else {
+    } else {
+
+        printf("adding right child to parent: %s %s\n",
+               TokenTypeToString(currentParent->token->type),
+               TokenKeywordToString(currentParent->token->attribute.keyword));
+
         addRightNode(ast, currentParent, argNode);
     }
     currentParent = argNode;
