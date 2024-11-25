@@ -15,8 +15,8 @@ IFJ project
 #include "enums.h"
 
 typedef union {
-    int integer;
-    float decimal;
+    long long int integer;
+    double decimal;
     char *string;
     Keyword keyword;
 } TokenAttribute;
