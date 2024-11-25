@@ -140,7 +140,6 @@ void parseFuncDefs() {
 
         goToPub();
 
-        displayEntireAST(ast);
         parseFuncDefs();
     }
 }
@@ -1244,7 +1243,7 @@ int parse() {
 
     parseProg();
 
-    displayEntireAST(ast);
+    // displayEntireAST(ast);
     free(decider);
 
     return 0;
