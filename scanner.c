@@ -13,6 +13,7 @@ IFJ Project
 #include <stdlib.h>
 
 extern FILE *sourceFile; // Source file to be used as input for scanner
+int count = 0;
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
@@ -20,9 +21,6 @@ int freeAndReturn(DynamicString *string, int errorCode) {
 }
 
 int checkTypeValid(DynamicString *string, Token *token) {
-    // TODO: DELETE DEBUG
-    // printf("STRING: %s\n", dynamicStringToCString(string));
-
     if (dynamicStringCompare(string, "?i32")) {
         token->type = TOKEN_TYPE_KEYWORD;
         token->attribute.keyword = KEYWORD_I_32_NULL;
@@ -129,6 +127,7 @@ int getNextToken(Token *token) {
     while (true) {
 
         int current = getc(sourceFile);
+        count++;
 
         // TODO: delete debug
         // // DEBUG
@@ -531,4 +530,14 @@ int getNextToken(Token *token) {
             break;
         }
     }
+}
+
+void resetCharCount() { count = 0; }
+
+void ungetcCharCount() {
+    int c = 0;
+    while (count-- != 0) {
+        ungetc(c, sourceFile);
+    }
+    (void)c;
 }

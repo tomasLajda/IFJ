@@ -1,0 +1,8 @@
+const ifj = @import("ifj24.zig");
+
+pub fn main() void {
+    const abcdefgh = ifj.string("abcdefgh");
+    str2 = ifj.readstr();
+    const number = 15;
+    ifj.write(number, fd);
+}

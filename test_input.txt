@@ -1,0 +1,16 @@
+const ifj = @import("ifj24.zig");
+pub fn main() void {
+    if(1 == 2){
+        a = b;
+    } else {
+        if(3 == 4){
+            c = d;
+        } else {
+            while(5 == 6){
+                ahojki = nie;
+                ahoj = ano;
+            }
+        }
+    }
+    return;
+}

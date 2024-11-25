@@ -1,33 +1,64 @@
-#include <stdio.h>
-
-#include "ast.h"
-#include "code_generator.h"
-#include "helpers.h"
+#include "enums.h"
+#include "error_codes.h"
 #include "parser.h"
 #include "scanner.h"
 #include "semantic_analysis.h"
+#include "testing_utils.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-AST *ast;
-Token *currentToken;
 FILE *sourceFile;
+Token *currentToken = NULL;
+AST *ast = NULL;
 
 int main() {
+    sourceFile = fopen("test_input.txt", "r");
+    if (sourceFile == NULL) {
+        fprintf(stderr, "Error: Cannot open input file.\n");
+        return INTERNAL_ERROR;
+    }
+
     currentToken = malloc(sizeof(Token));
-    ast = initAST();
-    ASTNode *root = initASTNode();
-    ast->root = root;
-    sourceFile = stdin;
-    getNextToken(currentToken);
+    if (currentToken == NULL) {
+        fprintf(stderr, "Error: Could not allocate memory for currentToken.\n");
+        fclose(sourceFile);
+        return INTERNAL_ERROR;
+    }
 
-    parse();
+    int result = getNextToken(currentToken);
+    if (result != TOKEN_OK) {
+        fprintf(stderr, "Error: getNextToken returned %d\n", result);
+        free(currentToken);
+        fclose(sourceFile);
+        return result;
+    }
 
-    // displayEntireAST(ast);
+    // while (true) {
+    //     int result = getNextToken(currentToken);
+    //     if (result != TOKEN_OK) {
+    //         printTokenInfo(currentToken);
+    //         fprintf(stderr, "Error: getNextToken returned %d\n", result);
+    //         free(currentToken);
+    //         fclose(sourceFile);
+    //         return result;
+    //     }
 
-    semanticAnalysis(ast);
+    //     printTokenInfo(currentToken);
 
-    generateCode(stdout, ast);
+    //     if (currentToken->type == TOKEN_TYPE_EOF) {
+    //         break;
+    //     }
+    // }
 
-    displayEntireAST(ast);
+    // printf("--------------------------------\n");
+    // printf("Finished scanning tokens\n");
 
+    int parseResult = parse();
+    printf("\nRESULT: %d\n", parseResult);
+
+    semanticAnalysis();
+
+    free(currentToken);
+    fclose(sourceFile);
     return 0;
 }

@@ -6,48 +6,443 @@
  *
  */
 
-#include "semantic_analysis.h"
+#include <math.h>
+#include <stdio.h>
+
 #include "ast.h"
 #include "helpers.h"
+#include "semantic_analysis.h"
+
+#define EPSILON 1e-9
 
 extern AST *ast;
 AST *listOfVariables;
 Stack symbolTableStack;
 Symbol currentSymbol;
 
-bool isDoubleInteger(double number);
+/**
+ * @brief Checks if the given integer value is zero to prevent division by zero.
+ *
+ * This function is used to ensure that an integer value is not zero before performing
+ * a division operation, which would result in a runtime error.
+ *
+ * @param value The integer value to be checked.
+ */
+void checkDivisionByZeroInt(int value);
+
+/**
+ * @brief Checks if a double is an integer.
+ * @param number The double to check.
+ * @return True if the double is an integer, false otherwise.
+ */
+bool isFloatInteger(float number);
+
+/**
+ * @brief Checks if the operator is an equality operator.
+ * @param operator The operator to check.
+ * @return True if the operator is an equality operator, false otherwise.
+ */
 bool isEqualOperator(TokenType operator);
+
+/**
+ * @brief Checks if the operator is a relational operator.
+ * @param operator The operator to check.
+ * @return True if the operator is a relational operator, false otherwise.
+ */
 bool isRelationalOperator(TokenType operator);
+
+/**
+ * @brief Checks if the type is nullable.
+ * @param type The type to check.
+ * @return True if the type is nullable, false otherwise.
+ */
 bool isNullableType(DataType type);
+
+/**
+ * @brief Checks if a null value can be assigned to a variable.
+ * @param valueType The type of the value being assigned.
+ * @param varType The type of the variable.
+ * @return True if the null value can be assigned, false otherwise.
+ */
+bool checkNullAssignment(DataType valueType, DataType varType);
+
+/**
+ * @brief Checks if a variable is declared in the symbol table.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @return True if the variable is declared, false otherwise.
+ */
 bool checkDeclaration(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if the assignment type matches the variable type.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @param valueType The type of the value being assigned.
+ * @return True if the types match, false otherwise.
+ */
 bool checkAssignmentType(SymbolTable *table, const char *key, DataType valueType);
+
+/**
+ * @brief Gets the type of a variable from the symbol table.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @return The type of the variable.
+ */
 DataType getVariableType(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a variable is constant.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @return True if the variable is constant, false otherwise.
+ */
 bool checkVariableConstant(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a variable is known at compile time.
+ * @param table The symbol table to check.
+ * @param key The key of the variable.
+ * @return True if the variable is known at compile time, false otherwise.
+ */
 bool checkVariableCompileTime(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a function parameter matches the expected type.
+ * @param table The symbol table to check.
+ * @param key The key of the function.
+ * @param type The expected type of the parameter.
+ * @param parameterIndex The index of the parameter.
+ * @return True if the parameter matches the expected type, false otherwise.
+ */
 bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
                             unsigned parameterIndex);
-unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
-bool checkFunctionDefined(SymbolTable *table, const char *key);
-bool isConstruct(ASTNode *node);
-void jumpToPreviousConstruct(ASTNode **node);
-bool checkBuildInFunction(Keyword key);
-DataType convertNullableType(DataType type);
-void functionParameterAnalysis(ASTNode *node);
-void functionAnalysis(ASTNode *node);
-void statementAnalysis(ASTNode *node);
-void functionBodyAnalysis(ASTNode *node);
-void ifAnalysis(ASTNode *node);
-void whileAnalysis(ASTNode *node);
-void variableDefinitionAnalysis(ASTNode *node);
-void variableAssignmentAnalysis(ASTNode *node);
-void returnAnalysis(ASTNode *node);
-Operand functionCallAnalysis(ASTNode *node);
-Operand determineNextOperand(Operand left, Operand right, TokenType operator);
-Operand expressionAnalysis(ASTNode *node);
-void semanticAnalysis();
-Operand buildInFunctionAnalysis(ASTNode *node);
 
-bool isDoubleInteger(double number) { return number - (int)number > 0 ? false : true; }
+/**
+ * @brief Gets the number of parameters of a function.
+ * @param table The symbol table to check.
+ * @param key The key of the function.
+ * @return The number of parameters of the function.
+ */
+unsigned getFunctionParameterCount(SymbolTable *table, const char *key);
+
+/**
+ * @brief Gets the return type of the current function.
+ * @param table The symbol table to check.
+ * @return The return type of the current function.
+ */
+DataType getReturnType(SymbolTable *table);
+
+/**
+ * @brief Checks if a function is defined.
+ * @param table The symbol table to check.
+ * @param key The key of the function.
+ * @return True if the function is defined, false otherwise.
+ */
+bool checkFunctionDefined(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if a function is a built-in function.
+ * @param key The keyword representing the function.
+ * @return True if the function is a built-in function, false otherwise.
+ */
+bool checkBuiltInFunction(Keyword key);
+
+/**
+ * @brief Converts a nullable type to its non-nullable counterpart.
+ * @param type The nullable type to convert.
+ * @return The non-nullable counterpart of the type.
+ */
+DataType convertNullableType(DataType type);
+
+/**
+ * @brief Analyzes the parameters of a function.
+ * @param node The AST node representing the function parameters.
+ */
+void functionParameterAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a function definition.
+ * @param node The AST node representing the function definition.
+ */
+void functionAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a statement.
+ * @param node The AST node representing the statement.
+ */
+void statementAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes the body of a function.
+ * @param node The AST node representing the function body.
+ */
+void functionBodyAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes an if statement.
+ * @param node The AST node representing the if statement.
+ */
+void ifAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a while statement.
+ * @param node The AST node representing the while statement.
+ */
+void whileAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a variable definition.
+ * @param node The AST node representing the variable definition.
+ */
+void variableDefinitionAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a variable assignment.
+ * @param node The AST node representing the variable assignment.
+ */
+void variableAssignmentAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a return statement.
+ * @param node The AST node representing the return statement.
+ */
+void returnAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a function call.
+ * @param node The AST node representing the function call.
+ * @return The operand representing the result of the function call.
+ */
+Operand functionCallAnalysis(ASTNode *node);
+
+/**
+ * @brief Determines the next operand in an expression.
+ * @param left The left operand.
+ * @param right The right operand.
+ * @param operator The operator.
+ * @return The operand representing the result of the operation.
+ */
+Operand determineNextOperand(Operand left, Operand right, ASTNode *node);
+
+/**
+ * @brief Analyzes an expression.
+ * @param node The AST node representing the expression.
+ * @return The operand representing the result of the expression.
+ */
+Operand expressionAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a built-in function call.
+ * @param node The AST node representing the built-in function call.
+ * @return The operand representing the result of the built-in function call.
+ */
+Operand builtInFunctionAnalysis(ASTNode *node);
+
+/**
+ * @brief Creates a new unique variable name.
+ * @return The new variable name.
+ */
+char *createNewVariableName();
+
+/**
+ * @brief Adds a variable to the AST list.
+ * @param oldId The old token representing the variable.
+ * @return The new AST node representing the variable.
+ */
+ASTNode *addVariableToASTList(Token *oldId);
+
+/**
+ * @brief Inserts function parameters into the AST list.
+ * @param params The list of function parameters.
+ */
+void insertParamsToASTList(List *params);
+
+/**
+ * @brief Finds a variable in the AST list.
+ * @param oldId The old variable name.
+ * @return The AST node representing the variable.
+ */
+ASTNode *findVariableInASTList(char *oldId);
+
+/**
+ * @brief Analyzes a function body.
+ * @param node The AST node representing the function body.
+ */
+void functionBodyAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes an if statement.
+ * @param node The AST node representing the if statement.
+ */
+void ifAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a while statement.
+ * @param node The AST node representing the while statement.
+ */
+void whileAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a variable definition.
+ * @param node The AST node representing the variable definition.
+ */
+void variableDefinitionAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a variable assignment.
+ * @param node The AST node representing the variable assignment.
+ */
+void variableAssignmentAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a return statement.
+ * @param node The AST node representing the return statement.
+ */
+void returnAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a function call.
+ * @param node The AST node representing the function call.
+ * @return The operand representing the result of the function call.
+ */
+Operand functionCallAnalysis(ASTNode *node);
+
+/**
+ * @brief Analyzes a built-in function call.
+ * @param node The AST node representing the built-in function call.
+ * @return The operand representing the result of the built-in function call.
+ */
+Operand builtInFunctionAnalysis(ASTNode *node);
+
+/**
+ * @brief Reduces an expression to a single operand.
+ * @param left The left operand.
+ * @param right The right operand.
+ * @param node The AST node representing the operator.
+ * @return The operand representing the result of the reduction.
+ */
+Operand reduceExpression(Operand left, Operand right, ASTNode *node);
+
+/**
+ * @brief Determines the next operand in an expression.
+ * @param left The left operand.
+ * @param right The right operand.
+ * @param node The AST node representing the operator.
+ * @return The operand representing the result of the operation.
+ */
+Operand determineNextOperand(Operand left, Operand right, ASTNode *node);
+
+/**
+ * @brief Analyzes an expression.
+ * @param node The AST node representing the expression.
+ * @return The operand representing the result of the expression.
+ */
+Operand expressionAnalysis(ASTNode *node);
+
+void checkDivisionByZero(float value) {
+    if (fabs(value) < EPSILON) {
+        HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
+    }
+}
+
+char *createNewVariableName() {
+    char *baseString = "var_";
+
+    static unsigned variableCount = 0;
+
+    int newVariableLength = snprintf(NULL, 0, "%u", variableCount) + strlen(baseString) + 1;
+
+    char *newVariable = malloc(newVariableLength * sizeof(char));
+    if (newVariable == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+
+    sprintf(newVariable, "%s%u", baseString, variableCount);
+    variableCount++;
+
+    return newVariable;
+}
+
+ASTNode *addVariableToASTList(Token *oldId) {
+    if (oldId == NULL) {
+        HANDLE_ERROR("Token is NULL", INTERNAL_ERROR);
+    }
+
+    if (listOfVariables == NULL) {
+        HANDLE_ERROR("List of variables is NULL", INTERNAL_ERROR);
+    }
+
+    ASTNode *nodeCopy = initASTNode();
+    Token *tokenCopy = malloc(sizeof(Token));
+    if (tokenCopy == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    tokenCopy->type = TOKEN_TYPE_IDENTIFIER;
+    tokenCopy->attribute.string = createNewVariableName();
+    nodeCopy->token = tokenCopy;
+
+    nodeCopy->left = initASTNode();
+    nodeCopy->left->token = malloc(sizeof(Token));
+    if (nodeCopy->left->token == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    nodeCopy->left->token->type = TOKEN_TYPE_IDENTIFIER;
+    nodeCopy->left->token->attribute.string = oldId->attribute.string;
+    nodeCopy->left->parent = nodeCopy;
+
+    if (listOfVariables->root == NULL) {
+        listOfVariables->root = nodeCopy;
+    } else {
+        ASTNode *current = listOfVariables->root;
+        while (current->right != NULL) {
+            current = current->right;
+        }
+        current->right = nodeCopy;
+        nodeCopy->parent = current;
+    }
+
+    return nodeCopy;
+}
+
+void insertParamsToASTList(List *params) {
+    if (params == NULL) {
+        return;
+    }
+
+    listFirst(params);
+    while (listIsActive(params)) {
+        ListData data;
+        listGetValue(params, &data);
+
+        Token oldId;
+        oldId.type = TOKEN_TYPE_IDENTIFIER;
+        oldId.attribute.string = data.key;
+
+        addVariableToASTList(&oldId);
+
+        listNext(params);
+    }
+}
+
+ASTNode *findVariableInASTList(char *oldId) {
+    ASTNode *current = listOfVariables->root;
+    while (current != NULL) {
+        if (current->left == NULL) {
+            HANDLE_ERROR("Old variable name in AST list is NULL", INTERNAL_ERROR);
+        }
+        char *currentId = current->left->token->attribute.string;
+
+        if (strcmp(currentId, oldId) == 0) {
+            return current;
+        }
+        current = current->right;
+    }
+
+    HANDLE_ERROR("Variable not found in AST list", INTERNAL_ERROR);
+}
+
+bool isFloatInteger(float number) { return floorf(number) == number; }
 
 bool isEqualOperator(TokenType operator) {
     return operator== TOKEN_TYPE_EQ || operator== TOKEN_TYPE_NEQ;
@@ -62,6 +457,10 @@ bool isRelationalOperator(TokenType operator) {
 bool isNullableType(DataType type) {
     return type == TYPE_I_32_NULL || type == TYPE_F_64_NULL || type == TYPE_U_8_ARRAY_NULL ||
            type == TYPE_NULL;
+}
+
+bool checkNullAssignment(DataType valueType, DataType varType) {
+    return (valueType == TYPE_NULL && isNullableType(varType));
 }
 
 bool checkDeclaration(SymbolTable *table, const char *key) { return symbolTableSearch(table, key); }
@@ -86,8 +485,7 @@ bool checkVariableCompileTime(SymbolTable *table, const char *key) {
     return symbol != NULL && symbol->compileTime;
 }
 
-bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
-                            unsigned parameterIndex) {
+DataType getFunctionParameterType(SymbolTable *table, const char *key, unsigned parameterIndex) {
     Symbol *symbol = symbolTableGetSymbol(table, key);
 
     if (symbol == NULL || !symbol->function) {
@@ -111,7 +509,7 @@ bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
     ListData data;
     listGetValue(symbol->params, &data);
 
-    return data.type == type || (data.type == TYPE_NULL && isNullableType(type));
+    return data.type;
 }
 
 unsigned getFunctionParameterCount(SymbolTable *table, const char *key) {
@@ -157,23 +555,7 @@ bool checkFunctionDefined(SymbolTable *table, const char *key) {
     return symbol != NULL && symbol->function;
 }
 
-bool isConstruct(ASTNode *node) {
-    return node->token->type == TOKEN_TYPE_KEYWORD &&
-           (node->token->attribute.keyword == KEYWORD_IF ||
-            node->token->attribute.keyword == KEYWORD_PUB ||
-            node->token->attribute.keyword == KEYWORD_WHILE);
-}
-
-void jumpToPreviousConstruct(ASTNode **node) {
-    while ((*node)->parent != NULL) {
-        (*node) = (*node)->parent;
-        if (isConstruct(*node)) {
-            return;
-        }
-    }
-}
-
-bool checkBuildInFunction(Keyword key) {
+bool checkBuiltInFunction(Keyword key) {
     return key == KEYWORD_STRING || key == KEYWORD_LENGTH || key == KEYWORD_CONCAT ||
            key == KEYWORD_SUBSTRING || key == KEYWORD_STRCMP || key == KEYWORD_ORD ||
            key == KEYWORD_CHR || key == KEYWORD_WRITE || key == KEYWORD_READSTR ||
@@ -200,8 +582,11 @@ void functionParameterAnalysis(ASTNode *node) {
     }
 
     ListData currentParameter;
-
     currentParameter.key = node->token->attribute.string;
+
+    if (node->left == NULL || node->left->token->type != TOKEN_TYPE_KEYWORD) {
+        HANDLE_ERROR("Expected parameter type", INTERNAL_ERROR);
+    }
     currentParameter.type = (DataType)node->left->token->attribute.keyword;
 
     if (currentSymbol.params == NULL) {
@@ -225,8 +610,7 @@ void functionAnalysis(ASTNode *node) {
     if (node == NULL) {
         return;
     }
-
-    ASTNode *currentNode = node->left;
+    ASTNode *tempNode;
 
     currentSymbol.function = true;
     currentSymbol.constant = true;
@@ -234,25 +618,39 @@ void functionAnalysis(ASTNode *node) {
     currentSymbol.compileTime = false;
 
     node = node->left;
-    currentNode = node->right;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected function keyword", INTERNAL_ERROR);
+    }
 
-    currentSymbol.type = (DataType)currentNode->token->attribute.keyword;
+    tempNode = node->right;
+    if (tempNode == NULL || tempNode->token->type != TOKEN_TYPE_KEYWORD) {
+        HANDLE_ERROR("Expected function return type", INTERNAL_ERROR);
+    }
+
+    currentSymbol.type = (DataType)tempNode->token->attribute.keyword;
 
     node = node->left;
-    currentNode = node;
-    if (currentNode->token->type == TOKEN_TYPE_KEYWORD &&
-        currentNode->token->attribute.keyword == KEYWORD_MAIN) {
+    if (node == NULL) {
+        HANDLE_ERROR("Expected function id", INTERNAL_ERROR);
+    }
+
+    tempNode = node;
+    if (tempNode->token->type == TOKEN_TYPE_KEYWORD) {
+        if (tempNode->token->attribute.keyword != KEYWORD_MAIN) {
+            HANDLE_ERROR("Expected function main keyword", INTERNAL_ERROR);
+        }
+
         currentSymbol.key = "main";
     } else {
-        currentSymbol.key = currentNode->token->attribute.string;
+        currentSymbol.key = tempNode->token->attribute.string;
     }
 
     if (checkDeclaration(symbolTableTop(&symbolTableStack), currentSymbol.key)) {
         HANDLE_ERROR("Function redefinition", REDEFINITION_ERROR);
     }
 
-    currentNode = node->left;
-    functionParameterAnalysis(currentNode);
+    tempNode = node->left;
+    functionParameterAnalysis(tempNode);
 
     if (strcmp(currentSymbol.key, "main") == 0) {
         if (currentSymbol.type != TYPE_VOID) {
@@ -265,7 +663,16 @@ void functionAnalysis(ASTNode *node) {
     symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
     symbolResetValues(&currentSymbol);
 
-    jumpToPreviousConstruct(&node);
+    node = node->parent;
+    if (node == NULL) {
+        HANDLE_ERROR("Function id doesn't have a parent", INTERNAL_ERROR);
+    }
+
+    node = node->parent;
+    if (node == NULL) {
+        HANDLE_ERROR("Function keyword doesn't have a parent", INTERNAL_ERROR);
+    }
+
     node = node->right;
     functionAnalysis(node);
 }
@@ -291,6 +698,18 @@ void statementAnalysis(ASTNode *node) {
     case KEYWORD_CONST:
     case KEYWORD_VAR:
         variableDefinitionAnalysis(node);
+
+        if (currentSymbol.compileTime) {
+            ASTNode *temp = node->parent;
+            node->parent->right = node->right;
+            if (node->right != NULL) {
+                node->right->parent = node->parent;
+            }
+            node->right = NULL;
+            disposeSubtree(node);
+            node = temp;
+        }
+        symbolResetValues(&currentSymbol);
         break;
 
     case KEYWORD_UNDERSCORE:
@@ -331,14 +750,29 @@ void functionBodyAnalysis(ASTNode *node) {
 
     node = node->left;
     node = node->left;
+
     if (node->token->type == TOKEN_TYPE_KEYWORD) {
         symbolTableSetFunctionKey(table, "main");
     } else {
+        List *params = symbolTableGetSymbol(table, node->token->attribute.string)->params;
         symbolTableSetFunctionKey(table, node->token->attribute.string);
-        symbolTableCopyFunctionParams(
-            table, symbolTableGetSymbol(table, node->token->attribute.string)->params);
+        symbolTableCopyFunctionParams(table, params);
+        insertParamsToASTList(params);
     }
 
+    // renaming of parameters
+    ASTNode *temp = node->left;
+    while (temp != NULL) {
+        ASTNode *newParam = findVariableInASTList(temp->token->attribute.string);
+        if (newParam == NULL) {
+            HANDLE_ERROR("Parameter not found", INTERNAL_ERROR);
+        }
+
+        free(temp->token);
+        temp->token = copyToken(newParam->token);
+
+        temp = temp->right;
+    }
     statementAnalysis(node->right);
 
     symbolTableCheckUsed(table);
@@ -354,19 +788,30 @@ void ifAnalysis(ASTNode *node) {
     symbolTablePush(&symbolTableStack, table);
 
     node = node->left;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected if condition or null condition", INTERNAL_ERROR);
+    }
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
-            HANDLE_ERROR("Variable is not defined", UNDEFINED_ERROR);
+            HANDLE_ERROR("Variable redefinition in null cond", REDEFINITION_ERROR);
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
+        currentSymbol.key = node->right->token->attribute.string;
         currentSymbol.compileTime = false;
 
         nullCond = true;
         node = node->left;
+        if (node == NULL) {
+            HANDLE_ERROR("Expected if condition", INTERNAL_ERROR);
+        }
+    }
+
+    if (node->exprTree == NULL) {
+        HANDLE_ERROR("Expected if condition expression", INTERNAL_ERROR);
     }
 
     DataType type = expressionAnalysis(node->exprTree->root).type;
@@ -380,21 +825,9 @@ void ifAnalysis(ASTNode *node) {
         }
         currentSymbol.type = convertNullableType(type);
 
-        ASTNode *nodeCopy = initASTNode();
-        Token *tokenCopy = malloc(sizeof(Token));
-        if (tokenCopy == NULL) {
-            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
-        }
-        tokenCopy->type = TOKEN_TYPE_IDENTIFIER;
-        tokenCopy->attribute.string = currentSymbol.key;
-        nodeCopy->token = tokenCopy;
-
-        ASTNode *temp = listOfVariables->root;
-        listOfVariables->root = nodeCopy;
-        nodeCopy->right = temp;
-        if (temp != NULL) {
-            temp->parent = nodeCopy;
-        }
+        ASTNode *newNameNode = addVariableToASTList(node->parent->right->token);
+        free(node->parent->right->token);
+        node->parent->right->token = copyToken(newNameNode->token);
 
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
@@ -427,22 +860,33 @@ void whileAnalysis(ASTNode *node) {
     symbolTablePush(&symbolTableStack, table);
 
     node = node->left;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected while condition or null condition", INTERNAL_ERROR);
+    }
 
     bool nullCond = false;
     if (node->token->type == TOKEN_TYPE_VB) {
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
-            HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
+            HANDLE_ERROR("Variable redefinition in null cond", REDEFINITION_ERROR);
         }
         symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
                         true, true);
+        currentSymbol.key = node->right->token->attribute.string;
         currentSymbol.compileTime = false;
 
         nullCond = true;
         node = node->left;
+        if (node == NULL) {
+            HANDLE_ERROR("Expected while condition", INTERNAL_ERROR);
+        }
     }
 
+    if (node->exprTree == NULL) {
+        HANDLE_ERROR("Expected while condition expression", INTERNAL_ERROR);
+    }
     DataType type = expressionAnalysis(node->exprTree->root).type;
+
     if (!nullCond) {
         if (type != TYPE_BOOL) {
             HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
@@ -451,22 +895,11 @@ void whileAnalysis(ASTNode *node) {
         if (type == TYPE_NULL || !isNullableType(type)) {
             HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
         }
+        currentSymbol.type = convertNullableType(type);
 
-        ASTNode *nodeCopy = initASTNode();
-        Token *tokenCopy = malloc(sizeof(Token));
-        if (tokenCopy == NULL) {
-            HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
-        }
-        tokenCopy->type = TOKEN_TYPE_IDENTIFIER;
-        tokenCopy->attribute.string = currentSymbol.key;
-        nodeCopy->token = tokenCopy;
-
-        ASTNode *temp = listOfVariables->root;
-        listOfVariables->root = nodeCopy;
-        nodeCopy->right = temp;
-        if (temp != NULL) {
-            temp->parent = nodeCopy;
-        }
+        ASTNode *newNameNode = addVariableToASTList(node->parent->right->token);
+        free(node->parent->right->token);
+        node->parent->right->token = copyToken(newNameNode->token);
 
         symbolTableInsert(table, currentSymbol);
         symbolResetValues(&currentSymbol);
@@ -488,18 +921,14 @@ void variableDefinitionAnalysis(ASTNode *node) {
     currentSymbol.used = false;
 
     node = node->left;
+    if (node == NULL || node->token->type != TOKEN_TYPE_IDENTIFIER) {
+        HANDLE_ERROR("Expected variable id", INTERNAL_ERROR);
+    }
     currentSymbol.key = node->token->attribute.string;
 
-    ASTNode *nodeCopy = initASTNode();
-    Token *tokenCopy = copyToken(node->token);
-    nodeCopy->token = tokenCopy;
-
-    ASTNode *temp = listOfVariables->root;
-    listOfVariables->root = nodeCopy;
-    nodeCopy->right = temp;
-    if (temp != NULL) {
-        temp->parent = nodeCopy;
-    }
+    ASTNode *newNameNode = addVariableToASTList(node->token);
+    free(node->token);
+    node->token = copyToken(newNameNode->token);
 
     if (node->left != NULL) {
         currentSymbol.type = (DataType)node->left->token->attribute.keyword;
@@ -512,20 +941,30 @@ void variableDefinitionAnalysis(ASTNode *node) {
     }
 
     node = node->right;
-    Operand expressionResult;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected variable definition assignment", INTERNAL_ERROR);
+    }
+    if (node->exprTree == NULL) {
+        HANDLE_ERROR("Expected variable definition assignment expression", INTERNAL_ERROR);
+    }
 
-    if (node) {
-        if (node->exprTree != NULL) {
-            expressionResult = node->exprTree->isExpression
+    Operand expressionResult = node->exprTree->isExpression
                                    ? expressionAnalysis(node->exprTree->root)
                                    : functionCallAnalysis(node->exprTree->root);
-        }
+
+    // Convert integer to double for consistent type
+    if ((currentSymbol.type == TYPE_F_64 || currentSymbol.type == TYPE_F_64_NULL) &&
+        expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
+        float value = (float)expressionResult.token->attribute.integer;
+        expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+        expressionResult.token->attribute.decimal = value;
+        expressionResult.type = TYPE_F_64;
     }
 
     if (currentSymbol.type != TYPE_ANY && currentSymbol.type != expressionResult.type &&
-        (expressionResult.type != TYPE_NULL || !isNullableType(currentSymbol.type)) &&
+        !checkNullAssignment(expressionResult.type, currentSymbol.type) &&
         convertNullableType(currentSymbol.type) != expressionResult.type) {
-        HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
+        HANDLE_ERROR("Invalid expression type assignment", TYPE_COMPATIBILITY_ERROR);
     }
 
     if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
@@ -540,14 +979,26 @@ void variableDefinitionAnalysis(ASTNode *node) {
         currentSymbol.type = expressionResult.type;
     }
 
+    // Sets up compile time const to be removed from AST and replaced with value
+    if (expressionResult.compileTime && currentSymbol.constant &&
+        !isNullableType(currentSymbol.type)) {
+        free(newNameNode->token->attribute.string);
+        free(newNameNode->token);
+        newNameNode->token = copyToken(expressionResult.token);
+        currentSymbol.compileTime = true;
+    }
+
     symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
-    symbolResetValues(&currentSymbol);
 }
 
 void variableAssignmentAnalysis(ASTNode *node) {
     DataType valueType = TYPE_ANY;
 
     if (node->token->type != TOKEN_TYPE_KEYWORD) {
+        if (node->token->type != TOKEN_TYPE_IDENTIFIER) {
+            HANDLE_ERROR("Expected variable id", INTERNAL_ERROR);
+        }
+
         if (!checkDeclaration(symbolTableTop(&symbolTableStack), node->token->attribute.string)) {
             HANDLE_ERROR("Variable not defined", UNDEFINED_ERROR);
         }
@@ -560,16 +1011,41 @@ void variableAssignmentAnalysis(ASTNode *node) {
 
         valueType =
             getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
+
+        ASTNode *newNameNode = findVariableInASTList(node->token->attribute.string);
+        free(node->token->attribute.string);
+        free(node->token);
+        node->token = copyToken(newNameNode->token);
+    }
+
+    if (node->token->type == TOKEN_TYPE_KEYWORD &&
+        node->token->attribute.keyword != KEYWORD_UNDERSCORE) {
+        HANDLE_ERROR("Expected underscore keyword", INTERNAL_ERROR);
     }
 
     node = node->left;
+    if (node == NULL) {
+        HANDLE_ERROR("Expected assignment expression", INTERNAL_ERROR);
+    }
+    if (node->exprTree == NULL) {
+        HANDLE_ERROR("Expected assignment expression", INTERNAL_ERROR);
+    }
 
     Operand expressionResult = node->exprTree->isExpression
                                    ? expressionAnalysis(node->exprTree->root)
                                    : functionCallAnalysis(node->exprTree->root);
 
+    // Convert integer to double if needed for consistent type
+    if ((valueType == TYPE_F_64 || valueType == TYPE_F_64_NULL) &&
+        expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
+        float value = (float)expressionResult.token->attribute.integer;
+        expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+        expressionResult.token->attribute.decimal = value;
+        expressionResult.type = TYPE_F_64;
+    }
+
     if (valueType != TYPE_ANY && valueType != expressionResult.type &&
-        (expressionResult.type != TYPE_NULL || !isNullableType(valueType)) &&
+        !checkNullAssignment(expressionResult.type, valueType) &&
         convertNullableType(valueType) != expressionResult.type) {
         HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
     }
@@ -587,11 +1063,23 @@ void returnAnalysis(ASTNode *node) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
     } else {
-        if (returnType == TYPE_VOID && node->exprTree->root != NULL) {
+        if (returnType == TYPE_VOID && node->exprTree != NULL) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
         }
 
-        Operand expressionResult = expressionAnalysis(node->exprTree->root);
+        Operand expressionResult = node->exprTree->isExpression
+                                       ? expressionAnalysis(node->exprTree->root)
+                                       : functionCallAnalysis(node->exprTree->root);
+
+        // Convert integer to double if needed for consistent type
+        if ((returnType == TYPE_F_64 || returnType == TYPE_F_64_NULL) &&
+            expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
+            float value = (float)expressionResult.token->attribute.integer;
+            expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            expressionResult.token->attribute.decimal = value;
+            expressionResult.type = TYPE_F_64;
+        }
+
         if (expressionResult.type != returnType &&
             (expressionResult.type != TYPE_NULL || !isNullableType(returnType))) {
             HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
@@ -604,8 +1092,12 @@ void returnAnalysis(ASTNode *node) {
 }
 
 Operand functionCallAnalysis(ASTNode *node) {
+    if (node == NULL) {
+        HANDLE_ERROR("Function call root node is NULL", INTERNAL_ERROR);
+    }
+
     if (node->token->type == TOKEN_TYPE_KEYWORD) {
-        return buildInFunctionAnalysis(node);
+        return builtInFunctionAnalysis(node);
     }
 
     char *functionKey = node->token->attribute.string;
@@ -620,10 +1112,26 @@ Operand functionCallAnalysis(ASTNode *node) {
 
     node = node->left;
     while (node != NULL) {
-        Operand expressionResult = expressionAnalysis(node->exprTree->root);
-        if (!checkFunctionParameter(symbolTableTop(&symbolTableStack), functionKey,
-                                    expressionResult.type, parameterIndex)) {
-            HANDLE_ERROR("Invalid function parameter", PARAMETER_ERROR);
+        DataType parameterType = getFunctionParameterType(symbolTableTop(&symbolTableStack),
+                                                          functionKey, parameterIndex);
+
+        Operand expressionResult = node->exprTree->isExpression
+                                       ? expressionAnalysis(node->exprTree->root)
+                                       : functionCallAnalysis(node->exprTree->root);
+
+        // Convert integer to double if needed for consistent type
+        if ((parameterType == TYPE_F_64 || parameterType == TYPE_F_64_NULL) &&
+            expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
+            float value = (float)expressionResult.token->attribute.integer;
+            expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            expressionResult.token->attribute.decimal = value;
+            expressionResult.type = TYPE_F_64;
+        }
+
+        if (parameterType != expressionResult.type &&
+            !checkNullAssignment(expressionResult.type, parameterType) &&
+            convertNullableType(parameterType) != expressionResult.type) {
+            HANDLE_ERROR("Invalid parameter type", PARAMETER_ERROR);
         }
 
         if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
@@ -645,7 +1153,7 @@ Operand functionCallAnalysis(ASTNode *node) {
     return functionReturn;
 }
 
-Operand buildInFunctionAnalysis(ASTNode *node) {
+Operand builtInFunctionAnalysis(ASTNode *node) {
     DataType parameterType[] = {TYPE_VOID, TYPE_VOID, TYPE_VOID, TYPE_VOID};
     DataType returnType = TYPE_VOID;
     Keyword key = node->token->attribute.keyword;
@@ -733,7 +1241,19 @@ Operand buildInFunctionAnalysis(ASTNode *node) {
             HANDLE_ERROR("Invalid number of parameters", PARAMETER_ERROR);
         }
 
-        Operand expressionResult = expressionAnalysis(node->exprTree->root);
+        Operand expressionResult = node->exprTree->isExpression
+                                       ? expressionAnalysis(node->exprTree->root)
+                                       : functionCallAnalysis(node->exprTree->root);
+
+        // Convert integer to double for consistent type
+        if ((parameterType[i] == TYPE_F_64 || parameterType[i] == TYPE_F_64_NULL) &&
+            expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
+            float value = (float)expressionResult.token->attribute.integer;
+            expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            expressionResult.token->attribute.decimal = value;
+            expressionResult.type = TYPE_F_64;
+        }
+
         if (expressionResult.type != parameterType[i] &&
             (expressionResult.type != TYPE_NULL || !isNullableType(parameterType[i])) &&
             parameterType[i] != TYPE_ANY) {
@@ -741,7 +1261,7 @@ Operand buildInFunctionAnalysis(ASTNode *node) {
         }
 
         if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime &&
-            key != KEYWORD_STRING) {
+            key != KEYWORD_STRING && key != KEYWORD_WRITE) {
             HANDLE_ERROR("Cannot assign compile time string to parameter", PARAMETER_ERROR);
         }
 
@@ -751,31 +1271,332 @@ Operand buildInFunctionAnalysis(ASTNode *node) {
     return (Operand){.type = returnType, .compileTime = false};
 }
 
-Operand determineNextOperand(Operand left, Operand right, TokenType operator) {
+Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
+    TokenType operator= node->token->type;
+
+    if (left.type == TYPE_I_32 && right.type == TYPE_I_32) {
+        switch (operator) {
+        case TOKEN_TYPE_PLUS:
+            int result = left.token->attribute.integer + right.token->attribute.integer;
+            node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+            node->token->attribute.integer = result;
+            break;
+
+        case TOKEN_TYPE_MINUS:
+            result = left.token->attribute.integer - right.token->attribute.integer;
+            node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+            node->token->attribute.integer = result;
+            break;
+
+        case TOKEN_TYPE_MUL:
+            result = left.token->attribute.integer * right.token->attribute.integer;
+            node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+            node->token->attribute.integer = result;
+            break;
+
+        case TOKEN_TYPE_DIV:
+            if (right.token->attribute.integer == 0) {
+                HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
+            }
+            // TAK TOTO JE EDGE CASE JAKO PRASE
+            double divisionResult =
+                (double)left.token->attribute.integer / (double)right.token->attribute.integer;
+            result = floor(divisionResult);
+            node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+            node->token->attribute.integer = result;
+            break;
+
+        default:
+            HANDLE_ERROR("Invalid reduction operator", INTERNAL_ERROR);
+            break;
+        }
+
+        disposeSubtree(node->left);
+        disposeSubtree(node->right);
+        node->left = NULL;
+        node->right = NULL;
+
+        return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+    }
+
+    if (left.type == TYPE_F_64 && right.type == TYPE_F_64) {
+        switch (operator) {
+        case TOKEN_TYPE_PLUS:
+            float result = left.token->attribute.decimal + right.token->attribute.decimal;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = (int)result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_MINUS:
+            result = left.token->attribute.decimal - right.token->attribute.decimal;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = (int)result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_MUL:
+            result = left.token->attribute.decimal * right.token->attribute.decimal;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = (int)result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_DIV:
+            checkDivisionByZero(right.token->attribute.decimal);
+            result = left.token->attribute.decimal / right.token->attribute.decimal;
+
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = (int)result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        default:
+            HANDLE_ERROR("Invalid reduction operator", INTERNAL_ERROR);
+            break;
+        }
+
+        disposeSubtree(node->left);
+        disposeSubtree(node->right);
+        node->left = NULL;
+        node->right = NULL;
+
+        if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
+            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+        }
+
+        return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
+    }
+
+    if (left.type == TYPE_I_32 && right.type == TYPE_F_64) {
+        switch (operator) {
+        case TOKEN_TYPE_PLUS:
+            float result = left.token->attribute.integer + right.token->attribute.decimal;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = (int)result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_MINUS:
+            result = left.token->attribute.integer - right.token->attribute.decimal;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = (int)result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_MUL:
+            result = left.token->attribute.integer * right.token->attribute.decimal;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = (int)result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_DIV:
+            checkDivisionByZero(right.token->attribute.decimal);
+            result = left.token->attribute.integer / right.token->attribute.decimal;
+
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = (int)result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        default:
+            HANDLE_ERROR("Invalid reduction operator", INTERNAL_ERROR);
+            break;
+        }
+
+        disposeSubtree(node->left);
+        disposeSubtree(node->right);
+        node->left = NULL;
+        node->right = NULL;
+
+        if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
+            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+        }
+
+        return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
+    }
+
+    if (left.type == TYPE_F_64 && right.type == TYPE_I_32) {
+        switch (operator) {
+        case TOKEN_TYPE_PLUS:
+            float result = left.token->attribute.decimal + right.token->attribute.integer;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_MINUS:
+            result = left.token->attribute.decimal - right.token->attribute.integer;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_MUL:
+            result = left.token->attribute.decimal * right.token->attribute.integer;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        case TOKEN_TYPE_DIV:
+            if (right.token->attribute.integer == 0) {
+                HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
+            }
+            result = left.token->attribute.decimal / right.token->attribute.integer;
+            if (isFloatInteger(result)) {
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = result;
+            } else {
+                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                node->token->attribute.decimal = result;
+            }
+            break;
+
+        default:
+            HANDLE_ERROR("Invalid reduction operator", INTERNAL_ERROR);
+            break;
+        }
+
+        disposeSubtree(node->left);
+        disposeSubtree(node->right);
+        node->left = NULL;
+        node->right = NULL;
+
+        if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
+            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+        }
+
+        return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
+    }
+
+    // TODO bool reduction if bool extension
+    if (left.type == TYPE_BOOL && right.type == TYPE_BOOL) {
+    }
+
+    HANDLE_ERROR("Invalid reduction", INTERNAL_ERROR);
+}
+
+Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
     Operand result;
     result.compileTime = left.compileTime && right.compileTime;
+
+    TokenType operator= node->token->type;
 
     switch (left.type) {
     case TYPE_I_32:
         if (right.type == TYPE_I_32) {
+            if (result.compileTime && !isRelationalOperator(operator)) {
+                return reduceExpression(left, right, node);
+            }
+
+            if (right.compileTime && node->token->type == TOKEN_TYPE_DIV &&
+                right.token->attribute.integer == 0) {
+                HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
+            }
+
             result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_I_32;
             return result;
         }
 
         if (right.type == TYPE_F_64 && left.compileTime) {
-            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
+            if (result.compileTime && !isRelationalOperator(operator)) {
+                return reduceExpression(left, right, node);
+            }
+
+            if (isRelationalOperator(operator)) {
+                result.type = TYPE_BOOL;
+                return result;
+            }
+
+            if (right.compileTime && node->token->type == TOKEN_TYPE_DIV) {
+                checkDivisionByZero(right.token->attribute.decimal);
+            }
+
+            result.type = TYPE_F_64;
+            left.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            left.token->attribute.decimal = (float)left.token->attribute.integer;
             return result;
         }
         break;
 
     case TYPE_F_64:
         if (right.type == TYPE_F_64) {
+            if (result.compileTime && !isRelationalOperator(operator)) {
+                return reduceExpression(left, right, node);
+            }
+
+            if (right.compileTime && node->token->type == TOKEN_TYPE_DIV) {
+                checkDivisionByZero(right.token->attribute.decimal);
+            }
+
             result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
             return result;
         }
 
         if (right.type == TYPE_I_32 && right.compileTime) {
-            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_F_64;
+            if (result.compileTime && !isRelationalOperator(operator)) {
+                return reduceExpression(left, right, node);
+            }
+
+            if (isRelationalOperator(operator)) {
+                result.type = TYPE_BOOL;
+                return result;
+            }
+
+            if (right.compileTime && node->token->type == TOKEN_TYPE_DIV &&
+                right.token->attribute.integer == 0) {
+                HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
+            }
+
+            result.type = TYPE_F_64;
+            right.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            right.token->attribute.decimal = (float)right.token->attribute.integer;
             return result;
         }
         break;
@@ -826,27 +1647,46 @@ Operand expressionAnalysis(ASTNode *node) {
             }
             symbolTableSetUsed(symbolTableTop(&symbolTableStack), node->token->attribute.string);
 
-            return (Operand){.type = getVariableType(symbolTableTop(&symbolTableStack),
-                                                     node->token->attribute.string),
-                             .compileTime = checkVariableCompileTime(
-                                 symbolTableTop(&symbolTableStack), node->token->attribute.string)};
+            Operand varOperand;
+            varOperand.compileTime = checkVariableCompileTime(symbolTableTop(&symbolTableStack),
+                                                              node->token->attribute.string);
+            varOperand.type =
+                getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
+
+            ASTNode *newNameNode = findVariableInASTList(node->token->attribute.string);
+            // can't free the string because it is invalid pointer free
+            // it might be because string is not allocated dynamically ???
+            // it's not allocated in tests you moron
+            // free(node->token->attribute.string);
+            free(node->token);
+            node->token = copyToken(newNameNode->token);
+
+            varOperand.token = node->token;
+            return varOperand;
         }
 
         if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
-            return (Operand){.type = TYPE_I_32, .compileTime = true};
+            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
         }
 
         if (node->token->type == TOKEN_TYPE_DOUBLE_VALUE) {
-            return (Operand){.type = TYPE_F_64, .compileTime = true};
+            if (isFloatInteger(node->token->attribute.decimal)) {
+                int value = (int)node->token->attribute.decimal;
+                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                node->token->attribute.integer = value;
+                return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+            }
+
+            return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
         }
 
         if (node->token->type == TOKEN_TYPE_STRING_VALUE) {
-            return (Operand){.type = TYPE_U_8_ARRAY, .compileTime = true};
+            return (Operand){.type = TYPE_U_8_ARRAY, .compileTime = true, .token = node->token};
         }
 
         if (node->token->type == TOKEN_TYPE_KEYWORD &&
             node->token->attribute.keyword == KEYWORD_NULL) {
-            return (Operand){.type = TYPE_NULL, .compileTime = true};
+            return (Operand){.type = TYPE_NULL, .compileTime = true, .token = node->token};
         }
 
         HANDLE_ERROR("Invalid token type", INTERNAL_ERROR);
@@ -855,9 +1695,7 @@ Operand expressionAnalysis(ASTNode *node) {
     Operand leftType = expressionAnalysis(node->left);
     Operand rightType = expressionAnalysis(node->right);
 
-    TokenType operator= node->token->type;
-
-    return determineNextOperand(leftType, rightType, operator);
+    return determineNextOperand(leftType, rightType, node);
 }
 
 void semanticAnalysis() {

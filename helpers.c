@@ -311,6 +311,21 @@ char *TokenKeywordToString(Keyword keyword) {
     }
 }
 
+char *stringDuplicate(const char *string) {
+    if (string == NULL) {
+        return NULL;
+    }
+
+    char *copy = malloc(strlen(string) + 1);
+    if (copy == NULL) {
+        return NULL;
+    }
+
+    strcpy(copy, string);
+
+    return copy;
+}
+
 ASTNode *mockASTProgramStructure(int type) {
     ASTNode *root = initASTNode();
     switch (type) {
@@ -321,16 +336,20 @@ ASTNode *mockASTProgramStructure(int type) {
 
         ASTNode *left = initASTNode();
         left->token = createToken(TOKEN_TYPE_EXPR);
+        left->parent = root;
         AST *exprTree = initAST();
 
         exprTree->root = initASTNode();
-        exprTree->root->token = createToken(TOKEN_TYPE_PLUS);
+        exprTree->root->token = createToken(TOKEN_TYPE_EQ);
+        exprTree->root->parent = left;
         exprTree->root->left = initASTNode();
-        exprTree->root->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTree->root->left->token->attribute.integer = 2;
+        exprTree->root->left->token = createToken(TOKEN_TYPE_KEYWORD);
+        exprTree->root->left->token->attribute.keyword = KEYWORD_NULL;
+        exprTree->root->left->parent = exprTree->root;
         exprTree->root->right = initASTNode();
-        exprTree->root->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTree->root->right->token->attribute.integer = 3;
+        exprTree->root->right->token = createToken(TOKEN_TYPE_KEYWORD);
+        exprTree->root->right->token->attribute.keyword = KEYWORD_NULL;
+        exprTree->root->right->parent = exprTree->root;
         exprTree->isExpression = true;
         left->exprTree = exprTree;
 
@@ -342,31 +361,36 @@ ASTNode *mockASTProgramStructure(int type) {
     // Function call
     case 2:
         // FUNCTION NAME
-        root->token = createToken(TOKEN_TYPE_IDENTIFIER);
-        root->token->attribute.string = malloc(5);
-        strcpy(root->token->attribute.string, "fooo");
+        root->token = createToken(TOKEN_TYPE_KEYWORD);
+        root->token->attribute.keyword = KEYWORD_I2F;
+        // root->token->attribute.string = malloc(5);
+        // strcpy(root->token->attribute.string, "bar");
 
         // FIRST ARGUMENT
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_EXPR);
+        root->left->parent = root;
         AST *exprTree1 = initAST();
         ASTNode *exprTreeRoot = initASTNode();
         exprTreeRoot->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
-        exprTreeRoot->token->attribute.decimal = 3.14;
+        exprTreeRoot->token->attribute.decimal = 3.0;
+        exprTreeRoot->parent = root->left;
         exprTree1->root = exprTreeRoot;
         exprTree1->isExpression = true;
         root->left->exprTree = exprTree1;
 
-        // SECOND ARGUMENT
-        root->left->right = initASTNode();
-        root->left->right->token = createToken(TOKEN_TYPE_EXPR);
-        AST *exprTree2 = initAST();
-        ASTNode *exprTreeRoot2 = initASTNode();
-        exprTreeRoot2->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot2->token->attribute.decimal = 100;
-        exprTree2->root = exprTreeRoot2;
-        exprTree2->isExpression = true;
-        root->left->right->exprTree = exprTree2;
+        // // SECOND ARGUMENT
+        // root->left->right = initASTNode();
+        // root->left->right->token = createToken(TOKEN_TYPE_EXPR);
+        // root->left->right->parent = root->left;
+        // AST *exprTree2 = initAST();
+        // ASTNode *exprTreeRoot2 = initASTNode();
+        // exprTreeRoot2->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        // exprTreeRoot2->token->attribute.decimal = 2.3;
+        // exprTreeRoot2->parent = root->left->right;
+        // exprTree2->root = exprTreeRoot2;
+        // exprTree2->isExpression = true;
+        // root->left->right->exprTree = exprTree2;
 
         return root;
         break;
@@ -380,16 +404,18 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->token->attribute.keyword = KEYWORD_FN;
+        root->left->parent = root;
 
         // RETURN TYPE
         root->left->right = initASTNode();
         root->left->right->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->right->token->attribute.keyword = KEYWORD_VOID;
+        root->left->right->parent = root->left;
 
         root->left->left = initASTNode();
         root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->left->token->attribute.keyword = KEYWORD_MAIN;
-        root->left->left->exprTree = initAST(); // init for list of variable names
+        root->left->left->parent = root->left;
 
         root->left->left->left = NULL; // No arguments
 
@@ -405,11 +431,13 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->token->attribute.keyword = KEYWORD_FN;
+        root->left->parent = root;
 
         // RETURN TYPE
         root->left->right = initASTNode();
         root->left->right->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->right->token->attribute.keyword = KEYWORD_F_64;
+        root->left->right->parent = root->left;
 
         // FUNCTION NAME
         root->left->left = initASTNode();
@@ -417,48 +445,73 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->left->token->attribute.string = malloc(5);
         strcpy(root->left->left->token->attribute.string, "bar");
         root->left->left->exprTree = initAST(); // init for list of variable names
+        root->left->left->parent = root->left;
 
         // FIRST PARAMETER
         root->left->left->left = initASTNode();
         root->left->left->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
         root->left->left->left->token->attribute.string = malloc(2);
         strcpy(root->left->left->left->token->attribute.string, "a");
+        root->left->left->left->parent = root->left->left;
         root->left->left->left->left = initASTNode();
         root->left->left->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->left->left->left->token->attribute.keyword = KEYWORD_F_64;
+        root->left->left->left->left->parent = root->left->left->left;
 
         // SECOND PARAMETER
         root->left->left->left->right = initASTNode();
         root->left->left->left->right->token = createToken(TOKEN_TYPE_IDENTIFIER);
         root->left->left->left->right->token->attribute.string = malloc(2);
         strcpy(root->left->left->left->right->token->attribute.string, "b");
+        root->left->left->left->right->parent = root->left->left->left;
         root->left->left->left->right->left = initASTNode();
         root->left->left->left->right->left->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->left->left->right->left->token->attribute.keyword = KEYWORD_F_64;
+        root->left->left->left->right->left->parent = root->left->left->left->right;
 
         // RETURN
         root->left->left->right = initASTNode();
         root->left->left->right->token = createToken(TOKEN_TYPE_KEYWORD);
         root->left->left->right->token->attribute.keyword = KEYWORD_RETURN;
+        root->left->left->right->parent = root->left->left;
+
         // EXPRESSION FOR RETURN (currently 3.14 + a + b)
         root->left->left->right->exprTree = initAST();
+        root->left->left->right->exprTree->isExpression = true;
         root->left->left->right->exprTree->root = initASTNode();
         root->left->left->right->exprTree->root->token = createToken(TOKEN_TYPE_PLUS);
+        root->left->left->right->exprTree->root->parent = root->left->left->right->exprTree->root;
         root->left->left->right->exprTree->root->left = initASTNode();
+        // root->left->left->right->exprTree->root->left->token =
+        // createToken(TOKEN_TYPE_IDENTIFIER);
+        // root->left->left->right->exprTree->root->left->token->attribute.string = malloc(10);
+        // strcpy(root->left->left->right->exprTree->root->left->token->attribute.string,
+        // "premenna");
         root->left->left->right->exprTree->root->left->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
-        root->left->left->right->exprTree->root->left->token->attribute.decimal = 3.14;
+        root->left->left->right->exprTree->root->left->token->attribute.decimal = 3.0;
+        root->left->left->right->exprTree->root->left->parent =
+            root->left->left->right->exprTree->root;
+
         root->left->left->right->exprTree->root->right = initASTNode();
         root->left->left->right->exprTree->root->right->token = createToken(TOKEN_TYPE_PLUS);
+        root->left->left->right->exprTree->root->right->parent =
+            root->left->left->right->exprTree->root;
+
         root->left->left->right->exprTree->root->right->left = initASTNode();
         root->left->left->right->exprTree->root->right->left->token =
             createToken(TOKEN_TYPE_IDENTIFIER);
         root->left->left->right->exprTree->root->right->left->token->attribute.string = malloc(2);
         strcpy(root->left->left->right->exprTree->root->right->left->token->attribute.string, "a");
+        root->left->left->right->exprTree->root->right->left->parent =
+            root->left->left->right->exprTree->root->right;
+
         root->left->left->right->exprTree->root->right->right = initASTNode();
         root->left->left->right->exprTree->root->right->right->token =
             createToken(TOKEN_TYPE_IDENTIFIER);
         root->left->left->right->exprTree->root->right->right->token->attribute.string = malloc(2);
         strcpy(root->left->left->right->exprTree->root->right->right->token->attribute.string, "b");
+        root->left->left->right->exprTree->root->right->right->parent =
+            root->left->left->right->exprTree->root->right;
 
         return root;
         break;
@@ -472,15 +525,18 @@ ASTNode *mockASTProgramStructure(int type) {
         // CONDITION
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_EXPR);
+        root->left->parent = root;
         AST *exprTree3 = initAST();
         ASTNode *exprTreeRoot3 = initASTNode();
         exprTreeRoot3->token = createToken(TOKEN_TYPE_EQ);
         exprTreeRoot3->left = initASTNode();
         exprTreeRoot3->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
         exprTreeRoot3->left->token->attribute.integer = 2;
+        exprTreeRoot3->left->parent = exprTreeRoot3;
         exprTreeRoot3->right = initASTNode();
         exprTreeRoot3->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
         exprTreeRoot3->right->token->attribute.integer = 2;
+        exprTreeRoot3->right->parent = exprTreeRoot3;
         exprTree3->root = exprTreeRoot3;
         exprTree3->isExpression = true;
         root->left->exprTree = exprTree3;
@@ -495,26 +551,31 @@ ASTNode *mockASTProgramStructure(int type) {
         root->token->attribute.keyword = KEYWORD_IF;
 
         root->left = initASTNode();
-        root->left->token = createToken(TOKEN_TYPE_NULL_COND);
+        root->left->token = createToken(TOKEN_TYPE_VB);
+        root->left->parent = root;
 
         // INDENTIFIER FOR STORAGE
         root->left->right = initASTNode();
         root->left->right->token = createToken(TOKEN_TYPE_IDENTIFIER);
         root->left->right->token->attribute.string = malloc(9);
         strcpy(root->left->right->token->attribute.string, "identIF");
+        root->left->right->parent = root->left;
 
         // CONDITION
         root->left->left = initASTNode();
         root->left->left->token = createToken(TOKEN_TYPE_EXPR);
+        root->left->left->parent = root->left;
         AST *exprTree4 = initAST();
         ASTNode *exprTreeRoot4 = initASTNode();
-        exprTreeRoot4->token = createToken(TOKEN_TYPE_EQ);
-        exprTreeRoot4->left = initASTNode();
-        exprTreeRoot4->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot4->left->token->attribute.integer = 6;
-        exprTreeRoot4->right = initASTNode();
-        exprTreeRoot4->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot4->right->token->attribute.integer = 6;
+        exprTreeRoot4->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        exprTreeRoot4->token->attribute.string = "premenna";
+        // exprTreeRoot4->left = initASTNode();
+        // exprTreeRoot4->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        // exprTreeRoot4->left->parent = exprTreeRoot4;
+        // exprTreeRoot4->right = initASTNode();
+        // exprTreeRoot4->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        // exprTreeRoot4->right->token->attribute.integer = 6;
+        // exprTreeRoot4->right->parent = exprTreeRoot4;
         exprTree4->root = exprTreeRoot4;
         exprTree4->isExpression = true;
         root->left->left->exprTree = exprTree4;
@@ -531,15 +592,18 @@ ASTNode *mockASTProgramStructure(int type) {
         // CONDITION
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_EXPR);
+        root->left->parent = root;
         AST *exprTree5 = initAST();
         ASTNode *exprTreeRoot5 = initASTNode();
         exprTreeRoot5->token = createToken(TOKEN_TYPE_EQ);
         exprTreeRoot5->left = initASTNode();
         exprTreeRoot5->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
         exprTreeRoot5->left->token->attribute.integer = 9;
+        exprTreeRoot5->left->parent = exprTreeRoot5;
         exprTreeRoot5->right = initASTNode();
         exprTreeRoot5->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
         exprTreeRoot5->right->token->attribute.integer = 9;
+        exprTreeRoot5->right->parent = exprTreeRoot5;
         exprTree5->root = exprTreeRoot5;
         exprTree5->isExpression = true;
         root->left->exprTree = exprTree5;
@@ -593,21 +657,39 @@ ASTNode *mockASTProgramStructure(int type) {
         root->left->token = createToken(TOKEN_TYPE_IDENTIFIER);
         root->left->token->attribute.string = malloc(10);
         strcpy(root->left->token->attribute.string, "premenna");
+        root->left->parent = root;
 
         // TYPE
         root->left->left = initASTNode();
         root->left->left->token = createToken(TOKEN_TYPE_KEYWORD);
-        root->left->left->token->attribute.keyword = KEYWORD_F_64;
+        root->left->left->token->attribute.keyword = KEYWORD_F_64_NULL;
+        root->left->left->parent = root->left;
 
         // VALUE (currently 3.14)
         root->left->right = initASTNode();
         root->left->right->token = createToken(TOKEN_TYPE_EXPR);
+        root->left->right->parent = root->left;
         AST *exprTree8 = initAST();
         ASTNode *exprTreeRoot8 = initASTNode();
-        exprTreeRoot8->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
-        exprTreeRoot8->token->attribute.decimal = 3.14;
+        exprTreeRoot8->token = createToken(TOKEN_TYPE_DIV);
+        exprTreeRoot8->parent = root->left->right;
         exprTree8->root = exprTreeRoot8;
         exprTree8->isExpression = true;
+        exprTreeRoot8->left = initASTNode();
+        exprTreeRoot8->left->token = createToken(TOKEN_TYPE_MINUS);
+        exprTreeRoot8->left->parent = exprTreeRoot8;
+        exprTreeRoot8->left->left = initASTNode();
+        exprTreeRoot8->left->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot8->left->left->token->attribute.integer = 0;
+        exprTreeRoot8->left->left->parent = exprTreeRoot8->left;
+        exprTreeRoot8->left->right = initASTNode();
+        exprTreeRoot8->left->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot8->left->right->token->attribute.integer = 0;
+        exprTreeRoot8->left->right->parent = exprTreeRoot8->left;
+        exprTreeRoot8->right = initASTNode();
+        exprTreeRoot8->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        exprTreeRoot8->right->token->attribute.integer = 0;
+        exprTreeRoot8->right->parent = exprTreeRoot8;
         root->left->right->exprTree = exprTree8;
 
         return root;
@@ -615,27 +697,28 @@ ASTNode *mockASTProgramStructure(int type) {
 
     // Variable assignment
     case 9:
-        root->isAssignment = true;
+
         // VARIABLE NAME
         root->token = createToken(TOKEN_TYPE_IDENTIFIER);
+        root->isAssignment = true;
         root->token->attribute.string = malloc(10);
-        strcpy(root->token->attribute.string, "menime");
+        strcpy(root->token->attribute.string, "premenna");
 
         // VALUE (currently 99 / 11)
         root->left = initASTNode();
         root->left->token = createToken(TOKEN_TYPE_EXPR);
-        AST *exprTree7 = initAST();
-        ASTNode *exprTreeRoot7 = initASTNode();
-        exprTreeRoot7->token = createToken(TOKEN_TYPE_DIV);
-        exprTreeRoot7->left = initASTNode();
-        exprTreeRoot7->left->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot7->left->token->attribute.integer = 99;
-        exprTreeRoot7->right = initASTNode();
-        exprTreeRoot7->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
-        exprTreeRoot7->right->token->attribute.integer = 11;
-        exprTree7->root = exprTreeRoot7;
-        exprTree7->isExpression = true;
-        root->left->exprTree = exprTree7;
+        // AST *exprTree7 = initAST();
+        // ASTNode *exprTreeRoot7 = initASTNode();
+        // exprTreeRoot7->token = createToken(TOKEN_TYPE_DIV);
+        // exprTreeRoot7->left = initASTNode();
+        // exprTreeRoot7->left->token = createToken(TOKEN_TYPE_DOUBLE_VALUE);
+        // exprTreeRoot7->left->token->attribute.decimal = 9.2;
+        // exprTreeRoot7->right = initASTNode();
+        // exprTreeRoot7->right->token = createToken(TOKEN_TYPE_INTEGER_VALUE);
+        // exprTreeRoot7->right->token->attribute.integer = 11;
+        // exprTree7->root = exprTreeRoot7;
+        // exprTree7->isExpression = true;
+        // root->left->exprTree = exprTree7;
 
         return root;
         break;
