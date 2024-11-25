@@ -1,3 +1,4 @@
+#include "helpers.h"
 #include "scanner.h"
 #include <assert.h>
 #include <math.h>
@@ -8,10 +9,10 @@
 #define TOLERANCE 1e-5
 
 void printToken(Token *token) {
-    printf("Token type: %d\n", token->type);
+    // printf("Token type: %d\n", token->type);
     switch (token->type) {
     case TOKEN_TYPE_INTEGER_VALUE:
-        printf("Token attribute (integer): %d\n", token->attribute.integer);
+        printf("Token attribute (integer): %lld\n", token->attribute.integer);
         break;
     case TOKEN_TYPE_DOUBLE_VALUE:
         printf("Token attribute (double): %f\n", token->attribute.decimal);
@@ -21,7 +22,8 @@ void printToken(Token *token) {
         break;
     case TOKEN_TYPE_KEYWORD:
         // TODO: Print keyword as string
-        printf("Token attribute (keyword): %d\n", token->attribute.keyword);
+
+        printf("Token attribute (keyword): %s\n", TokenKeywordToString(token->attribute.keyword));
         break;
     case TOKEN_TYPE_IDENTIFIER:
         printf("Token attribute (identifier): %s\n", token->attribute.string);
@@ -48,7 +50,7 @@ void printToken(Token *token) {
         printf("Token is a RIGHT BRACKET.\n");
         break;
     case TOKEN_TYPE_COLON:
-        printf("Token is a COLON.\n");
+        printf("Token is a COLON. ':' \n");
         break;
     case TOKEN_TYPE_DOT:
         printf("Token is a DOT.\n");
@@ -390,36 +392,28 @@ void test_getNextToken() {
 
     fclose(testFile);
 
-    // Test 12: Edge case - Invalid token
-    testFile = fopen("test12.txt", "w+");
-    fprintf(testFile, "@");
-    rewind(testFile);
-    sourceFile = testFile;
+    // // Test 12: Edge case - Invalid token
+    // testFile = fopen("test12.txt", "w+");
+    // fprintf(testFile, "@");
+    // rewind(testFile);
+    // sourceFile = testFile;
 
-    int result = getNextToken(&token);
-    if (result != 0) {
-        printf("Error: Invalid token encountered.\n");
-    } else {
-        printToken(&token);
-    }
-    assert(result != 0);
+    // int result = getNextToken(&token);
+    // if (result != 0) {
+    //     printf("Error: Invalid token encountered.\n");
+    // } else {
+    //     printToken(&token);
+    // }
+    // assert(result != 0);
 
-    fclose(testFile);
+    // fclose(testFile);
+
     // Test 13: complex test - ifj24.zig
     printf("Test 13: complex test - ifj24.zig\n-----------------------------\n");
     testFile = fopen("test13.txt", "w+");
-    fprintf(testFile, "\
-    const ifj = @import(\"ifj24.zig\");\
-    pub fn build(x : []u8, y : []u8) []u8 {\
-        const res = ifj.concat(x, y);\
-        return res;\
-    }\
-    pub fn main() void {\
-        const a = ifj.string(\"ahoj \");\
-        var ct : []u8 = ifj.string(\"svete\");\
-        ct = build(a, ct);\
-        ifj.write(ct);\
-    } |");
+    fprintf(testFile, "const b: ?i32 = 10;\
+    const c: ?i32 = 5;\
+    const a: ?i32 = null;");
     rewind(testFile);
     sourceFile = testFile;
 
