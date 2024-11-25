@@ -392,30 +392,6 @@ void symbolTableReassign(SymbolTable *table, const char *key, Symbol data) {
     treeReassign(table->root, key, data);
 }
 
-void symbolTableSetDefined(SymbolTable *table, const char *key) {
-    Symbol *symbol = NULL;
-
-    while (symbol == NULL) {
-        symbol = treeGet(table->root, key);
-
-        if (table->previousTable != NULL) {
-            table = table->previousTable;
-        } else {
-            break;
-        }
-    }
-
-    if (symbol == NULL) {
-        HANDLE_ERROR("Symbol not found", UNDEFINED_ERROR);
-    }
-
-    if (symbol->constant) {
-        HANDLE_ERROR("Cannot redefine constant", REDEFINITION_ERROR);
-    }
-
-    symbol->defined = true;
-}
-
 void symbolTableSetUsed(SymbolTable *table, const char *key) {
     Symbol *symbol = NULL;
 
@@ -508,24 +484,29 @@ void symbolTableCopyFunctionParams(SymbolTable *table, List *params) {
         ListData data;
         listGetValue(params, &data);
         Symbol newSymbol;
-        symbolSetValues(&newSymbol, data.key, data.type, false, true);
+        symbolSetValues(&newSymbol, data.key, data.type, false, false, false);
+        newSymbol.compileTime = false;
         symbolTableInsert(table, newSymbol);
         listNext(params);
     }
 }
 
-void symbolSetValues(Symbol *symbol, char *key, DataType type, bool defined, bool function) {
+void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bool constant,
+                     bool used) {
     symbol->key = key;
     symbol->type = type;
-    symbol->defined = defined;
     symbol->function = function;
+    symbol->constant = constant;
+    symbol->used = used;
+    symbol->params = NULL;
 }
 
 void symbolResetValues(Symbol *symbol) {
     symbol->key = NULL;
     symbol->type = TYPE_VOID;
-    symbol->defined = false;
     symbol->function = false;
+    symbol->constant = false;
+    symbol->used = false;
     symbol->params = NULL;
 }
 
