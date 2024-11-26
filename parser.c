@@ -138,6 +138,7 @@ void parseFuncDefs() {
     if (isTokenKeyword(currentToken, KEYWORD_PUB)) {
         parseFuncDef();
         goToPub();
+        mainParent = currentParent;
         parseFuncDefs();
     }
 }
@@ -192,7 +193,6 @@ void parseFuncDef() {
     }
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
-
     parseParams();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_BR) {
@@ -224,7 +224,6 @@ void parseFunc() {
     }
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
-
     parseStatements();
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
@@ -350,6 +349,9 @@ void parseReturn() {
         // printTokenInfo(currentToken);
         HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR);
     }
+
+    parsingReturnType = false;
+
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
 }
@@ -383,13 +385,12 @@ void parseParams() {
     }
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
-
+    currentParent = paramIdNode;
     parseType();
 
     if (currentToken->type == TOKEN_TYPE_COMMA) {
         // printTokenInfo(currentToken);
         getNextToken(currentToken);
-
         parseParams();
     }
 }
