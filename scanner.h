@@ -63,4 +63,15 @@ int handleIdentifierOrKeyword(DynamicString *string, Token *token);
  */
 int checkTypeValid(DynamicString *string, Token *token);
 
+/**
+ * @brief Formats a dynamic string for IFJcode printing.
+ *
+ * This function takes a DynamicString and converts it to a format suitable
+ * for printing in IFJcode. It ensures that the string adheres to the
+ * required formatting rules for IFJcode output.
+ *
+ * @param string Pointer to the DynamicString to be formatted.
+ */
+void stringFormatting(DynamicString *string);
+
 #endif
