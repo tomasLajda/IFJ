@@ -99,12 +99,11 @@ int isReducible(Stack *stack, StackElement *nextInputElement) {
         nextInputElement->tokenPtr == NULL) {
         return 0; // Stack is empty, cannot reduce
     }
-
     Token *nextInputToken = nextInputElement->tokenPtr;
     StackElement *first = stack->top;
+
     // Check for operand reduction (e.g., EXPR → id)
-    if (isOperand(first->tokenPtr) || (first->tokenPtr->type == TOKEN_TYPE_KEYWORD &&
-                                       first->tokenPtr->attribute.keyword == KEYWORD_NULL)) {
+    if (isOperand(first->tokenPtr)) {
         return 1; // Stack is reducible by operand rule
     }
 
@@ -165,8 +164,7 @@ int chooseReduceRule(Stack *stack) {
     StackElement *first = stack->top;
 
     // Check for operand reduction (EXPR → id)
-    if (isOperand(first->tokenPtr) || (first->tokenPtr->type == TOKEN_TYPE_KEYWORD &&
-                                       first->tokenPtr->attribute.keyword == KEYWORD_NULL)) {
+    if (isOperand(first->tokenPtr)) {
         return EXPR_ID; // Expr -> id
     }
 
@@ -250,9 +248,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
 
     // Begin filling
     if (providedTokens == 2) {
-        if ((isOperand(firstToken) || (firstToken->type == TOKEN_TYPE_KEYWORD &&
-                                       firstToken->attribute.keyword == KEYWORD_NULL)) &&
-            isDelimiter(secondToken)) {
+        if (isOperand(firstToken) && isDelimiter(secondToken)) {
             ASTNode *astNode = initASTNode();
             astNode->token = copyToken(firstToken);
             push(stack, createStackElement(firstToken, astNode));
@@ -276,8 +272,8 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
         getNextToken(token);
     }
 
-    while (isOperand(token) || isOperator(token) || isParentheses(token) ||
-           (token->type == TOKEN_TYPE_KEYWORD && token->attribute.keyword == KEYWORD_NULL)) {
+    while (isOperand(token) || isOperator(token) || isParentheses(token)) {
+
         // Track parentheses balance
         if (token->type == TOKEN_TYPE_LEFT_BR) {
             openingParentheses++;
@@ -322,10 +318,9 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
     *delimiterToken = *token;
     if (!isDelimiter(token)) {
         cleanupStack(&tempStack);
-        HANDLE_ERROR(
-            "Token doesn't belong in expression",
-            SYNTAX_ERROR); // Token doesn't belong in the expression - a syntax error occured
+        return NULL; // Token doesn't belong in the expression - a syntax error occured
     }
+
     // Reverse the temporary stack and push it onto the input stack
     while (!isEmpty(&tempStack)) {
         StackElement *topElement = top(&tempStack);
@@ -419,9 +414,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
     // Shift-reduce parsing loop
     // Continue parsing as long as there are input tokens or the stack can be reduced further
     while (!isEmpty(input) || isReducible(stack, currentInputElement)) {
-
         int reducible = isReducible(stack, currentInputElement);
-
         if (reducible == 1) { // Reduce
             int rule = chooseReduceRule(stack);
             switch (rule) {
@@ -488,9 +481,10 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
             free(input);
             cleanupStack(stack);
             free(stack);
+
             HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
         } else if (!isEmpty(input)) {                                    // Shift
-            Token *currentToken = copyToken(currentInputElement->tokenPtr);
+            Token *currentToken = createToken(currentInputElement->tokenPtr->type);
             ASTNode *currentASTNode = copyASTNode(currentInputElement->ASTNodePtr);
             pop(input);
             StackElement *newElement = createStackElement(currentToken, currentASTNode);
