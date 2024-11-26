@@ -137,9 +137,7 @@ void parseProlog() {
 void parseFuncDefs() {
     if (isTokenKeyword(currentToken, KEYWORD_PUB)) {
         parseFuncDef();
-
         goToPub();
-
         parseFuncDefs();
     }
 }
@@ -228,7 +226,6 @@ void parseFunc() {
     getNextToken(currentToken);
 
     parseStatements();
-    goBack(currentParent); // TODO CHECK
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR);
@@ -327,8 +324,7 @@ void parseReturn() {
     // FUNCTION RETURN TYPE IS VOID
     if (voidFuncType) {
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR,
-                         currentToken);
+            HANDLE_ERROR("Expected semicolon after return", RETURN_EXPRESSION_ERROR);
         }
         // printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -336,57 +332,26 @@ void parseReturn() {
     // FUNCTION RETURN TYPE IS NOT VOID
     else {
         initTokenBuffer();
-
         tokenBuffer.first = copyToken(currentToken);
 
-        // VARIABLE
-        if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
-            // printTokenInfo(currentToken);
-            getNextToken(currentToken);
+        AST *exprTree = initAST();
+        ASTNode *exprNode = initASTNode();
+        exprTree->root = exprNode;
+        parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
 
-            tokenBuffer.second = copyToken(currentToken);
+        exprNode->exprTree = exprTree;
+        exprNode->exprTree->isExpression = true;
+        currentParent->exprTree = exprTree;
 
-            // FUNC_CALL - MAYBE IN THE FUTURE
-            if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
-                HANDLE_ERROR("Unexpected '(' after identifier in return expression", SYNTAX_ERROR,
-                             currentToken);
-            }
-
-            // VARIABLE
-            AST *exprTree = initAST();
-            ASTNode *exprNode = initASTNode();
-            exprTree->root = exprNode;
-
-            parseExpression(exprTree, tokenBuffer.first, tokenBuffer.second, currentToken);
-
-            exprNode->exprTree = exprTree;
-            exprNode->exprTree->isExpression = true;
-            currentParent->exprTree = exprTree;
-
-            goBack(currentParent);
-
-        }
-        // NUMERICAL VALUE
-        else {
-            AST *exprTree = initAST();
-            ASTNode *exprNode = initASTNode();
-            exprTree->root = exprNode;
-            parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
-
-            exprNode->exprTree = exprTree;
-            exprNode->exprTree->isExpression = true;
-            currentParent->exprTree = exprTree;
-
-            goBack(currentParent);
-        }
-
-        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            // printTokenInfo(currentToken);
-            HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR);
-        }
-        // printTokenInfo(currentToken);
-        getNextToken(currentToken);
+        goBack(currentParent);
     }
+
+    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+        // printTokenInfo(currentToken);
+        HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR);
+    }
+    // printTokenInfo(currentToken);
+    getNextToken(currentToken);
 }
 
 // PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
@@ -607,7 +572,7 @@ void parseVarDef() {
     else if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
         ASTNode *funcIdNode = initASTNode();
         funcIdNode->token = copyToken(currentToken);
-        funcIdNode->isAssignment = true; // todo study
+        funcIdNode->isAssignment = true;
 
         // printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -1057,7 +1022,6 @@ void parseFuncCall() {
 
 // DISCARD_CALL ::= token_underscore token_equals EXPR token_semicolon
 void parseDiscardCall() {
-    // TODO: IMPLEMENT: EXPR = FUNC_CALL
     if (!isTokenKeyword(currentToken, KEYWORD_UNDERSCORE)) {
         HANDLE_ERROR("Expected '_' at the beginning of discard call", SYNTAX_ERROR);
     }
@@ -1090,7 +1054,7 @@ void parseDiscardCall() {
 
     tokenBuffer.first = copyToken(currentToken);
 
-    // BUILT-IN FUNCTION // TODO: semanticky error - pozriet ci to je kw
+    // BUILT-IN FUNCTION
     if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         // printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -1196,9 +1160,12 @@ void parseDiscardCall() {
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε
 void parseArgs() {
-    // TODO add term check
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         return;
+    }
+
+    if (!isTerm(currentToken)) {
+        HANDLE_ERROR("Expected term in function call", SYNTAX_ERROR);
     }
 
     ASTNode *argNode = initASTNode();
@@ -1241,7 +1208,6 @@ int parse() {
 
     parseProg();
 
-    // displayEntireAST(ast);
     free(decider);
 
     return 0;

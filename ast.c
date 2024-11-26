@@ -143,7 +143,7 @@ void displayASTNode(ASTNode *node, int level, bool isLeft) {
             }
             break;
         case TOKEN_TYPE_INTEGER_VALUE:
-            printf(", Integer: %d", node->token->attribute.integer);
+            printf(", Integer: %lld", node->token->attribute.integer);
             break;
         case TOKEN_TYPE_DOUBLE_VALUE:
             printf(", Double: %f", node->token->attribute.decimal);
@@ -190,7 +190,7 @@ void displayEntireASTNode(ASTNode *node, int level, bool isLeft) {
             }
             break;
         case TOKEN_TYPE_INTEGER_VALUE:
-            printf(", Integer: %d", node->token->attribute.integer);
+            printf(", Integer: %lld", node->token->attribute.integer);
             break;
         case TOKEN_TYPE_DOUBLE_VALUE:
             printf(", Double: %f", node->token->attribute.decimal);

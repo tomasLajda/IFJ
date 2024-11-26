@@ -15,8 +15,8 @@ IFJ project
 #include "enums.h"
 
 typedef union {
-    int integer;
-    float decimal;
+    long long int integer;
+    double decimal;
     char *string;
     Keyword keyword;
     void *noAttribute;
@@ -62,15 +62,5 @@ int handleIdentifierOrKeyword(DynamicString *string, Token *token);
  * @return int Returns TOKEN_OK  if the type is valid, or an LEXICAL_ERROR if invalid.
  */
 int checkTypeValid(DynamicString *string, Token *token);
-
-/**
- * @brief Resets the getc count to allow for controlled roll back of tokens.
- */
-void resetCharCount();
-
-/**
- * @brief Ungets the characters from the input stream to get tokens again.
- */
-void ungetcCharCount();
 
 #endif
