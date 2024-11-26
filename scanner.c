@@ -12,8 +12,8 @@ IFJ Project
 #include <stdbool.h>
 #include <stdlib.h>
 
-FILE *sourceFile; // Source file to be used as input for scanner
-char hexaChar;    // Hexadecimal character
+extern FILE *sourceFile; // Source file to be used as input for scanner
+char hexaChar;           // Hexadecimal character
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
