@@ -555,6 +555,10 @@ void functionParameterAnalysis(ASTNode *node) {
     ListData currentParameter;
     currentParameter.key = node->token->attribute.string;
 
+    if (checkDeclaration(symbolTableTop(&symbolTableStack), currentParameter.key)) {
+        HANDLE_ERROR("Parameter redefinition", REDEFINITION_ERROR);
+    }
+
     if (node->left == NULL || node->left->token->type != TOKEN_TYPE_KEYWORD) {
         HANDLE_ERROR("Expected parameter type", INTERNAL_ERROR);
     }
@@ -573,6 +577,18 @@ void functionParameterAnalysis(ASTNode *node) {
         listNext(currentSymbol.params);
     }
 
+    Symbol paramSymbol = {
+        .key = currentParameter.key,
+        .type = currentParameter.type,
+        .constant = false,
+        .compileTime = false,
+        .used = false,
+        .function = false,
+        .params = NULL,
+    };
+
+    symbolTableInsert(symbolTableTop(&symbolTableStack), paramSymbol);
+
     node = node->right;
     functionParameterAnalysis(node);
 }
@@ -581,6 +597,14 @@ void functionAnalysis(ASTNode *node) {
     if (node == NULL) {
         return;
     }
+
+    SymbolTable *table = malloc(sizeof(SymbolTable));
+    if (table == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    symbolTableInit(table, symbolTableTop(&symbolTableStack));
+    symbolTablePush(&symbolTableStack, table);
+
     ASTNode *tempNode;
 
     currentSymbol.function = true;
@@ -631,8 +655,6 @@ void functionAnalysis(ASTNode *node) {
             HANDLE_ERROR("Main function cannot have parameters", PARAMETER_ERROR);
         }
     }
-    symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
-    symbolResetValues(&currentSymbol);
 
     node = node->parent;
     if (node == NULL) {
@@ -643,6 +665,11 @@ void functionAnalysis(ASTNode *node) {
     if (node == NULL) {
         HANDLE_ERROR("Function keyword doesn't have a parent", INTERNAL_ERROR);
     }
+
+    symbolTablePop(&symbolTableStack);
+
+    symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
+    symbolResetValues(&currentSymbol);
 
     node = node->right;
     functionAnalysis(node);
@@ -994,11 +1021,11 @@ void returnAnalysis(ASTNode *node) {
 
         if (expressionResult.type != returnType &&
             (expressionResult.type != TYPE_NULL || !isNullableType(returnType))) {
-            HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
+            HANDLE_ERROR("Return type does not match", PARAMETER_ERROR);
         }
 
         if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
-            HANDLE_ERROR("Cannot return compile time string", RETURN_EXPRESSION_ERROR);
+            HANDLE_ERROR("Cannot return compile time string", PARAMETER_ERROR);
         }
     }
 }
@@ -1109,7 +1136,7 @@ Operand builtInFunctionAnalysis(ASTNode *node) {
     case KEYWORD_CHR:
         // 1 param
         parameterType[0] = TYPE_I_32;
-        returnType = TYPE_I_32;
+        returnType = TYPE_U_8_ARRAY;
         break;
     case KEYWORD_WRITE:
         // 1 param
@@ -1586,7 +1613,7 @@ void semanticAnalysis() {
     symbolResetValues(&currentSymbol);
 
     if (ast->root->right == NULL) {
-        HANDLE_ERROR("AST is NULL", INTERNAL_ERROR);
+        HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
     }
 
     // Adds functions to the global scope

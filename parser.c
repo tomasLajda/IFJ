@@ -20,6 +20,7 @@ Token *decider = NULL;
 bool voidFuncType = false;
 bool parsingReturnType = false;
 bool isFirstStatement = false; // In IF -> 1st statement left child, Otherwise right child
+bool gotReturn = false;
 unsigned int argCounter = 0;
 unsigned int paramCounter = 0;
 
@@ -224,7 +225,14 @@ void parseFunc() {
     }
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    voidFuncType = false;
+    gotReturn = false;
     parseStatements();
+    voidFuncType = false;
+    if (!gotReturn) {
+        HANDLE_ERROR("Missing return statement in function definition", RETURN_EXPRESSION_ERROR);
+    }
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR);
@@ -254,8 +262,9 @@ void parseVoidFunc() {
     }
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
-
+    voidFuncType = true;
     parseStatements();
+    voidFuncType = false;
     goBack(currentParent);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
@@ -325,8 +334,8 @@ void parseReturn() {
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             HANDLE_ERROR("Expected semicolon after return", RETURN_EXPRESSION_ERROR);
         }
-        // printTokenInfo(currentToken);
         getNextToken(currentToken);
+        // printTokenInfo(currentToken);
     }
     // FUNCTION RETURN TYPE IS NOT VOID
     else {
@@ -338,22 +347,24 @@ void parseReturn() {
         exprTree->root = exprNode;
         parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
 
+        if (exprTree->root == NULL) {
+            HANDLE_ERROR("Expected expression after return keyword", RETURN_EXPRESSION_ERROR);
+        }
+
+        if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
+            // printTokenInfo(currentToken);
+            HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR);
+        }
+
         exprNode->exprTree = exprTree;
         exprNode->exprTree->isExpression = true;
         currentParent->exprTree = exprTree;
 
         goBack(currentParent);
+        getNextToken(currentToken);
     }
-
-    if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-        // printTokenInfo(currentToken);
-        HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR);
-    }
-
     parsingReturnType = false;
-
-    // printTokenInfo(currentToken);
-    getNextToken(currentToken);
+    gotReturn = true;
 }
 
 // PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
@@ -400,10 +411,10 @@ void parseStatements() {
     if (currentToken->type == TOKEN_TYPE_RIGHT_CURLY_BR) {
         return;
     }
-
     // CHECK IF THE RETURN STATEMENT IS THE LAST STATEMENT
     if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
         parseReturn();
+
         if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
             HANDLE_ERROR("Unreachable code after return statement", SYNTAX_ERROR,
                          currentToken); // correct error?
@@ -456,7 +467,6 @@ void parseStatement() {
             parseFuncCall();
 
         } else {
-            // printTokenInfo(currentToken);
             HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR);
         }
         break;
@@ -477,7 +487,7 @@ void parseStatement() {
         }
         break;
     default:
-        // printTokenInfo(currentToken);
+        printTokenInfo(currentToken);
         HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR);
         break;
     }
@@ -942,18 +952,15 @@ void parseIf() {
     isFirstStatement = true;
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
-
     parseStatements();
-
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' to end the body of if statement", SYNTAX_ERROR);
     }
     currentParent = exprNode;
-    // printTokenInfo(currentToken);
     getNextToken(currentToken);
-
     parseElse();
     isFirstStatement = false;
+    getNextToken(currentToken);
     currentParent = ifNode;
 }
 
@@ -977,7 +984,6 @@ void parseElse() {
         HANDLE_ERROR("Expected '}' to end the body of else statement", SYNTAX_ERROR);
     }
     // printTokenInfo(currentToken);
-    getNextToken(currentToken);
 }
 
 // FUNC_CALL ::= token_Orb ARGS token_Crb token_semicolon

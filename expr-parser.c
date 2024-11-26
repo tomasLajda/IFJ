@@ -278,6 +278,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
 
     while (isOperand(token) || isOperator(token) || isParentheses(token) ||
            (token->type == TOKEN_TYPE_KEYWORD && token->attribute.keyword == KEYWORD_NULL)) {
+
         // Track parentheses balance
         if (token->type == TOKEN_TYPE_LEFT_BR) {
             openingParentheses++;
@@ -326,6 +327,12 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
             "Token doesn't belong in expression",
             SYNTAX_ERROR); // Token doesn't belong in the expression - a syntax error occured
     }
+
+    if (isEmpty(&tempStack)) {
+        cleanupStack(&tempStack);
+        return NULL;
+    }
+
     // Reverse the temporary stack and push it onto the input stack
     while (!isEmpty(&tempStack)) {
         StackElement *topElement = top(&tempStack);
@@ -405,8 +412,8 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        HANDLE_ERROR("Syntax error. fillinupstack() returned null\n", SYNTAX_ERROR,
-                     SYNTAX_ERROR); // Indicate syntax error
+        exprAST->root = NULL;
+        return 3;
     }
 
     // Initialize the current input element
@@ -488,8 +495,9 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
             free(input);
             cleanupStack(stack);
             free(stack);
-            HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
-        } else if (!isEmpty(input)) {                                    // Shift
+            HANDLE_ERROR("Syntax error. Expression precedence not found.\n", SYNTAX_ERROR,
+                         SYNTAX_ERROR); // Syntax error
+        } else if (!isEmpty(input)) {   // Shift
             Token *currentToken = copyToken(currentInputElement->tokenPtr);
             ASTNode *currentASTNode = copyASTNode(currentInputElement->ASTNodePtr);
             pop(input);
@@ -534,6 +542,6 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        HANDLE_ERROR("Syntax error.\n", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
+        HANDLE_ERROR("Syntax error.", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
     }
 }
