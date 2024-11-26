@@ -50,7 +50,11 @@ typedef enum {
                        // STATE_READ_STRING, or '\x' to STATE_HEXA0
     STATE_HEXA0,       // '\x' was read, reads first part of the hexa number, goes to STATE_HEXA1
     STATE_HEXA1,       // Reads second part of the hexa number and goes back to STATE_READ_STRING
-    STATE_STRING       // Second '"' was loaded, string ends
+    STATE_STRING,      // Second '"' was loaded, string ends
+
+    STATE_BACKSLASH_MULTILINE,   // State for multiline string
+    STATE_MULTILINE_STRING_LOAD, // State for multiline string
+    STATE_MULTILINE_EOL,         // State for multiline string EOL
 
 } ScannerState;
 
