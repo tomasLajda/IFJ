@@ -114,13 +114,26 @@ void generateBuiltInFunctions() {
 
 void generateFuncBody(ASTNode *node) {
 
+    // // DEFVAR for all variables
+    // if (node->parent->parent->exprTree != NULL) {
+    //     ASTNode *currentVarible = node->parent->parent->exprTree->root;
+    //     while (currentVarible != NULL && currentVarible->token->type == TOKEN_TYPE_IDENTIFIER) {
+    //         ADD_TO_BUFFER("DEFVAR LF@");
+    //         ADD_TO_BUFFER(currentVarible->token->attribute.string);
+    //         ADD_TO_BUFFER("\n");
+    //         currentVarible = currentVarible->right;
+    //     }
+    // }
+
     // DEFVAR for all variables
     if (node->parent->parent->exprTree != NULL) {
         ASTNode *currentVarible = node->parent->parent->exprTree->root;
-        while (currentVarible != NULL && currentVarible->token->type == TOKEN_TYPE_IDENTIFIER) {
-            ADD_TO_BUFFER("DEFVAR LF@");
-            ADD_TO_BUFFER(currentVarible->token->attribute.string);
-            ADD_TO_BUFFER("\n");
+        while (currentVarible != NULL) {
+            if (currentVarible->token->type == TOKEN_TYPE_IDENTIFIER) {
+                ADD_TO_BUFFER("DEFVAR LF@");
+                ADD_TO_BUFFER(currentVarible->token->attribute.string);
+                ADD_TO_BUFFER("\n");
+            }
             currentVarible = currentVarible->right;
         }
     }
@@ -380,6 +393,8 @@ void processNode(ASTNode *node) {
 int mainStart() {
     ADD_TO_BUFFER("# Start of Main:\n");
     ADD_TO_BUFFER("LABEL $$main\n");
+    ADD_TO_BUFFER("DEFVAR GF@%%div_temp\n");
+    ADD_TO_BUFFER("DEFVAR GF@%%div_type\n");
     ADD_TO_BUFFER("CREATEFRAME\n");
     ADD_TO_BUFFER("PUSHFRAME\n");
     return 0;
@@ -453,7 +468,30 @@ int generateExpression(ASTNode *node) {
         } else if (currentTokenType == TOKEN_TYPE_MUL) {
             ADD_TO_BUFFER("MULS\n");
         } else if (currentTokenType == TOKEN_TYPE_DIV) {
+
+            unsigned int currentLabelCounter = labelCounter;
+            labelCounter++;
+            ADD_TO_BUFFER("POPS GF@%%div_temp\n");
+            ADD_TO_BUFFER("TYPE GF@%%div_type GF@%%div_temp\n");
+            ADD_TO_BUFFER("PUSHS GF@%%div_temp\n");
+            ADD_TO_BUFFER("JUMPIFEQ ");
+            ADD_TO_BUFFER("$div_int_");
+
+            int enoughSpaceForInt = 12;
+            char intStr[enoughSpaceForInt];
+            snprintf(intStr, sizeof(intStr), "%d ", currentLabelCounter);
+            ADD_TO_BUFFER(intStr);
+
+            ADD_TO_BUFFER("GF@%%div_type string@int\n");
             ADD_TO_BUFFER("DIVS\n");
+            ADD_TO_BUFFER("JUMP ");
+            addLabelToBuffer("div", "end", currentLabelCounter);
+            ADD_TO_BUFFER("LABEL ");
+            addLabelToBuffer("div", "int", currentLabelCounter);
+            ADD_TO_BUFFER("IDIVS\n");
+            ADD_TO_BUFFER("LABEL ");
+            addLabelToBuffer("div", "end", currentLabelCounter);
+
         } else if (currentTokenType == TOKEN_TYPE_EQ) {
             ADD_TO_BUFFER("EQS\n");
         } else if (currentTokenType == TOKEN_TYPE_NEQ) {
