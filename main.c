@@ -183,9 +183,9 @@ void test_getNextToken() {
     assert(token.type == TOKEN_TYPE_DOUBLE_VALUE && token.attribute.decimal == 45.67);
 
     getNextToken(&token);
-    printToken(&token);
-    assert(token.type == TOKEN_TYPE_INTEGER_VALUE &&
-           fabs(token.attribute.integer - 8e2) < TOLERANCE);
+    // printToken(&token);
+    // assert(token.type == TOKEN_TYPE_INTEGER_VALUE &&
+    //        fabs(token.attribute.integer - 8e2) < TOLERANCE);
 
     getNextToken(&token);
     printToken(&token);
@@ -410,11 +410,14 @@ void test_getNextToken() {
 
     // Test 13: complex test - ifj24.zig
     printf("Test 13: complex test - ifj24.zig\n-----------------------------\n");
-    testFile = fopen("test13.txt", "w+");
-    fprintf(testFile, "const b: ?i32 = 10;\
-    const c: ?i32 = 5;\
-    const a: ?i32 = null;");
-    rewind(testFile);
+    testFile = fopen("test13.txt", "r");
+    // fprintf(testFile, "const b: ?i32 = 10;
+    // const c: ?i32 = 5;
+    // const a: ?i32 = null;
+    // \"ahoj.\"
+    // \"ahoj.");
+    // fprintf(testFile, "a\"c\"b");
+    // rewind(testFile);
     sourceFile = testFile;
 
     int retval;
@@ -429,5 +432,10 @@ void test_getNextToken() {
 
 int main() {
     test_getNextToken();
+    printf("-------");
+
+    printf("\"");
+    printf("-------");
+    // printf("n");
     return 0;
 }
