@@ -139,8 +139,6 @@ void parseFuncDefs() {
         parseFuncDef();
 
         goToPub();
-
-        displayEntireAST(ast);
         parseFuncDefs();
     }
 }
@@ -229,7 +227,6 @@ void parseFunc() {
     getNextToken(currentToken);
 
     parseStatements();
-    goBack(currentParent); // TODO CHECK
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR);
@@ -328,8 +325,7 @@ void parseReturn() {
     // FUNCTION RETURN TYPE IS VOID
     if (voidFuncType) {
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
-            HANDLE_ERROR("Expected ';' after 'return' in void function", SYNTAX_ERROR,
-                         currentToken);
+            HANDLE_ERROR("Expected semicolon after return", RETURN_EXPRESSION_ERROR);
         }
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -340,14 +336,14 @@ void parseReturn() {
 
         tokenBuffer.first = copyToken(currentToken);
 
-        // VARIABLE
+        // VARIABLE TODO: why is this separate?
         if (currentToken->type == TOKEN_TYPE_IDENTIFIER) {
             printTokenInfo(currentToken);
             getNextToken(currentToken);
 
             tokenBuffer.second = copyToken(currentToken);
 
-            // FUNC_CALL - MAYBE IN THE FUTURE
+            // FUNC_CALL - MAYBE IN THE FUTURE huh
             if (currentToken->type == TOKEN_TYPE_LEFT_BR) {
                 HANDLE_ERROR("Unexpected '(' after identifier in return expression", SYNTAX_ERROR,
                              currentToken);
@@ -990,8 +986,6 @@ void parseIf() {
     parseElse();
     isFirstStatement = false;
     currentParent = ifNode;
-    printf("CURERNTPARNT %s %s\n", TokenTypeToString(currentParent->token->type),
-           TokenKeywordToString(currentParent->token->attribute.keyword));
 }
 
 // ELSE ::= token_else token_Ocb STATEMENTS token_Ccb | ε
@@ -1093,7 +1087,7 @@ void parseDiscardCall() {
 
     tokenBuffer.first = copyToken(currentToken);
 
-    // BUILT-IN FUNCTION // TODO: semanticky error - pozriet ci to je kw
+    // BUILT-IN FUNCTION
     if (isTokenKeyword(currentToken, KEYWORD_IFJ)) {
         printTokenInfo(currentToken);
         getNextToken(currentToken);
@@ -1199,9 +1193,12 @@ void parseDiscardCall() {
 
 // ARGS ::= (EXPR | token_id) NEXT_ARG | ε
 void parseArgs() {
-    // TODO add term check
     if (currentToken->type == TOKEN_TYPE_RIGHT_BR) {
         return;
+    }
+
+    if (!isTerm(currentToken)) {
+        HANDLE_ERROR("Expected term in function call", SYNTAX_ERROR);
     }
 
     ASTNode *argNode = initASTNode();
@@ -1244,7 +1241,6 @@ int parse() {
 
     parseProg();
 
-    displayEntireAST(ast);
     free(decider);
 
     return 0;
