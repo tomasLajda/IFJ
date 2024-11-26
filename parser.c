@@ -20,6 +20,7 @@ Token *decider = NULL;
 bool voidFuncType = false;
 bool parsingReturnType = false;
 bool isFirstStatement = false; // In IF -> 1st statement left child, Otherwise right child
+bool gotReturn = false;
 unsigned int argCounter = 0;
 unsigned int paramCounter = 0;
 
@@ -224,7 +225,14 @@ void parseFunc() {
     }
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
+
+    voidFuncType = false;
+    gotReturn = false;
     parseStatements();
+    voidFuncType = false;
+    if (!gotReturn) {
+        HANDLE_ERROR("Missing return statement in function definition", RETURN_EXPRESSION_ERROR);
+    }
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
         HANDLE_ERROR("Expected '}' in function definition", SYNTAX_ERROR);
@@ -254,8 +262,9 @@ void parseVoidFunc() {
     }
     // printTokenInfo(currentToken);
     getNextToken(currentToken);
-
+    voidFuncType = true;
     parseStatements();
+    voidFuncType = false;
     goBack(currentParent);
 
     if (currentToken->type != TOKEN_TYPE_RIGHT_CURLY_BR) {
@@ -355,6 +364,7 @@ void parseReturn() {
         getNextToken(currentToken);
     }
     parsingReturnType = false;
+    gotReturn = true;
 }
 
 // PARAMS ::= token_id token_colon TYPE NEXT_PARAM | ε
@@ -401,7 +411,6 @@ void parseStatements() {
     if (currentToken->type == TOKEN_TYPE_RIGHT_CURLY_BR) {
         return;
     }
-
     // CHECK IF THE RETURN STATEMENT IS THE LAST STATEMENT
     if (isTokenKeyword(currentToken, KEYWORD_RETURN)) {
         parseReturn();
@@ -458,7 +467,6 @@ void parseStatement() {
             parseFuncCall();
 
         } else {
-            displayAST(ast);
             HANDLE_ERROR("Unexpected keyword in statement", SYNTAX_ERROR);
         }
         break;
@@ -479,7 +487,6 @@ void parseStatement() {
         }
         break;
     default:
-        displayAST(ast);
         printTokenInfo(currentToken);
         HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR);
         break;
