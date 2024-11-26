@@ -12,7 +12,7 @@ IFJ Project
 #include <stdbool.h>
 #include <stdlib.h>
 
-FILE *sourceFile; // Source file to be used as input for scanner
+extern FILE *sourceFile; // Source file to be used as input for scanner
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
