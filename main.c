@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "code_generator.h"
+#include "graph.h"
 #include "helpers.h"
 #include <stdio.h>
 
@@ -35,6 +36,8 @@ int main() {
 
     FILE *outputFile = fopen("generated_code.ifjcode", "w");
     generateCode(outputFile, newAST);
+
+    generateASTDotFile(newAST, "ast.dot");
 
     // freeAST(newAST);
     return 0;
