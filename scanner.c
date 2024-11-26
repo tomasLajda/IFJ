@@ -12,7 +12,7 @@ IFJ Project
 #include <stdbool.h>
 #include <stdlib.h>
 
-extern FILE *sourceFile; // Source file to be used as input for scanner
+FILE *sourceFile; // Source file to be used as input for scanner
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
@@ -284,7 +284,7 @@ int getNextToken(Token *token) {
             } else {
                 ungetc(current, sourceFile);
                 token->type = TOKEN_TYPE_INTEGER_VALUE;
-                token->attribute.integer = (int)strtod((dynamicStringToCString(&buffer)), NULL);
+                token->attribute.integer = strtoll((dynamicStringToCString(&buffer)), NULL, 10);
                 return freeAndReturn(&buffer, TOKEN_OK);
             }
 
@@ -323,7 +323,7 @@ int getNextToken(Token *token) {
                 state = STATE_EXPONENT;
             } else {
                 ungetc(current, sourceFile);
-                token->attribute.decimal = atof(dynamicStringToCString(&buffer));
+                token->attribute.decimal = strtod(dynamicStringToCString(&buffer), NULL);
                 return freeAndReturn(&buffer, TOKEN_OK);
             }
             break;
@@ -361,11 +361,10 @@ int getNextToken(Token *token) {
             } else {
                 ungetc(current, sourceFile);
                 if (token->type == TOKEN_TYPE_INTEGER_VALUE) {
-                    token->attribute.integer = (int)strtod((dynamicStringToCString(&buffer)), NULL);
+                    token->attribute.integer = strtoll((dynamicStringToCString(&buffer)), NULL, 10);
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else if (token->type == TOKEN_TYPE_DOUBLE_VALUE) {
-                    token->attribute.decimal = strtof((dynamicStringToCString(&buffer)), NULL);
-                    printf("DECIMAL: %f\n", token->attribute.decimal);
+                    token->attribute.decimal = strtod((dynamicStringToCString(&buffer)), NULL);
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
                     HANDLE_ERROR("Invalid token type in state exp number", INTERNAL_ERROR,
