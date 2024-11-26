@@ -12,15 +12,20 @@ IFJ Project
 #include <stdbool.h>
 #include <stdlib.h>
 
-extern FILE *sourceFile; // Source file to be used as input for scanner
-int count = 0;
+FILE *sourceFile; // Source file to be used as input for scanner
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
+    if (errorCode != TOKEN_OK) {
+        HANDLE_ERROR("Error in scanner", errorCode, errorCode);
+    }
     return errorCode;
 }
 
 int checkTypeValid(DynamicString *string, Token *token) {
+    // TODO: DELETE DEBUG
+    // printf("STRING: %s\n", dynamicStringToCString(string));
+
     if (dynamicStringCompare(string, "?i32")) {
         token->type = TOKEN_TYPE_KEYWORD;
         token->attribute.keyword = KEYWORD_I_32_NULL;
@@ -34,6 +39,7 @@ int checkTypeValid(DynamicString *string, Token *token) {
         token->type = TOKEN_TYPE_KEYWORD;
         token->attribute.keyword = KEYWORD_U_8_ARRAY_NULL;
     } else {
+        HANDLE_ERROR("Invalid type", LEXICAL_ERROR, LEXICAL_ERROR);
         return LEXICAL_ERROR;
     }
     return TOKEN_OK;
@@ -117,6 +123,7 @@ int getNextToken(Token *token) {
     dynamicStringInit(&buffer);
 
     if (sourceFile == NULL) {
+        HANDLE_ERROR("Source file is NULL", INTERNAL_ERROR, INTERNAL_ERROR);
         return INTERNAL_ERROR;
     }
 
@@ -127,7 +134,6 @@ int getNextToken(Token *token) {
     while (true) {
 
         int current = getc(sourceFile);
-        count++;
 
         // TODO: delete debug
         // // DEBUG
@@ -238,6 +244,7 @@ int getNextToken(Token *token) {
             }
             // else
             else {
+                HANDLE_ERROR("Invalid character", LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
 
@@ -255,6 +262,7 @@ int getNextToken(Token *token) {
                     token->attribute.keyword = KEYWORD_IMPORT;
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
+                    HANDLE_ERROR("Invalid character in state import", LEXICAL_ERROR, LEXICAL_ERROR);
                     return freeAndReturn(&buffer, LEXICAL_ERROR);
                 }
             }
@@ -301,6 +309,8 @@ int getNextToken(Token *token) {
                 state = STATE_FLOAT;
             } else {
                 ungetc(current, sourceFile);
+                HANDLE_ERROR("Invalid character after number dot. (Expected number).",
+                             LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -314,7 +324,7 @@ int getNextToken(Token *token) {
             } else {
                 ungetc(current, sourceFile);
                 token->attribute.decimal = atof(dynamicStringToCString(&buffer));
-                return freeAndReturn(&buffer, LEXICAL_ERROR);
+                return freeAndReturn(&buffer, TOKEN_OK);
             }
             break;
 
@@ -327,6 +337,8 @@ int getNextToken(Token *token) {
                 state = STATE_EXP_SIGN;
             } else {
                 ungetc(current, sourceFile);
+                HANDLE_ERROR("Invalid character after exponent. (Expected number or sign).",
+                             LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -337,6 +349,8 @@ int getNextToken(Token *token) {
                 state = STATE_EXP_NUMBER;
             } else {
                 ungetc(current, sourceFile);
+                HANDLE_ERROR("Invalid character after exponent sign. (Expected number).",
+                             LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -354,6 +368,8 @@ int getNextToken(Token *token) {
                     printf("DECIMAL: %f\n", token->attribute.decimal);
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
+                    HANDLE_ERROR("Invalid token type in state exp number", INTERNAL_ERROR,
+                                 INTERNAL_ERROR);
                     return freeAndReturn(&buffer, INTERNAL_ERROR);
                 }
             }
@@ -374,6 +390,7 @@ int getNextToken(Token *token) {
         // STRING
         case STATE_READ_STRING:
             if (current <= 31) {
+                HANDLE_ERROR("Invalid character in string", LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             } else if (current == '\\') {
                 state = STATE_BACKSLASH;
@@ -403,6 +420,7 @@ int getNextToken(Token *token) {
             } else if (current == 'x') {
                 state = STATE_HEXA0;
             } else {
+                HANDLE_ERROR("Invalid escape sequence", LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -412,6 +430,7 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
                 state = STATE_HEXA1;
             } else {
+                HANDLE_ERROR("Invalid hexa number", LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -421,6 +440,7 @@ int getNextToken(Token *token) {
                 dynamicStringAddChar(&buffer, current);
                 state = STATE_READ_STRING;
             } else {
+                HANDLE_ERROR("Invalid hexa number", LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -474,6 +494,8 @@ int getNextToken(Token *token) {
                 return TOKEN_OK;
             } else {
                 ungetc(current, sourceFile);
+                HANDLE_ERROR("Invalid character after ! (expected =)", LEXICAL_ERROR,
+                             LEXICAL_ERROR);
                 return LEXICAL_ERROR;
             }
 
@@ -501,6 +523,7 @@ int getNextToken(Token *token) {
                 if (checkTypeValid(&buffer, token) == TOKEN_OK) {
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
+                    HANDLE_ERROR("Invalid type", LEXICAL_ERROR, LEXICAL_ERROR);
                     return freeAndReturn(&buffer, LEXICAL_ERROR);
                 }
             }
@@ -512,6 +535,8 @@ int getNextToken(Token *token) {
                 state = STATE_CLOSING_SQUARE_BRAC;
             } else {
                 ungetc(current, sourceFile);
+                HANDLE_ERROR("Invalid character after [ (expected ])", LEXICAL_ERROR,
+                             LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -522,6 +547,8 @@ int getNextToken(Token *token) {
                 state = STATE_TYPE;
             } else {
                 ungetc(current, sourceFile);
+                HANDLE_ERROR("Invalid character after ] (expected digit or lowercase character)",
+                             LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
             break;
@@ -530,14 +557,4 @@ int getNextToken(Token *token) {
             break;
         }
     }
-}
-
-void resetCharCount() { count = 0; }
-
-void ungetcCharCount() {
-    int c = 0;
-    while (count-- != 0) {
-        ungetc(c, sourceFile);
-    }
-    (void)c;
 }
