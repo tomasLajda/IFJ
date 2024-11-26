@@ -13,6 +13,7 @@ IFJ Project
 #include <stdlib.h>
 
 FILE *sourceFile; // Source file to be used as input for scanner
+char hexaChar;    // Hexadecimal character
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
@@ -426,7 +427,7 @@ int getNextToken(Token *token) {
 
         case STATE_HEXA0:
             if (isxdigit(current)) {
-                dynamicStringAddChar(&buffer, current);
+                hexaChar = current;
                 state = STATE_HEXA1;
             } else {
                 HANDLE_ERROR("Invalid hexa number", LEXICAL_ERROR, LEXICAL_ERROR);
@@ -436,7 +437,9 @@ int getNextToken(Token *token) {
 
         case STATE_HEXA1:
             if (isxdigit(current)) {
-                dynamicStringAddChar(&buffer, current);
+                char hexa[3] = {hexaChar, current, '\0'};
+                char hexaConverted = (char)strtol(hexa, NULL, 16);
+                dynamicStringAddChar(&buffer, hexaConverted);
                 state = STATE_READ_STRING;
             } else {
                 HANDLE_ERROR("Invalid hexa number", LEXICAL_ERROR, LEXICAL_ERROR);
