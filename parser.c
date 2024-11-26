@@ -338,6 +338,10 @@ void parseReturn() {
         exprTree->root = exprNode;
         parseExpression(exprTree, tokenBuffer.first, NULL, currentToken);
 
+        if (exprTree->root == NULL) {
+            HANDLE_ERROR("Expected expression after return keyword", RETURN_EXPRESSION_ERROR);
+        }
+
         if (currentToken->type != TOKEN_TYPE_SEMICOLON) {
             // printTokenInfo(currentToken);
             HANDLE_ERROR("Expected ';' after return expression", SYNTAX_ERROR);

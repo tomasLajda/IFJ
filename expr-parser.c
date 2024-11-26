@@ -330,7 +330,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
 
     if (isEmpty(&tempStack)) {
         cleanupStack(&tempStack);
-        HANDLE_ERROR("Empty expression", SYNTAX_ERROR); // Empty expression - a syntax error occured
+        return NULL;
     }
 
     // Reverse the temporary stack and push it onto the input stack
@@ -412,8 +412,8 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        HANDLE_ERROR("Syntax error. fillinupstack() returned null\n", SYNTAX_ERROR,
-                     SYNTAX_ERROR); // Indicate syntax error
+        exprAST->root = NULL;
+        return 3;
     }
 
     // Initialize the current input element
