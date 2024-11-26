@@ -1613,7 +1613,7 @@ void semanticAnalysis() {
     symbolResetValues(&currentSymbol);
 
     if (ast->root->right == NULL) {
-        HANDLE_ERROR("AST is NULL", INTERNAL_ERROR);
+        HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
     }
 
     // Adds functions to the global scope
