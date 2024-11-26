@@ -82,6 +82,12 @@ int isDelimiter(Token *token);
 int isRelOperator(Token *token);
 
 /**
+ * @brief Function that checks if the given token is a term
+ * @return 1 if the token is a term, 0 otherwise
+ */
+int isTerm(Token *token);
+
+/**
  * @brief Duplicates a given string.
  *
  * This function allocates memory and creates a duplicate of the input string.

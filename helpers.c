@@ -235,6 +235,14 @@ int isRelOperator(Token *token) {
            token->type == TOKEN_TYPE_GTH || // >
            token->type == TOKEN_TYPE_GEQ;   // >=
 }
+
+int isTerm(Token *token) {
+    return token->type == TOKEN_TYPE_IDENTIFIER ||    // id
+           token->type == TOKEN_TYPE_INTEGER_VALUE || // i32
+           token->type == TOKEN_TYPE_DOUBLE_VALUE ||  // f64
+           token->type == TOKEN_TYPE_STRING_VALUE ||
+           (token->type == TOKEN_TYPE_KEYWORD && token->attribute.keyword == KEYWORD_NULL); // (
+}
 /**
  * @brief Function that transforms the token keyword integer to the corresponding character (string)
  */
