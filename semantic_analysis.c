@@ -555,6 +555,10 @@ void functionParameterAnalysis(ASTNode *node) {
     ListData currentParameter;
     currentParameter.key = node->token->attribute.string;
 
+    if (checkDeclaration(symbolTableTop(&symbolTableStack), currentParameter.key)) {
+        HANDLE_ERROR("Parameter redefinition", REDEFINITION_ERROR);
+    }
+
     if (node->left == NULL || node->left->token->type != TOKEN_TYPE_KEYWORD) {
         HANDLE_ERROR("Expected parameter type", INTERNAL_ERROR);
     }
@@ -573,6 +577,18 @@ void functionParameterAnalysis(ASTNode *node) {
         listNext(currentSymbol.params);
     }
 
+    Symbol paramSymbol = {
+        .key = currentParameter.key,
+        .type = currentParameter.type,
+        .constant = false,
+        .compileTime = false,
+        .used = false,
+        .function = false,
+        .params = NULL,
+    };
+
+    symbolTableInsert(symbolTableTop(&symbolTableStack), paramSymbol);
+
     node = node->right;
     functionParameterAnalysis(node);
 }
@@ -581,6 +597,14 @@ void functionAnalysis(ASTNode *node) {
     if (node == NULL) {
         return;
     }
+
+    SymbolTable *table = malloc(sizeof(SymbolTable));
+    if (table == NULL) {
+        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
+    }
+    symbolTableInit(table, symbolTableTop(&symbolTableStack));
+    symbolTablePush(&symbolTableStack, table);
+
     ASTNode *tempNode;
 
     currentSymbol.function = true;
@@ -631,8 +655,6 @@ void functionAnalysis(ASTNode *node) {
             HANDLE_ERROR("Main function cannot have parameters", PARAMETER_ERROR);
         }
     }
-    symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
-    symbolResetValues(&currentSymbol);
 
     node = node->parent;
     if (node == NULL) {
@@ -643,6 +665,11 @@ void functionAnalysis(ASTNode *node) {
     if (node == NULL) {
         HANDLE_ERROR("Function keyword doesn't have a parent", INTERNAL_ERROR);
     }
+
+    symbolTablePop(&symbolTableStack);
+
+    symbolTableInsert(symbolTableTop(&symbolTableStack), currentSymbol);
+    symbolResetValues(&currentSymbol);
 
     node = node->right;
     functionAnalysis(node);
@@ -1109,7 +1136,7 @@ Operand builtInFunctionAnalysis(ASTNode *node) {
     case KEYWORD_CHR:
         // 1 param
         parameterType[0] = TYPE_I_32;
-        returnType = TYPE_I_32;
+        returnType = TYPE_U_8_ARRAY;
         break;
     case KEYWORD_WRITE:
         // 1 param
