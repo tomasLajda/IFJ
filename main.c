@@ -53,10 +53,14 @@ int main() {
     // printf("--------------------------------\n");
     // printf("Finished scanning tokens\n");
 
-    int parseResult = parse();
-    printf("\nRESULT: %d\n", parseResult);
+    printf("Starting parsing\n");
+    parse();
+    printf("Finished parsing\n");
+    displayEntireAST(ast);
 
+    printf("\nStarting semantic analysis\n");
     semanticAnalysis();
+    printf("Finished semantic analysis\n");
 
     free(currentToken);
     fclose(sourceFile);
