@@ -13,7 +13,7 @@
 #include "helpers.h"
 #include "semantic_analysis.h"
 
-#define EPSILON 1e-9
+#define EPSILON 1e-15
 
 extern AST *ast;
 AST *listOfVariables;
@@ -21,21 +21,21 @@ Stack symbolTableStack;
 Symbol currentSymbol;
 
 /**
- * @brief Checks if the given integer value is zero to prevent division by zero.
+ * @brief Checks if the given value is zero and handles division by zero error.
  *
- * This function is used to ensure that an integer value is not zero before performing
- * a division operation, which would result in a runtime error.
+ * This function takes a double value as input and checks if it is zero.
+ * If the value is zero, it handles the division by zero error appropriately.
  *
- * @param value The integer value to be checked.
+ * @param value The double value to be checked for division by zero.
  */
-void checkDivisionByZeroInt(int value);
+void checkDivisionByZero(double value);
 
 /**
  * @brief Checks if a double is an integer.
  * @param number The double to check.
  * @return True if the double is an integer, false otherwise.
  */
-bool isFloatInteger(float number);
+bool isDoubleInt(double number);
 
 /**
  * @brief Checks if the operator is an equality operator.
@@ -108,17 +108,6 @@ bool checkVariableConstant(SymbolTable *table, const char *key);
 bool checkVariableCompileTime(SymbolTable *table, const char *key);
 
 /**
- * @brief Checks if a function parameter matches the expected type.
- * @param table The symbol table to check.
- * @param key The key of the function.
- * @param type The expected type of the parameter.
- * @param parameterIndex The index of the parameter.
- * @return True if the parameter matches the expected type, false otherwise.
- */
-bool checkFunctionParameter(SymbolTable *table, const char *key, DataType type,
-                            unsigned parameterIndex);
-
-/**
  * @brief Gets the number of parameters of a function.
  * @param table The symbol table to check.
  * @param key The key of the function.
@@ -180,16 +169,10 @@ void statementAnalysis(ASTNode *node);
 void functionBodyAnalysis(ASTNode *node);
 
 /**
- * @brief Analyzes an if statement.
+ * @brief Analyzes an if/while statement.
  * @param node The AST node representing the if statement.
  */
-void ifAnalysis(ASTNode *node);
-
-/**
- * @brief Analyzes a while statement.
- * @param node The AST node representing the while statement.
- */
-void whileAnalysis(ASTNode *node);
+void ifWhileAnalysis(ASTNode *node);
 
 /**
  * @brief Analyzes a variable definition.
@@ -272,18 +255,6 @@ ASTNode *findVariableInASTList(char *oldId);
 void functionBodyAnalysis(ASTNode *node);
 
 /**
- * @brief Analyzes an if statement.
- * @param node The AST node representing the if statement.
- */
-void ifAnalysis(ASTNode *node);
-
-/**
- * @brief Analyzes a while statement.
- * @param node The AST node representing the while statement.
- */
-void whileAnalysis(ASTNode *node);
-
-/**
  * @brief Analyzes a variable definition.
  * @param node The AST node representing the variable definition.
  */
@@ -340,7 +311,7 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node);
  */
 Operand expressionAnalysis(ASTNode *node);
 
-void checkDivisionByZero(float value) {
+void checkDivisionByZero(double value) {
     if (fabs(value) < EPSILON) {
         HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
     }
@@ -442,7 +413,7 @@ ASTNode *findVariableInASTList(char *oldId) {
     HANDLE_ERROR("Variable not found in AST list", INTERNAL_ERROR);
 }
 
-bool isFloatInteger(float number) { return floorf(number) == number; }
+bool isDoubleInt(double number) { return floor(number) == number; }
 
 bool isEqualOperator(TokenType operator) {
     return operator== TOKEN_TYPE_EQ || operator== TOKEN_TYPE_NEQ;
@@ -688,11 +659,8 @@ void statementAnalysis(ASTNode *node) {
         break;
 
     case KEYWORD_IF:
-        ifAnalysis(node);
-        break;
-
     case KEYWORD_WHILE:
-        whileAnalysis(node);
+        ifWhileAnalysis(node);
         break;
 
     case KEYWORD_CONST:
@@ -779,7 +747,7 @@ void functionBodyAnalysis(ASTNode *node) {
     symbolTablePop(&symbolTableStack);
 }
 
-void ifAnalysis(ASTNode *node) {
+void ifWhileAnalysis(ASTNode *node) {
     SymbolTable *table = malloc(sizeof(SymbolTable));
     if (table == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
@@ -838,6 +806,10 @@ void ifAnalysis(ASTNode *node) {
     symbolTableCheckUsed(table);
     symbolTablePop(&symbolTableStack);
 
+    if (node->right == NULL) {
+        return;
+    }
+
     table = malloc(sizeof(SymbolTable));
     if (table == NULL) {
         HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
@@ -846,66 +818,6 @@ void ifAnalysis(ASTNode *node) {
     symbolTablePush(&symbolTableStack, table);
 
     statementAnalysis(node->right);
-
-    symbolTableCheckUsed(table);
-    symbolTablePop(&symbolTableStack);
-}
-
-void whileAnalysis(ASTNode *node) {
-    SymbolTable *table = malloc(sizeof(SymbolTable));
-    if (table == NULL) {
-        HANDLE_ERROR("Memory allocation failed", INTERNAL_ERROR);
-    }
-    symbolTableInit(table, symbolTableTop(&symbolTableStack));
-    symbolTablePush(&symbolTableStack, table);
-
-    node = node->left;
-    if (node == NULL) {
-        HANDLE_ERROR("Expected while condition or null condition", INTERNAL_ERROR);
-    }
-
-    bool nullCond = false;
-    if (node->token->type == TOKEN_TYPE_VB) {
-        if (checkDeclaration(symbolTableTop(&symbolTableStack),
-                             node->right->token->attribute.string)) {
-            HANDLE_ERROR("Variable redefinition in null cond", REDEFINITION_ERROR);
-        }
-        symbolSetValues(&currentSymbol, node->right->token->attribute.string, TYPE_NULL, false,
-                        true, true);
-        currentSymbol.key = node->right->token->attribute.string;
-        currentSymbol.compileTime = false;
-
-        nullCond = true;
-        node = node->left;
-        if (node == NULL) {
-            HANDLE_ERROR("Expected while condition", INTERNAL_ERROR);
-        }
-    }
-
-    if (node->exprTree == NULL) {
-        HANDLE_ERROR("Expected while condition expression", INTERNAL_ERROR);
-    }
-    DataType type = expressionAnalysis(node->exprTree->root).type;
-
-    if (!nullCond) {
-        if (type != TYPE_BOOL) {
-            HANDLE_ERROR("Invalid condition type", TYPE_COMPATIBILITY_ERROR);
-        }
-    } else {
-        if (type == TYPE_NULL || !isNullableType(type)) {
-            HANDLE_ERROR("Invalid variable type", TYPE_COMPATIBILITY_ERROR);
-        }
-        currentSymbol.type = convertNullableType(type);
-
-        ASTNode *newNameNode = addVariableToASTList(node->parent->right->token);
-        free(node->parent->right->token);
-        node->parent->right->token = copyToken(newNameNode->token);
-
-        symbolTableInsert(table, currentSymbol);
-        symbolResetValues(&currentSymbol);
-    }
-
-    statementAnalysis(node->left);
 
     symbolTableCheckUsed(table);
     symbolTablePop(&symbolTableStack);
@@ -955,7 +867,7 @@ void variableDefinitionAnalysis(ASTNode *node) {
     // Convert integer to double for consistent type
     if ((currentSymbol.type == TYPE_F_64 || currentSymbol.type == TYPE_F_64_NULL) &&
         expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
-        float value = (float)expressionResult.token->attribute.integer;
+        double value = (long long)expressionResult.token->attribute.integer;
         expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
         expressionResult.token->attribute.decimal = value;
         expressionResult.type = TYPE_F_64;
@@ -1038,7 +950,7 @@ void variableAssignmentAnalysis(ASTNode *node) {
     // Convert integer to double if needed for consistent type
     if ((valueType == TYPE_F_64 || valueType == TYPE_F_64_NULL) &&
         expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
-        float value = (float)expressionResult.token->attribute.integer;
+        double value = (long long)expressionResult.token->attribute.integer;
         expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
         expressionResult.token->attribute.decimal = value;
         expressionResult.type = TYPE_F_64;
@@ -1074,7 +986,7 @@ void returnAnalysis(ASTNode *node) {
         // Convert integer to double if needed for consistent type
         if ((returnType == TYPE_F_64 || returnType == TYPE_F_64_NULL) &&
             expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
-            float value = (float)expressionResult.token->attribute.integer;
+            double value = (long long)expressionResult.token->attribute.integer;
             expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
             expressionResult.token->attribute.decimal = value;
             expressionResult.type = TYPE_F_64;
@@ -1122,7 +1034,7 @@ Operand functionCallAnalysis(ASTNode *node) {
         // Convert integer to double if needed for consistent type
         if ((parameterType == TYPE_F_64 || parameterType == TYPE_F_64_NULL) &&
             expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
-            float value = (float)expressionResult.token->attribute.integer;
+            double value = (long long)expressionResult.token->attribute.integer;
             expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
             expressionResult.token->attribute.decimal = value;
             expressionResult.type = TYPE_F_64;
@@ -1248,7 +1160,7 @@ Operand builtInFunctionAnalysis(ASTNode *node) {
         // Convert integer to double for consistent type
         if ((parameterType[i] == TYPE_F_64 || parameterType[i] == TYPE_F_64_NULL) &&
             expressionResult.type == TYPE_I_32 && expressionResult.compileTime) {
-            float value = (float)expressionResult.token->attribute.integer;
+            double value = (double)expressionResult.token->attribute.integer;
             expressionResult.token->type = TOKEN_TYPE_DOUBLE_VALUE;
             expressionResult.token->attribute.decimal = value;
             expressionResult.type = TYPE_F_64;
@@ -1277,7 +1189,7 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
     if (left.type == TYPE_I_32 && right.type == TYPE_I_32) {
         switch (operator) {
         case TOKEN_TYPE_PLUS:
-            int result = left.token->attribute.integer + right.token->attribute.integer;
+            long long result = left.token->attribute.integer + right.token->attribute.integer;
             node->token->type = TOKEN_TYPE_INTEGER_VALUE;
             node->token->attribute.integer = result;
             break;
@@ -1320,56 +1232,41 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
     }
 
     if (left.type == TYPE_F_64 && right.type == TYPE_F_64) {
+        double result;
         switch (operator) {
         case TOKEN_TYPE_PLUS:
-            float result = left.token->attribute.decimal + right.token->attribute.decimal;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = (int)result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            result = left.token->attribute.decimal + right.token->attribute.decimal;
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_MINUS:
             result = left.token->attribute.decimal - right.token->attribute.decimal;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = (int)result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_MUL:
             result = left.token->attribute.decimal * right.token->attribute.decimal;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = (int)result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_DIV:
             checkDivisionByZero(right.token->attribute.decimal);
             result = left.token->attribute.decimal / right.token->attribute.decimal;
-
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = (int)result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         default:
             HANDLE_ERROR("Invalid reduction operator", INTERNAL_ERROR);
             break;
+        }
+
+        if (isDoubleInt(result)) {
+            node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+            node->token->attribute.integer = (long long)result;
         }
 
         disposeSubtree(node->left);
@@ -1385,56 +1282,42 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
     }
 
     if (left.type == TYPE_I_32 && right.type == TYPE_F_64) {
+        double result;
+
         switch (operator) {
         case TOKEN_TYPE_PLUS:
-            float result = left.token->attribute.integer + right.token->attribute.decimal;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = (int)result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            result = left.token->attribute.integer + right.token->attribute.decimal;
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_MINUS:
             result = left.token->attribute.integer - right.token->attribute.decimal;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = (int)result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_MUL:
             result = left.token->attribute.integer * right.token->attribute.decimal;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = (int)result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_DIV:
             checkDivisionByZero(right.token->attribute.decimal);
             result = left.token->attribute.integer / right.token->attribute.decimal;
-
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = (int)result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         default:
             HANDLE_ERROR("Invalid reduction operator", INTERNAL_ERROR);
             break;
+        }
+
+        if (isDoubleInt(result)) {
+            node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+            node->token->attribute.integer = (long long)result;
         }
 
         disposeSubtree(node->left);
@@ -1450,38 +1333,24 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
     }
 
     if (left.type == TYPE_F_64 && right.type == TYPE_I_32) {
+        double result;
         switch (operator) {
         case TOKEN_TYPE_PLUS:
-            float result = left.token->attribute.decimal + right.token->attribute.integer;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            result = left.token->attribute.decimal + right.token->attribute.integer;
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_MINUS:
             result = left.token->attribute.decimal - right.token->attribute.integer;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_MUL:
             result = left.token->attribute.decimal * right.token->attribute.integer;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         case TOKEN_TYPE_DIV:
@@ -1489,18 +1358,18 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
                 HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
             }
             result = left.token->attribute.decimal / right.token->attribute.integer;
-            if (isFloatInteger(result)) {
-                node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                node->token->attribute.integer = result;
-            } else {
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            }
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         default:
             HANDLE_ERROR("Invalid reduction operator", INTERNAL_ERROR);
             break;
+        }
+
+        if (isDoubleInt(result)) {
+            node->token->type = (long long)TOKEN_TYPE_INTEGER_VALUE;
+            node->token->attribute.integer = result;
         }
 
         disposeSubtree(node->left);
@@ -1560,7 +1429,7 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
 
             result.type = TYPE_F_64;
             left.token->type = TOKEN_TYPE_DOUBLE_VALUE;
-            left.token->attribute.decimal = (float)left.token->attribute.integer;
+            left.token->attribute.decimal = (double)left.token->attribute.integer;
             return result;
         }
         break;
@@ -1596,7 +1465,7 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
 
             result.type = TYPE_F_64;
             right.token->type = TOKEN_TYPE_DOUBLE_VALUE;
-            right.token->attribute.decimal = (float)right.token->attribute.integer;
+            right.token->attribute.decimal = (double)right.token->attribute.integer;
             return result;
         }
         break;
@@ -1656,7 +1525,7 @@ Operand expressionAnalysis(ASTNode *node) {
             ASTNode *newNameNode = findVariableInASTList(node->token->attribute.string);
             // can't free the string because it is invalid pointer free
             // it might be because string is not allocated dynamically ???
-            // it's not allocated in tests you moron
+            // it's not allocated in tests
             // free(node->token->attribute.string);
             free(node->token);
             node->token = copyToken(newNameNode->token);
@@ -1670,8 +1539,8 @@ Operand expressionAnalysis(ASTNode *node) {
         }
 
         if (node->token->type == TOKEN_TYPE_DOUBLE_VALUE) {
-            if (isFloatInteger(node->token->attribute.decimal)) {
-                int value = (int)node->token->attribute.decimal;
+            if (isDoubleInt(node->token->attribute.decimal)) {
+                long long value = (long long)node->token->attribute.decimal;
                 node->token->type = TOKEN_TYPE_INTEGER_VALUE;
                 node->token->attribute.integer = value;
                 return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
