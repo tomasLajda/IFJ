@@ -323,7 +323,7 @@ int getNextToken(Token *token) {
                 state = STATE_EXPONENT;
             } else {
                 ungetc(current, sourceFile);
-                token->attribute.decimal = atof(dynamicStringToCString(&buffer));
+                token->attribute.decimal = strtod(dynamicStringToCString(&buffer), NULL);
                 return freeAndReturn(&buffer, TOKEN_OK);
             }
             break;
