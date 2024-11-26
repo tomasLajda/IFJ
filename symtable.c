@@ -347,6 +347,20 @@ void treeCheckUsed(BinaryTreeNodePtr node) {
     treeCheckUsed(node->right);
 }
 
+void treeCheckChanged(BinaryTreeNodePtr node) {
+    if (node == NULL) {
+        return;
+    }
+
+    treeCheckChanged(node->left);
+
+    if (!node->data.changed && !node->data.constant) {
+        HANDLE_ERROR("Variable is not modified", UNUSED_VARIABLE_ERROR);
+    }
+
+    treeCheckChanged(node->right);
+}
+
 bool symbolTableSearch(SymbolTable *table, const char *key) {
     bool found = false;
 
@@ -410,6 +424,26 @@ void symbolTableSetUsed(SymbolTable *table, const char *key) {
     }
 
     symbol->used = true;
+}
+
+void symbolTableSetChanged(SymbolTable *table, const char *key) {
+    Symbol *symbol = NULL;
+
+    while (symbol == NULL) {
+        symbol = treeGet(table->root, key);
+
+        if (table->previousTable != NULL) {
+            table = table->previousTable;
+        } else {
+            break;
+        }
+    }
+
+    if (symbol == NULL) {
+        HANDLE_ERROR("Symbol not found", UNDEFINED_ERROR);
+    }
+
+    symbol->changed = true;
 }
 
 Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key) {
@@ -507,6 +541,7 @@ void symbolResetValues(Symbol *symbol) {
     symbol->function = false;
     symbol->constant = false;
     symbol->used = false;
+    symbol->changed = false;
     symbol->params = NULL;
 }
 
@@ -517,5 +552,15 @@ void symbolTableCheckUsed(SymbolTable *table) {
 
     if (table->root != NULL) {
         treeCheckUsed(table->root);
+    }
+}
+
+void symbolTableCheckChanged(SymbolTable *table) {
+    if (table == NULL) {
+        return;
+    }
+
+    if (table->root != NULL) {
+        treeCheckChanged(table->root);
     }
 }

@@ -22,6 +22,7 @@ typedef struct Symbol {
     bool function;
     bool constant;
     bool used;
+    bool changed;
     bool compileTime;
     List *params;
 } Symbol;
@@ -202,5 +203,27 @@ void symbolResetValues(Symbol *symbol);
  * @param table Pointer to the symbol table to be checked.
  */
 void symbolTableCheckUsed(SymbolTable *table);
+
+/**
+ * @brief Marks a symbol table entry as changed.
+ *
+ * This function updates the status of a specific entry in the symbol table,
+ * indicating that it has been modified.
+ *
+ * @param table A pointer to the symbol table.
+ * @param key The key of the entry to mark as changed.
+ */
+void symbolTableSetChanged(SymbolTable *table, const char *key);
+
+/**
+ * @brief Checks if the symbol table has changed.
+ *
+ * This function examines the provided symbol table to determine if any changes
+ * have been made since the last check. It is useful for ensuring that the symbol
+ * table remains consistent and up-to-date.
+ *
+ * @param table A pointer to the SymbolTable to be checked.
+ */
+void symbolTableCheckChanged(SymbolTable *table);
 
 #endif

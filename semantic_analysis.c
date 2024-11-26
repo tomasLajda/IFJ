@@ -318,7 +318,7 @@ void checkDivisionByZero(double value) {
 }
 
 char *createNewVariableName() {
-    char *baseString = "var_";
+    char *baseString = "var__";
 
     static unsigned variableCount = 0;
 
@@ -771,6 +771,7 @@ void functionBodyAnalysis(ASTNode *node) {
     statementAnalysis(node->right);
 
     symbolTableCheckUsed(table);
+    symbolTableCheckChanged(table);
     symbolTablePop(&symbolTableStack);
 }
 
@@ -831,6 +832,7 @@ void ifWhileAnalysis(ASTNode *node) {
     statementAnalysis(node->left);
 
     symbolTableCheckUsed(table);
+    symbolTableCheckChanged(table);
     symbolTablePop(&symbolTableStack);
 
     if (node->right == NULL) {
@@ -847,6 +849,7 @@ void ifWhileAnalysis(ASTNode *node) {
     statementAnalysis(node->right);
 
     symbolTableCheckUsed(table);
+    symbolTableCheckChanged(table);
     symbolTablePop(&symbolTableStack);
 }
 
@@ -858,6 +861,7 @@ void variableDefinitionAnalysis(ASTNode *node) {
     }
     currentSymbol.compileTime = false;
     currentSymbol.used = false;
+    currentSymbol.changed = false;
 
     node = node->left;
     if (node == NULL || node->token->type != TOKEN_TYPE_IDENTIFIER) {
@@ -947,6 +951,7 @@ void variableAssignmentAnalysis(ASTNode *node) {
             HANDLE_ERROR("Cannot assign to constant", REDEFINITION_ERROR);
         }
         symbolTableSetUsed(symbolTableTop(&symbolTableStack), node->token->attribute.string);
+        symbolTableSetChanged(symbolTableTop(&symbolTableStack), node->token->attribute.string);
 
         valueType =
             getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
