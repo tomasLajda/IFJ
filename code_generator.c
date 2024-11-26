@@ -117,7 +117,7 @@ void generateFuncBody(ASTNode *node) {
     // DEFVAR for all variables
     if (node->exprTree != NULL) {
         ASTNode *currentVarible = node->exprTree->root;
-        while (currentVarible != NULL) {
+        while (currentVarible != NULL && currentVarible->token->type == TOKEN_TYPE_IDENTIFIER) {
             ADD_TO_BUFFER("DEFVAR LF@");
             ADD_TO_BUFFER(currentVarible->token->attribute.string);
             ADD_TO_BUFFER("\n");
@@ -504,9 +504,6 @@ int generateParam(ASTNode *node, int paramID) {
     }
     char *paramName = node->token->attribute.string;
 
-    ADD_TO_BUFFER("DEFVAR LF@");
-    ADD_TO_BUFFER(paramName);
-    ADD_TO_BUFFER("\n");
     ADD_TO_BUFFER("MOVE LF@");
     ADD_TO_BUFFER(paramName);
     ADD_TO_BUFFER(" LF@%%arg");
