@@ -484,7 +484,7 @@ void symbolTableCopyFunctionParams(SymbolTable *table, List *params) {
         ListData data;
         listGetValue(params, &data);
         Symbol newSymbol;
-        symbolSetValues(&newSymbol, data.key, data.type, false, false, false);
+        symbolSetValues(&newSymbol, data.key, data.type, false, true, false);
         newSymbol.compileTime = false;
         symbolTableInsert(table, newSymbol);
         listNext(params);

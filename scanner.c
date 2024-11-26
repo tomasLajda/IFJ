@@ -268,7 +268,7 @@ int getNextToken(Token *token) {
                     token->attribute.keyword = KEYWORD_IMPORT;
                     return freeAndReturn(&buffer, TOKEN_OK);
                 } else {
-                    HANDLE_ERROR("Invalid character in state import", LEXICAL_ERROR, LEXICAL_ERROR);
+                    HANDLE_ERROR("Invalid character in state import", LEXICAL_ERROR);
                     return freeAndReturn(&buffer, LEXICAL_ERROR);
                 }
             }

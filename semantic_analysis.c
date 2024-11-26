@@ -580,7 +580,7 @@ void functionParameterAnalysis(ASTNode *node) {
     Symbol paramSymbol = {
         .key = currentParameter.key,
         .type = currentParameter.type,
-        .constant = false,
+        .constant = true,
         .compileTime = false,
         .used = false,
         .function = false,
@@ -1447,6 +1447,8 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
 
             if (isRelationalOperator(operator)) {
                 result.type = TYPE_BOOL;
+                left.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                left.token->attribute.decimal = (double)left.token->attribute.integer;
                 return result;
             }
 
@@ -1482,6 +1484,8 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
 
             if (isRelationalOperator(operator)) {
                 result.type = TYPE_BOOL;
+                right.token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                right.token->attribute.decimal = (double)right.token->attribute.integer;
                 return result;
             }
 
