@@ -13,6 +13,7 @@ IFJ Project
 #include <stdlib.h>
 
 extern FILE *sourceFile; // Source file to be used as input for scanner
+char hexaChar;           // Hexadecimal character
 
 int freeAndReturn(DynamicString *string, int errorCode) {
     dynamicStringFree(string);
@@ -213,6 +214,11 @@ int getNextToken(Token *token) {
             else if (current == '"') {
                 token->type = TOKEN_TYPE_STRING_VALUE;
                 state = STATE_READ_STRING;
+            }
+            // MULTILINE STRING
+            else if (current == '\\') {
+                token->type = TOKEN_TYPE_STRING_VALUE;
+                state = STATE_BACKSLASH_MULTILINE;
             }
             // IMPORT
             else if (current == '@') {
@@ -426,7 +432,7 @@ int getNextToken(Token *token) {
 
         case STATE_HEXA0:
             if (isxdigit(current)) {
-                dynamicStringAddChar(&buffer, current);
+                hexaChar = current;
                 state = STATE_HEXA1;
             } else {
                 HANDLE_ERROR("Invalid hexa number", LEXICAL_ERROR, LEXICAL_ERROR);
@@ -436,7 +442,9 @@ int getNextToken(Token *token) {
 
         case STATE_HEXA1:
             if (isxdigit(current)) {
-                dynamicStringAddChar(&buffer, current);
+                char hexa[3] = {hexaChar, current, '\0'};
+                char hexaConverted = (char)strtol(hexa, NULL, 16);
+                dynamicStringAddChar(&buffer, hexaConverted);
                 state = STATE_READ_STRING;
             } else {
                 HANDLE_ERROR("Invalid hexa number", LEXICAL_ERROR, LEXICAL_ERROR);
@@ -448,6 +456,39 @@ int getNextToken(Token *token) {
             ungetc(current, sourceFile);
             token->attribute.string = dynamicStringToCString(&buffer);
             return freeAndReturn(&buffer, TOKEN_OK);
+
+        // MULTILINE STRING
+        case STATE_BACKSLASH_MULTILINE:
+            if (current == '\\') {
+                state = STATE_MULTILINE_STRING_LOAD;
+            } else {
+                HANDLE_ERROR("Invalid character after \\ in multiline string", LEXICAL_ERROR,
+                             LEXICAL_ERROR);
+                return freeAndReturn(&buffer, LEXICAL_ERROR);
+            }
+            break;
+
+        case STATE_MULTILINE_STRING_LOAD:
+            if (current == '\n') {
+                state = STATE_MULTILINE_EOL;
+            } else {
+                dynamicStringAddChar(&buffer, current);
+                state = STATE_MULTILINE_STRING_LOAD;
+            }
+            break;
+
+        case STATE_MULTILINE_EOL:
+            if (isspace(current)) {
+                state = STATE_MULTILINE_EOL;
+            } else if (current == '\\') {
+                dynamicStringAddChar(&buffer, '\n');
+                state = STATE_BACKSLASH_MULTILINE;
+            } else {
+                ungetc(current, sourceFile);
+                token->attribute.string = dynamicStringToCString(&buffer);
+                return freeAndReturn(&buffer, TOKEN_OK);
+            }
+            break;
 
         // COMMENT
         case STATE_COMMENT:
