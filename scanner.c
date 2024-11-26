@@ -23,6 +23,21 @@ int freeAndReturn(DynamicString *string, int errorCode) {
     return errorCode;
 }
 
+void stringFormatting(DynamicString *string) {
+    unsigned char c;
+    int i = string->length - 1;
+    c = string->string[i];
+    if (c == '#' || c == '\\' || c <= 32 || !isprint(c)) {
+        unsigned char tmp = '\\';
+        dynamicStringReplaceChar(string, tmp, i);
+        char buffer[7];
+        snprintf(buffer, 7, "%03d", c);
+        dynamicStringAddString(string, buffer);
+    } else {
+        dynamicStringReplaceChar(string, c, i);
+    }
+}
+
 int checkTypeValid(DynamicString *string, Token *token) {
     // TODO: DELETE DEBUG
     // printf("STRING: %s\n", dynamicStringToCString(string));
@@ -403,24 +418,30 @@ int getNextToken(Token *token) {
                 state = STATE_STRING;
             } else {
                 dynamicStringAddChar(&buffer, current);
+                stringFormatting(&buffer);
             }
             break;
 
         case STATE_BACKSLASH:
             if (current == 'n') {
                 dynamicStringAddChar(&buffer, '\n');
+                stringFormatting(&buffer);
                 state = STATE_READ_STRING;
             } else if (current == 't') {
                 dynamicStringAddChar(&buffer, '\t');
+                stringFormatting(&buffer);
                 state = STATE_READ_STRING;
             } else if (current == '"') {
                 dynamicStringAddChar(&buffer, '\"');
+                stringFormatting(&buffer);
                 state = STATE_READ_STRING;
             } else if (current == '\\') {
                 dynamicStringAddChar(&buffer, '\\');
+                stringFormatting(&buffer);
                 state = STATE_READ_STRING;
             } else if (current == 'r') {
                 dynamicStringAddChar(&buffer, '\r');
+                stringFormatting(&buffer);
                 state = STATE_READ_STRING;
             } else if (current == 'x') {
                 state = STATE_HEXA0;
@@ -454,6 +475,7 @@ int getNextToken(Token *token) {
 
         case STATE_STRING:
             ungetc(current, sourceFile);
+            stringFormatting(&buffer);
             token->attribute.string = dynamicStringToCString(&buffer);
             return freeAndReturn(&buffer, TOKEN_OK);
 
@@ -485,6 +507,7 @@ int getNextToken(Token *token) {
                 state = STATE_BACKSLASH_MULTILINE;
             } else {
                 ungetc(current, sourceFile);
+                stringFormatting(&buffer);
                 token->attribute.string = dynamicStringToCString(&buffer);
                 return freeAndReturn(&buffer, TOKEN_OK);
             }
