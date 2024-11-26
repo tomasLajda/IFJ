@@ -495,6 +495,7 @@ int getNextToken(Token *token) {
                 state = STATE_MULTILINE_EOL;
             } else {
                 dynamicStringAddChar(&buffer, current);
+                stringFormatting(&buffer);
                 state = STATE_MULTILINE_STRING_LOAD;
             }
             break;
@@ -504,6 +505,7 @@ int getNextToken(Token *token) {
                 state = STATE_MULTILINE_EOL;
             } else if (current == '\\') {
                 dynamicStringAddChar(&buffer, '\n');
+                stringFormatting(&buffer);
                 state = STATE_BACKSLASH_MULTILINE;
             } else {
                 ungetc(current, sourceFile);
