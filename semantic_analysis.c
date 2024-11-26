@@ -1021,11 +1021,11 @@ void returnAnalysis(ASTNode *node) {
 
         if (expressionResult.type != returnType &&
             (expressionResult.type != TYPE_NULL || !isNullableType(returnType))) {
-            HANDLE_ERROR("Return type does not match", RETURN_EXPRESSION_ERROR);
+            HANDLE_ERROR("Return type does not match", PARAMETER_ERROR);
         }
 
         if (expressionResult.type == TYPE_U_8_ARRAY && expressionResult.compileTime) {
-            HANDLE_ERROR("Cannot return compile time string", RETURN_EXPRESSION_ERROR);
+            HANDLE_ERROR("Cannot return compile time string", PARAMETER_ERROR);
         }
     }
 }
