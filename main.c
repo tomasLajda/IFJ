@@ -1,7 +1,6 @@
 #include "code_generator.h"
 #include "enums.h"
 #include "error_codes.h"
-#include "graph.h"
 #include "parser.h"
 #include "scanner.h"
 #include "semantic_analysis.h"
@@ -15,7 +14,6 @@ AST *ast = NULL;
 
 int main() {
 
-    // sourceFile = fopen("IFJ24-tests-master/in/big_test2.ifj", "r");
     sourceFile = stdin;
 
     currentToken = malloc(sizeof(Token));
@@ -33,33 +31,11 @@ int main() {
         return result;
     }
 
-    // while (true) {
-    //     int result = getNextToken(currentToken);
-    //     if (result != TOKEN_OK) {
-    //         printTokenInfo(currentToken);
-    //         fprintf(stderr, "Error: getNextToken returned %d\n", result);
-    //         free(currentToken);
-    //         fclose(sourceFile);
-    //         return result;
-    //     }
-
-    //     printTokenInfo(currentToken);
-
-    //     if (currentToken->type == TOKEN_TYPE_EOF) {
-    //         break;
-    //     }
-    // }
-
-    // printf("--------------------------------\n");
-    // printf("Finished scanning tokens\n");
-
     parse();
     // printf("Finished parsing\n");
 
     semanticAnalysis();
     // printf("Finished semantic analysis\n");
-
-    generateASTDotFile(ast, "ast.dot");
 
     generateCode(stdout, ast);
 
