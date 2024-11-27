@@ -24,6 +24,7 @@ typedef struct Symbol {
     bool used;
     bool changed;
     bool compileTime;
+    double value;
     List *params;
 } Symbol;
 
@@ -41,6 +42,160 @@ typedef struct SymbolTable {
     char *functionKey;
     struct SymbolTable *previousTable;
 } SymbolTable;
+
+/**
+ * @brief Creates a new tree node with the given data.
+ *
+ * @param node Pointer to the node to be created.
+ * @param data Data to be stored in the new node.
+ */
+void treeCreate(BinaryTreeNodePtr *node, Symbol data);
+
+/**
+ * @brief Returns the height of the tree.
+ *
+ * @param node The root node of the tree.
+ * @return The height of the tree.
+ */
+unsigned treeHeight(BinaryTreeNodePtr node);
+
+/**
+ * @brief Calculates the balance factor of the node.
+ *
+ * @param node The node to calculate the balance factor for.
+ * @return The balance factor of the node.
+ */
+int treeBalanceFactor(BinaryTreeNodePtr node);
+
+/**
+ * @brief Updates the height of the node.
+ *
+ * @param node The node to update the height for.
+ */
+void treeUpdateHeight(BinaryTreeNodePtr node);
+
+/**
+ * @brief Performs a left rotation on the node.
+ *
+ * @param node The node to perform the left rotation on.
+ */
+void treeRotateLeft(BinaryTreeNodePtr *node);
+
+/**
+ * @brief Performs a right rotation on the node.
+ *
+ * @param node The node to perform the right rotation on.
+ */
+void treeRotateRight(BinaryTreeNodePtr *node);
+
+/**
+ * @brief Rebalances the tree.
+ *
+ * @param node The root node of the tree to rebalance.
+ */
+void treeRebalance(BinaryTreeNodePtr *node);
+
+/**
+ * @brief Disposes of the tree.
+ *
+ * @param node The root node of the tree to dispose of.
+ */
+void treeDispose(BinaryTreeNodePtr node);
+
+/**
+ * @brief Finds the node with the minimum value in the tree.
+ *
+ * @param node The root node of the tree.
+ * @return The node with the minimum value.
+ */
+BinaryTreeNodePtr treeMinValueNode(BinaryTreeNodePtr node);
+
+/**
+ * @brief Searches for a key in the tree.
+ *
+ * @param node The root node of the tree.
+ * @param key The key to search for.
+ * @return True if the key is found, false otherwise.
+ */
+bool treeSearch(BinaryTreeNodePtr node, const char *key);
+
+/**
+ * @brief Inserts a new node with the given data into the tree.
+ *
+ * @param node The root node of the tree.
+ * @param data The data to insert.
+ * @return The new root node of the tree.
+ */
+BinaryTreeNodePtr treeInsert(BinaryTreeNodePtr node, Symbol data);
+
+/**
+ * @brief Deletes a node with the given key from the tree.
+ *
+ * @param node The root node of the tree.
+ * @param key The key of the node to delete.
+ * @return The new root node of the tree.
+ */
+BinaryTreeNodePtr treeDelete(BinaryTreeNodePtr node, const char *key);
+
+/**
+ * @brief Reassigns the data of a node with the given key.
+ *
+ * @param node The root node of the tree.
+ * @param key The key of the node to reassign.
+ * @param data The new data to assign.
+ */
+void treeReassign(BinaryTreeNodePtr node, const char *key, Symbol data);
+
+/**
+ * @brief Retrieves the data of a node with the given key.
+ *
+ * @param node The root node of the tree.
+ * @param key The key of the node to retrieve.
+ * @return Pointer to the data of the node, or NULL if not found.
+ */
+Symbol *treeGet(BinaryTreeNodePtr node, const char *key);
+
+/**
+ * @brief Prints a specified number of spaces.
+ *
+ * This function prints a given number of spaces to the standard output.
+ *
+ * @param count The number of spaces to print.
+ */
+void printSpaces(int count);
+
+/**
+ * @brief Recursively prints a binary tree in a structured format.
+ *
+ * This function performs an in-order traversal of a binary tree and prints
+ * each node's key with indentation corresponding to its level in the tree.
+ *
+ * @param node A pointer to the current node in the binary tree.
+ * @param level The current level of the node in the binary tree.
+ */
+void treePrint(BinaryTreeNodePtr node, int level);
+
+/**
+ * @brief Checks if all symbols in the tree have been used.
+ *
+ * This function iterates through the given tree and verifies
+ * whether each symbol has been used. It can be used to ensure that
+ * there are no unused symbols in the tree.
+ *
+ * @param node The root node of the tree.
+ */
+void treeCheckUsed(BinaryTreeNodePtr node);
+
+/**
+ * @brief Checks if all symbols in the tree have been changed.
+ *
+ * This function iterates through the given tree and verifies
+ * whether each symbol has been changed. It can be used to ensure that
+ * there are no unchanged symbols in the tree.
+ *
+ * @param node The root node of the tree.
+ */
+void treeCheckChanged(BinaryTreeNodePtr node);
 
 /**
  * @brief Initializes the symbol table.

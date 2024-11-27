@@ -543,6 +543,8 @@ void symbolResetValues(Symbol *symbol) {
     symbol->used = false;
     symbol->changed = false;
     symbol->params = NULL;
+    symbol->compileTime = false;
+    symbol->value = 0;
 }
 
 void symbolTableCheckUsed(SymbolTable *table) {
