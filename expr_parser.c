@@ -284,7 +284,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
     if (!isDelimiter(token)) {
         // Token doesn't belong in the expression - a syntax error occured
         cleanupStack(&tempStack);
-        HANDLE_ERROR("Token doesn't belong in expression", SYNTAX_ERROR);
+        HANDLE_ERROR("Token doesn't belong in expression", SYNTAX_ERROR, NULL);
     }
 
     if (isEmpty(&tempStack)) {
@@ -299,7 +299,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
         if (topElement == NULL) {
             cleanupStack(&tempStack);
             freeToken(token);
-            HANDLE_ERROR("Unexpected NULL stack element", INTERNAL_ERROR, INTERNAL_ERROR);
+            HANDLE_ERROR("Unexpected NULL stack element", INTERNAL_ERROR, NULL);
         }
 
         // Duplicate the token from the top element
@@ -457,7 +457,8 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
             free(input);
             cleanupStack(stack);
             free(stack);
-            HANDLE_ERROR("Syntax error. Expression precedence not found.\n", SYNTAX_ERROR);
+            HANDLE_ERROR("Syntax error. Expression precedence not found.\n", SYNTAX_ERROR,
+                         SYNTAX_ERROR);
 
         } else if (!isEmpty(input)) { // Shift
             Token *currentToken = copyToken(currentInputElement->tokenPtr);
@@ -505,6 +506,6 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
         free(input);
         cleanupStack(stack);
         free(stack);
-        HANDLE_ERROR("Syntax error.", SYNTAX_ERROR, SYNTAX_ERROR); // Syntax error
+        HANDLE_ERROR("Syntax error.", SYNTAX_ERROR, SYNTAX_ERROR);
     }
 }
