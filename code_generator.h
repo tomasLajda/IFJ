@@ -130,7 +130,7 @@ IFJ project
     "DEFVAR LF@end_index\n"                                                                        \
     "DEFVAR LF@condition\n"                                                                        \
     "MOVE LF@%%retval nil@nil\n"                                                                   \
-    "MOVE LF@substring string@\"\"\n"                                                              \
+    "MOVE LF@substring string@\n"                                                                  \
     "MOVE LF@start_index LF@i\n"                                                                   \
     "MOVE LF@end_index LF@j\n"                                                                     \
     "STRLEN LF@len LF@s\n"                                                                         \
@@ -152,8 +152,8 @@ IFJ project
     "CONCAT LF@substring LF@substring LF@current_char\n"                                           \
     "ADD LF@counter LF@counter int@1\n"                                                            \
     "JUMP $substring_loop\n"                                                                       \
-    "LABEL $substring_end\n"                                                                       \
     "MOVE LF@%%retval LF@substring\n"                                                              \
+    "LABEL $substring_end\n"                                                                       \
     "POPFRAME\n"                                                                                   \
     "RETURN\n"                                                                                     \
     "LABEL $substring_error\n"                                                                     \
