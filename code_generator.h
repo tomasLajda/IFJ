@@ -152,9 +152,9 @@ IFJ project
     "GETCHAR LF@current_char LF@s LF@counter\n"                                                    \
     "CONCAT LF@substring LF@substring LF@current_char\n"                                           \
     "ADD LF@counter LF@counter int@1\n"                                                            \
+    "MOVE LF@%%retval LF@substring\n"                                                              \
     "JUMP $substring_loop\n"                                                                       \
     "LABEL $substring_end\n"                                                                       \
-    "MOVE LF@%%retval LF@substring\n"                                                              \
     "POPFRAME\n"                                                                                   \
     "RETURN\n"                                                                                     \
     "LABEL $substring_error\n"                                                                     \
