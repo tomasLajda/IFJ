@@ -1,9 +1,11 @@
-/*
+/**
  * IFJ Project
- * @brief Header file for parser
+ * @brief Header file for parser functions. Contains functions for all non-terminal symbols in the
+ * grammar. Some functions are two non-terminal symbols combined.
  *
  * @author Martin Valapka - xvalapm00
- */
+ * @author Matúš Csirik - xcsirim00
+ **/
 
 #ifndef _PARSER_H
 #define _PARSER_H
@@ -24,6 +26,15 @@ typedef struct {
 } TokenBuffer;
 
 /**
+ * @brief Parses the whole program. Stores an AST (abstract syntax tree) representing the source
+ * code in the global variable 'ast' which must be initialised beforehand.
+ *
+ * @return Returns 0 if the program was parsed successfully, exits with the corresponding error code
+ * otherwise.
+ */
+int parse();
+
+/**
  * @brief Initializes the token buffer by allocating memory for tokens
  */
 void initTokenBuffer();
@@ -34,23 +45,23 @@ void initTokenBuffer();
 void freeTokenBuffer();
 
 /**
- * @brief Goes back in the AST to the last node that is a WHILE, IF or PUB KEYWORD and sets it as
- * the current and main parent
+ * @brief Goes back to the last node that is an IF, WHILE or PUB KEYWORD and sets it as the current
+ * and main parent.
  *
- * @param startNode The node to start from
+ * @param startNode The node to start from.
  */
 void goBack(ASTNode *startNode);
 
 /**
- * @brief Checks if the current token is a keyword
+ * @brief Goes to the last node that is a PUB KEYWORD and sets it as the current and main parent.
  *
- * @param keyword The keyword to check
- * @return True if the current token is the keyword, false otherwise
  */
-bool isTokenKeyword(Token *token, Keyword keyword);
+void goToPub();
 
 /**
  * @brief Checks if the current token is a built-in function
+ *
+ * @param token The token to check
  *
  * @return True if the current token is a built-in function, false otherwise
  */
@@ -63,13 +74,6 @@ bool isTokenBuiltInFunction(Token *token);
  * @return True if the current token is the keyword, false otherwise
  */
 bool isTokenKeyword(Token *token, Keyword keyword);
-
-/**
- * @brief Parses the whole program
- *
- * @return Returns 0 if the program was parsed successfully, non-zero if an error was encountered
- */
-int parse();
 
 /**
  * @brief PROG ::= PROLOG FUNC_DEFS
