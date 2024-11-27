@@ -1,8 +1,8 @@
-/*
+/**
  * IFJ Project
  * @brief This file contains all the enums used in the project
  *
- *@author Vojtěch Gajdušek - xgajduv00
+ * @author Vojtěch Gajdušek - xgajduv00
  * @author Tomáš Lajda - xlajdat00
  *
  */
@@ -148,13 +148,14 @@ typedef enum {
     TOKEN_TYPE_DOT,            // Dot .
 
     // EXPRESSION PARSING
-    TOKEN_TYPE_EXPR,
-    TOKEN_TYPE_DOLLA,
+    TOKEN_TYPE_EXPR,  // Expression
+    TOKEN_TYPE_DOLLA, // Dollar sign for expression ($)
 
     // CODE GEN
     TOKEN_TYPE_NULL_COND // Null condition (if or while)
 } TokenType;
 
+// TODO: needs commenting
 typedef enum {
     SCOPE_GLOBAL = 0,
     SCOPE_FUNCTION = KEYWORD_FN,
