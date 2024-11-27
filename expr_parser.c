@@ -1,9 +1,11 @@
 /**
- *IFJ Project
- * @brief Implementation file for the expression parser
+ * IFJ Project
+ * @brief Implementation file for the expression parser. Utilizing a shift-reduce parsing algorithm
+ * with a static precedence table. Handles the parsing of expressions and constructs their AST
+ * (Abstract Syntax Tree). Expressions can not include string values or function calls.
  *
  * @author Matúš Csirik - xcsirim00
- */
+ **/
 
 #include "expr_parser.h"
 #include "error_codes.h"
@@ -25,24 +27,6 @@ typedef enum {
     EXPR_ID,  // id       -> Expr
     EXPR_PAR  // ( Expr ) -> Expr
 } ExpressionRule;
-
-char precedenceTable[14][14] = {
-    /*   */ /* +    -    *    /    <    >    <=   >=   !=   ==   (    )    i    $   */
-    /* +  */ {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'},
-    /* -  */ {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'},
-    /* *  */ {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'},
-    /* /  */ {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>'},
-    /* <  */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
-    /* >  */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
-    /* <= */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
-    /* >= */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
-    /* != */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
-    /* == */ {'<', '<', '<', '<', 'x', 'x', 'x', 'x', 'x', 'x', '<', '>', '<', '>'},
-    /* (  */ {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'x', '<', 'x'},
-    /* )  */ {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'x', '>', 'x', '>'},
-    /* i  */ {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'x', '>', 'x', '>'},
-    /* $  */ {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'x', '<', 'x'},
-};
 
 #define EXPR TOKEN_TYPE_EXPR
 #define DOLLAR TOKEN_TYPE_DOLLA
@@ -83,26 +67,19 @@ int getTableIndex(TokenType type) {
     }
 }
 
-/**
- * @brief Checks if the given stack is reducible.
- *
- * @param stack A pointer to the stack to be checked.
- * @param nextInputEleemnt A pointer to the next element to be processed.
- * @return An integer indicating whether the stack is reducible (1), not (0), SYNTAX_ERROR (2), or
- * INTERNAL_ERROR (99).
- */
 int isReducible(Stack *stack, StackElement *nextInputElement) {
     if (stack == NULL || stack->top == NULL || nextInputElement == NULL ||
         nextInputElement->tokenPtr == NULL) {
-        return 0; // Stack is empty, cannot reduce
+        return 0; // Invalid stack state
     }
 
     Token *nextInputToken = nextInputElement->tokenPtr;
     StackElement *first = stack->top;
+
     // Check for operand reduction (e.g., EXPR → id)
     if (isOperand(first->tokenPtr) || (first->tokenPtr->type == TOKEN_TYPE_KEYWORD &&
                                        first->tokenPtr->attribute.keyword == KEYWORD_NULL)) {
-        return 1; // Stack is reducible by operand rule
+        return 1; // Stack is reducible (by operand rule)
     }
 
     // Check for operator reduction (e.g., EXPR → Expr + Expr)
@@ -120,16 +97,17 @@ int isReducible(Stack *stack, StackElement *nextInputElement) {
 
             switch (precedence) {
             case '>':
-                return 1; // Reduce
+                return 1; // Reduce - Stack is reducible
             case '<':
-                return 0; // Shift
+                return 0; // Shift  - Stack is not reducible
             case 'x':
-                return SYNTAX_ERROR; // Syntax error
+                return SYNTAX_ERROR; // Syntax error - precedence not found
             default:
-                return INTERNAL_ERROR; // Internal error
+                return INTERNAL_ERROR; // Internal error - invalid precedence
             }
         }
     }
+
     // Check for parentheses reduction (Expr → ( Expr ))
     if (getStackLength(stack) >= 3) {
         StackElement *second = first->next;
@@ -137,23 +115,13 @@ int isReducible(Stack *stack, StackElement *nextInputElement) {
         // Verify the pattern: ) Expr (
         if (first->tokenPtr->type == TOKEN_TYPE_RIGHT_BR && second->tokenPtr->type == EXPR &&
             third->tokenPtr->type == TOKEN_TYPE_LEFT_BR) {
-            return 1; // Stack is reducible by parentheses rule
+            return 1; // Stack is reducible (by parentheses rule)
         }
     }
-    return 0; // No reducible pattern found
+
+    return 0; // Stack is not reducible (no rule to apply)
 }
 
-/**
- * @brief Chooses the appropriate reduction rule based on the current state of the stack. Use only
- * if isReducible() returns 0.
- *
- * @param stack Pointer to the current parsing stack.
- * @return
- *   - Returns a specific reduction rule identifier (e.g., EXPR_ADD) if a rule applies.
- *   - Returns EXPR_PAR for parentheses reduction.
- *   - Returns EXPR_ID for operand reduction.
- *   - Returns -1 if no applicable reduction rule is found.
- */
 int chooseReduceRule(Stack *stack) {
     if (stack == NULL || stack->top == NULL) {
         return -1; // Invalid stack state
@@ -161,7 +129,7 @@ int chooseReduceRule(Stack *stack) {
 
     StackElement *first = stack->top;
 
-    // Check for operand reduction (EXPR → id)
+    // 1.  Check for operand reduction (EXPR → id)
     if (isOperand(first->tokenPtr) || (first->tokenPtr->type == TOKEN_TYPE_KEYWORD &&
                                        first->tokenPtr->attribute.keyword == KEYWORD_NULL)) {
         return EXPR_ID; // Expr -> id
@@ -169,13 +137,13 @@ int chooseReduceRule(Stack *stack) {
 
     // Ensure there are at least three elements on the stack for further checks
     if (getStackLength(stack) < 3) {
-        return -1; // Not enough elements to apply any reduction rule
+        return -1; // Not enough elements to apply any other reduction rule
     }
 
     StackElement *second = first->next;
     StackElement *third = second->next;
 
-    // Check for parentheses reduction (Expr → ( Expr ))
+    // 2. Check for parentheses reduction (Expr → ( Expr ))
     if (first->tokenPtr->type == TOKEN_TYPE_RIGHT_BR && second->tokenPtr->type == EXPR &&
         third->tokenPtr->type == TOKEN_TYPE_LEFT_BR) {
         return EXPR_PAR; // Expr -> ( Expr )
@@ -212,27 +180,17 @@ int chooseReduceRule(Stack *stack) {
     return -1; // No rule to apply
 }
 
-/**
- * @brief Fills the input stack with tokens up to a delimiter token.
- *
- * @param stack Pointer to the stack to be filled with tokens.
- * @param delimiterToken Pointer to a token that will store the encountered delimiter token.
- *
- * @return
- *   - Pointer to the filled destination stack if successful.
- *   - NULL if a syntax error occurs or memory allocation fails.
- */
 Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token *delimiterToken) {
 
     // Initialize a temporary stack and a token pointer
     Stack tempStack;
     initStack(&tempStack);
-
     Token *token = (Token *)malloc(sizeof(Token));
     if (token == NULL) {
         HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
     }
 
+    // Initialize counters
     int openingParentheses = 0;
     int closingParentheses = 0;
     int relationOperators = 0;
@@ -245,7 +203,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
         providedTokens++;
     }
 
-    // Begin filling
+    // Special cases for the first two tokens
     if (providedTokens == 2) {
         if ((isOperand(firstToken) || (firstToken->type == TOKEN_TYPE_KEYWORD &&
                                        firstToken->attribute.keyword == KEYWORD_NULL)) &&
@@ -273,6 +231,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
         getNextToken(token);
     }
 
+    // Begin filling
     while (isOperand(token) || isOperator(token) || isParentheses(token) ||
            (token->type == TOKEN_TYPE_KEYWORD && token->attribute.keyword == KEYWORD_NULL)) {
 
@@ -291,6 +250,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
         if (relationOperators > 1) {
             break;
         }
+
         // Copy the token for the stack element
         Token *tempToken = copyToken(token);
         if (tempToken == NULL) {
@@ -300,6 +260,7 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
 
         ASTNode *astNode = initASTNode();
         astNode->token = copyToken(token);
+
         // Create a stack element and push it onto the temporary stack
         StackElement *newElement = createStackElement(tempToken, astNode);
         if (newElement == NULL) {
@@ -308,6 +269,8 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
             HANDLE_ERROR("Memory allocation failure", INTERNAL_ERROR, NULL);
         }
         push(&tempStack, newElement);
+
+        // Get the next token
         if (providedTokens == 1) {
             token = copyToken(secondToken);
             providedTokens--;
@@ -319,13 +282,13 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
     // Assign the delimiter token and check if its valid
     *delimiterToken = *token;
     if (!isDelimiter(token)) {
+        // Token doesn't belong in the expression - a syntax error occured
         cleanupStack(&tempStack);
-        HANDLE_ERROR(
-            "Token doesn't belong in expression",
-            SYNTAX_ERROR); // Token doesn't belong in the expression - a syntax error occured
+        HANDLE_ERROR("Token doesn't belong in expression", SYNTAX_ERROR);
     }
 
     if (isEmpty(&tempStack)) {
+        // No tokens were added to the input stack
         cleanupStack(&tempStack);
         return NULL;
     }
@@ -404,13 +367,14 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
     initStack(input);
 
     // Fill the input stack with tokens up to the delimiter token
-    if (fillInputStack(input, firstToken, secondToken, delimiterToken) == NULL) { // syntax error
+    if (fillInputStack(input, firstToken, secondToken, delimiterToken) == NULL) {
+        // Input stack is empty - empty expression
         cleanupStack(input);
         free(input);
         cleanupStack(stack);
         free(stack);
-        exprAST->root = NULL;
-        return 3;
+        exprAST->root = NULL; // Set the AST root to NULL (empty expression)
+        return 10;            // Missing expression
     }
 
     // Initialize the current input element
@@ -424,8 +388,8 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
     // Continue parsing as long as there are input tokens or the stack can be reduced further
     while (!isEmpty(input) || isReducible(stack, currentInputElement)) {
 
+        // Check if the stack is reducible
         int reducible = isReducible(stack, currentInputElement);
-
         if (reducible == 1) { // Reduce
             int rule = chooseReduceRule(stack);
             switch (rule) {
@@ -487,14 +451,15 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
                 free(stack);
                 HANDLE_ERROR("Invalid reduction rule.\n", INTERNAL_ERROR, INTERNAL_ERROR);
             }
+
         } else if (reducible == 2) { // Syntax error detected
             cleanupStack(input);
             free(input);
             cleanupStack(stack);
             free(stack);
-            HANDLE_ERROR("Syntax error. Expression precedence not found.\n", SYNTAX_ERROR,
-                         SYNTAX_ERROR); // Syntax error
-        } else if (!isEmpty(input)) {   // Shift
+            HANDLE_ERROR("Syntax error. Expression precedence not found.\n", SYNTAX_ERROR);
+
+        } else if (!isEmpty(input)) { // Shift
             Token *currentToken = copyToken(currentInputElement->tokenPtr);
             ASTNode *currentASTNode = copyASTNode(currentInputElement->ASTNodePtr);
             pop(input);
@@ -520,6 +485,7 @@ int parseExpression(AST *exprAST, Token *firstToken, Token *secondToken, Token *
     }
 
     // Verify successful parsing by checking the final stack state
+    // - The stack should contain exactly two elements: Expr and $
     if (getStackLength(stack) == 2 && stack->top->tokenPtr->type == EXPR &&
         stack->top->next->tokenPtr->type == DOLLAR) {
         // Successful parsing
