@@ -1,14 +1,22 @@
 /*
 IFJ Project
 
-@brief Header file to define error codes
+@brief Header file to define error codes and a macro for handling them.
 
 @author Vojtěch Gajdušek - xgajduv00
 @author Matúš Csirik - xcsirim00
 
 */
 
-// Macro for handling errors
+/**
+ * @brief Macro for handling errors. If the TEST_MODE is defined, the function will return the error
+ * code, otherwise it will exit the program.
+ *
+ * @param msg Message to be printed to stderr
+ * @param code Error code to be returned or exited with
+ * @param ... Additional arguments to be returned if in TEST_MODE
+ *
+ */
 #ifdef TEST_MODE
 #define HANDLE_ERROR(msg, code, ...)                                                               \
     do {                                                                                           \
