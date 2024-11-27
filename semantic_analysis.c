@@ -983,13 +983,9 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
 
         case TOKEN_TYPE_DIV:
             checkDivisionByZero(right.token->attribute.decimal);
-            if (isDoubleInt(right.token->attribute.decimal)) {
-                result = left.token->attribute.integer / right.token->attribute.decimal;
-                node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
-                node->token->attribute.decimal = result;
-            } else {
-                HANDLE_ERROR("Type compatibility error", TYPE_COMPATIBILITY_ERROR);
-            }
+            result = left.token->attribute.decimal / right.token->attribute.decimal;
+            node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+            node->token->attribute.decimal = result;
             break;
 
         default:
@@ -1254,6 +1250,7 @@ Operand expressionAnalysis(ASTNode *node) {
                     long long value = (long long)constValue;
                     node->token->type = TOKEN_TYPE_INTEGER_VALUE;
                     node->token->attribute.integer = value;
+                    varOperand.type = TYPE_I_32;
                 } else {
                     varOperand.compileTime = false;
                 }
