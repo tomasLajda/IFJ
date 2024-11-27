@@ -1,9 +1,10 @@
-/*
+/**
  * IFJ Project
- * @brief Implementation file for stack data structure
+ *
+ * @brief Implementation file for stack data structure. Functions exit with INTERNAL_ERROR (99) if a
+ * null pointer is passed or a memory allocation fails.
  *
  * @author Matúš Csirik - xcsirim00
- *
  */
 
 #include "stack.h"
@@ -55,8 +56,12 @@ void pop(Stack *stack) {
     if (isEmpty(stack)) {
         HANDLE_ERROR("Stack is empty", INTERNAL_ERROR);
     }
+    // Temporarily store the top element of the stack
     StackElement *tmp = stack->top;
+    // Update the top element of the stack
     stack->top = stack->top->next;
+
+    // Free the token and ASTNode subtree associated with the element
     if (tmp->tokenPtr != NULL) {
         freeToken(tmp->tokenPtr);
     }
@@ -71,7 +76,6 @@ StackElement *top(Stack *stack) {
         HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, NULL);
     }
     if (isEmpty(stack)) {
-        // fprintf(stderr, "Stack is empty\n");
         return NULL;
     }
     return stack->top;
@@ -82,11 +86,9 @@ Token *topToken(Stack *stack) {
         HANDLE_ERROR("Stack pointer is NULL", INTERNAL_ERROR, NULL);
     }
     if (isEmpty(stack)) {
-        // fprintf(stderr, "Stack is empty\n");
         return NULL;
     }
     if (stack->top->tokenPtr == NULL) {
-        fprintf(stderr, "Token is NULL\n");
         return NULL;
     }
     return stack->top->tokenPtr;
