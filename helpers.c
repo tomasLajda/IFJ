@@ -1,6 +1,6 @@
-/*
+/**
  * IFJ Project
- * @brief Header file for dynamic string
+ * @brief Implementation file for minor helper functions.
  *
  * @author Tomáš Lajda - xlajdat00
  * @author Matúš Csirik - xcsirim00

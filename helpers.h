@@ -1,6 +1,6 @@
-/*
+/**
  * IFJ Project
- * @brief Header file for dynamic string
+ * @brief Header file for minor helper functions.
  *
  * @author Tomáš Lajda - xlajdat00
  * @author Matúš Csirik - xcsirim00
@@ -16,12 +16,12 @@
 #include "stack.h"
 
 /**
- * @brief Function that transforms the token type integer to the corresponding character (string)
+ * @brief Function that transforms the token type enum to the corresponding character (string)
  */
 char *TokenTypeToString(TokenType type);
 
 /**
- * @brief Function that transforms the token keyword integer to the corresponding character (string)
+ * @brief Function that transforms the token keyword enum to the corresponding character (string)
  */
 char *TokenKeywordToString(Keyword keyword);
 
@@ -53,36 +53,42 @@ void freeToken(Token *token);
 
 /**
  * @brief Function that checks if the given token is an operator
+ * (+, -, *, /, <, >, <=, >=, ==, !=)
  * @return 1 if the token is an operator, 0 otherwise
  */
 int isOperator(Token *token);
 
 /**
  * @brief Function that checks if the given token is an operand
+ * (integer value, double value, identifier)
  * @return 1 if the token is an operand, 0 otherwise
  */
 int isOperand(Token *token);
 
 /**
  * @brief Function that checks if the given token is a parentheses
+ * (left parentheses, right parentheses)
  * @return 1 if the token is a parentheses, 0 otherwise
  */
 int isParentheses(Token *token);
 
 /**
  * @brief Function that checks if the given token is a delimiter
+ * (semicolon, comma, right parentheses)
  * @return 1 if the token is a delimiter, 0 otherwise
  */
 int isDelimiter(Token *token);
 
 /**
  * @brief Function that checks if the given token is a relational operator
+ * (==, !=, <, <=, >, >=)
  * @return 1 if the token is a relational operator, 0 otherwise
  */
 int isRelOperator(Token *token);
 
 /**
  * @brief Function that checks if the given token is a term
+ * (string value, integer value, double value, identifier, null)
  * @return 1 if the token is a term, 0 otherwise
  */
 int isTerm(Token *token);
@@ -99,8 +105,7 @@ int isTerm(Token *token);
 char *stringDuplicate(const char *string);
 
 /**
- * @brief Function that returns a pointer to the appropriate ASTNode structure based on the given
- * type
+ * @brief Function that creates the appropriate ASTNode structure based on the given type
  *
  *
  * @param type Type of the ASTNode structure
@@ -117,6 +122,7 @@ char *stringDuplicate(const char *string);
  * 8 - variable definition |
  * 9 - variable assignment |
  *
+ * @return Pointer to the root of the created ASTNode structure
  */
 ASTNode *mockASTProgramStructure(int type);
 
