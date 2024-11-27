@@ -298,6 +298,13 @@ void processNode(ASTNode *node) {
                 ADD_TO_BUFFER("PUSHS nil@nil\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
                 addLabelToBuffer("NULL_while", "end", currentLabelCounter);
+
+                ADD_TO_BUFFER("MOVE LF@");
+                ADD_TO_BUFFER(conditionNode->parent->right->token->attribute.string);
+                ADD_TO_BUFFER(" LF@");
+                ADD_TO_BUFFER(conditionNode->exprTree->root->token->attribute.string);
+                ADD_TO_BUFFER("\n");
+
                 // processNode(conditionNode->left);
                 // while body
                 ASTNode *whileBody = conditionNode->left;
@@ -521,8 +528,9 @@ int generateExpression(ASTNode *node) {
         // Push string value onto the data stack
         // PUSHS string@value
         ADD_TO_BUFFER("PUSHS string@");
-
-        ADD_TO_BUFFER(node->token->attribute.string);
+        if (node->token->attribute.string != NULL) {
+            ADD_TO_BUFFER(node->token->attribute.string);
+        }
         ADD_TO_BUFFER("\n");
     } else if (currentTokenType == TOKEN_TYPE_KEYWORD &&
                node->token->attribute.keyword == KEYWORD_NULL) {

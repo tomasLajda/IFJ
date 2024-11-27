@@ -25,7 +25,12 @@ int freeAndReturn(DynamicString *string, int errorCode) {
 
 void stringFormatting(DynamicString *string) {
     unsigned char c;
+    // printf("%d\n", string->length);
+    // fflush(stdout);
     int i = string->length - 1;
+    if (i < 0) {
+        return;
+    }
     c = string->string[i];
     if (c == '#' || c == '\\' || c <= 32 || !isprint(c)) {
         unsigned char tmp = '\\';
