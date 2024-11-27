@@ -1,12 +1,11 @@
-/*
-IFJ Project
-
-@brief Header file to define error codes and a macro for handling them.
-
-@author Vojtěch Gajdušek - xgajduv00
-@author Matúš Csirik - xcsirim00
-
-*/
+/**
+ * IFJ Project
+ *
+ * @brief Header file to define error codes and a macro for handling them.
+ *
+ * @author Vojtěch Gajdušek - xgajduv00
+ * @author Matúš Csirik - xcsirim00
+ */
 
 /**
  * @brief Macro for handling errors. If the TEST_MODE is defined, the function will return the error
