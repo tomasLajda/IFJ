@@ -146,14 +146,15 @@ IFJ project
     "JUMPIFEQ $substring_error LF@condition bool@true\n"                                           \
     "MOVE LF@counter LF@start_index\n"                                                             \
     "LABEL $substring_loop\n"                                                                      \
-    "GT LF@condition LF@counter LF@end_index\n"                                                    \
+    "LT LF@condition LF@counter LF@end_index\n"                                                    \
+    "NOT LF@condition LF@condition\n"                                                              \
     "JUMPIFEQ $substring_end LF@condition bool@true\n"                                             \
     "GETCHAR LF@current_char LF@s LF@counter\n"                                                    \
     "CONCAT LF@substring LF@substring LF@current_char\n"                                           \
     "ADD LF@counter LF@counter int@1\n"                                                            \
     "JUMP $substring_loop\n"                                                                       \
-    "MOVE LF@%%retval LF@substring\n"                                                              \
     "LABEL $substring_end\n"                                                                       \
+    "MOVE LF@%%retval LF@substring\n"                                                              \
     "POPFRAME\n"                                                                                   \
     "RETURN\n"                                                                                     \
     "LABEL $substring_error\n"                                                                     \
