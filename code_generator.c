@@ -107,6 +107,7 @@ void generateBuiltInFunctions() {
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_F2I);
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_CONCAT);
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_SUBSTRING);
+    ADD_TO_BUFFER(BUILT_IN_FUNCTION_STRCMP);
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_ORD);
     ADD_TO_BUFFER(BUILT_IN_FUNCTION_CHR);
     ADD_TO_BUFFER("# End of Built-in functions\n");
@@ -358,8 +359,14 @@ void processNode(ASTNode *node) {
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_RETURN) {
-            generateExpression(node->exprTree->root);
-            ADD_TO_BUFFER("POPS LF@%%retval\n");
+            // generateExpression(node->exprTree->root);
+            // ADD_TO_BUFFER("POPS LF@%%retval\n");
+            if (node->exprTree != NULL) {
+                generateExpression(node->exprTree->root);
+                ADD_TO_BUFFER("POPS LF@%%retval\n");
+                ADD_TO_BUFFER("POPFRAME\n");
+                ADD_TO_BUFFER("RETURN\n");
+            }
         } else if (node->token->attribute.keyword == KEYWORD_WRITE) {
             ADD_TO_BUFFER("CREATEFRAME\n");
             ADD_TO_BUFFER("DEFVAR TF@value\n");
@@ -517,6 +524,9 @@ int generateExpression(ASTNode *node) {
 
         ADD_TO_BUFFER(node->token->attribute.string);
         ADD_TO_BUFFER("\n");
+    } else if (currentTokenType == TOKEN_TYPE_KEYWORD &&
+               node->token->attribute.keyword == KEYWORD_NULL) {
+        ADD_TO_BUFFER("PUSHS nil@nil\n");
     } else {
         return INTERNAL_ERROR;
     }
