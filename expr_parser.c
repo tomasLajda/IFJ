@@ -271,7 +271,8 @@ Stack *fillInputStack(Stack *stack, Token *firstToken, Token *secondToken, Token
             relationOperators++;
         }
         if (relationOperators > 1) {
-            break;
+            HANDLE_ERROR("Multiple relational operators in expression", TYPE_COMPATIBILITY_ERROR,
+                         NULL);
         }
 
         // Copy the token for the stack element
