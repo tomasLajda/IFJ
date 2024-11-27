@@ -6,8 +6,7 @@
  * (Abstract Syntax Tree). Expressions can not include string values or function calls.
  *
  * @author Matúš Csirik - xcsirim00
- *
- **/
+ */
 
 #ifndef EXPR_PARSER_H
 #define EXPR_PARSER_H

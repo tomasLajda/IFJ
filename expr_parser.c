@@ -1,11 +1,12 @@
 /**
  * IFJ Project
+ *
  * @brief Implementation file for the expression parser. Utilizing a shift-reduce parsing algorithm
  * with a static precedence table. Handles the parsing of expressions and constructs their AST
  * (Abstract Syntax Tree). Expressions can not include string values or function calls.
  *
  * @author Matúš Csirik - xcsirim00
- **/
+ */
 
 #include "expr_parser.h"
 #include "error_codes.h"
