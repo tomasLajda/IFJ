@@ -193,11 +193,11 @@ IFJ project
     "JUMPIFEQ $ord_error LF@len int@0\n"                                                           \
     "DEFVAR LF@condition\n"                                                                        \
     "GT LF@condition LF@i LF@len\n"                                                                \
-    "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
+    "JUMPIFEQ $ord_error LF@condition bool@true\n"                                                 \
     "EQ LF@condition LF@i LF@len\n"                                                                \
-    "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
+    "JUMPIFEQ $ord_error LF@condition bool@true\n"                                                 \
     "LT LF@condition LF@i int@0\n"                                                                 \
-    "JUMPIFNEQ $ord_error LF@condition bool@true\n"                                                \
+    "JUMPIFEQ $ord_error LF@condition bool@true\n"                                                 \
     "STRI2INT LF@%%retval LF@s LF@i\n"                                                             \
     "JUMP $ord_end\n"                                                                              \
     "LABEL $ord_error\n"                                                                           \
