@@ -601,6 +601,10 @@ void variableDefinitionAnalysis(ASTNode *node) {
         expressionResult.type = TYPE_F_64;
     }
 
+    if (!expressionResult.isLiteral) {
+        expressionResult.compileTime = false;
+    }
+
     if (expressionResult.compileTime && currentSymbol.constant &&
         !isNullableType(currentSymbol.type)) {
         currentSymbol.compileTime = true;
@@ -1147,6 +1151,7 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
 Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
     Operand result;
     result.compileTime = left.compileTime && right.compileTime;
+    result.isLiteral = false;
 
     TokenType operator= node->token->type;
 
