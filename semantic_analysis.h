@@ -14,6 +14,7 @@
 typedef struct Operand {
     DataType type;
     bool compileTime;
+    bool isLiteral;
     Token *token;
 } Operand;
 

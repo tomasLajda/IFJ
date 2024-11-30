@@ -915,6 +915,18 @@ Operand builtInFunctionAnalysis(ASTNode *node) {
 Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
     TokenType operator= node->token->type;
 
+    if (!left.isLiteral && left.type == TYPE_F_64 && right.type == TYPE_I_32) {
+        left.type = TYPE_I_32;
+        left.token->attribute.integer = (long long)left.token->attribute.decimal;
+        left.token->type = TOKEN_TYPE_INTEGER_VALUE;
+    }
+
+    if (!right.isLiteral && right.type == TYPE_F_64 && left.type == TYPE_I_32) {
+        right.type = TYPE_I_32;
+        right.token->attribute.integer = (long long)right.token->attribute.decimal;
+        right.token->type = TOKEN_TYPE_INTEGER_VALUE;
+    }
+
     if (left.type == TYPE_I_32 && right.type == TYPE_I_32) {
         switch (operator) {
         case TOKEN_TYPE_PLUS:
@@ -939,7 +951,6 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
             if (right.token->attribute.integer == 0) {
                 HANDLE_ERROR("Division by zero", OTHER_SEMANTIC_ERROR);
             }
-            // TAK TOTO JE EDGE CASE JAKO PRASE
             double divisionResult =
                 (double)left.token->attribute.integer / (double)right.token->attribute.integer;
             result = floor(divisionResult);
@@ -957,7 +968,8 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
         node->left = NULL;
         node->right = NULL;
 
-        return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+        return (Operand){
+            .type = TYPE_I_32, .compileTime = true, .token = node->token, .isLiteral = false};
     }
 
     if (left.type == TYPE_F_64 && right.type == TYPE_F_64) {
@@ -1004,10 +1016,12 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
         node->right = NULL;
 
         if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
-            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+            return (Operand){
+                .type = TYPE_I_32, .compileTime = true, .token = node->token, .isLiteral = false};
         }
 
-        return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
+        return (Operand){
+            .type = TYPE_F_64, .compileTime = true, .token = node->token, .isLiteral = false};
     }
 
     if (left.type == TYPE_I_32 && right.type == TYPE_F_64) {
@@ -1060,10 +1074,12 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
         node->right = NULL;
 
         if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
-            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+            return (Operand){
+                .type = TYPE_I_32, .compileTime = true, .token = node->token, .isLiteral = false};
         }
 
-        return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
+        return (Operand){
+            .type = TYPE_F_64, .compileTime = true, .token = node->token, .isLiteral = false};
     }
 
     if (left.type == TYPE_F_64 && right.type == TYPE_I_32) {
@@ -1117,10 +1133,12 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
         node->right = NULL;
 
         if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
-            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+            return (Operand){
+                .type = TYPE_I_32, .compileTime = true, .token = node->token, .isLiteral = false};
         }
 
-        return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
+        return (Operand){
+            .type = TYPE_F_64, .compileTime = true, .token = node->token, .isLiteral = false};
     }
 
     HANDLE_ERROR("Invalid reduction", INTERNAL_ERROR);
@@ -1155,9 +1173,25 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
                 return result;
             }
 
+            if (!left.isLiteral && left.compileTime) {
+                HANDLE_ERROR("Type compatibility error", TYPE_COMPATIBILITY_ERROR);
+            }
+
             result.type = TYPE_F_64;
             left.token->type = TOKEN_TYPE_DOUBLE_VALUE;
             left.token->attribute.decimal = (double)left.token->attribute.integer;
+            return result;
+        }
+
+        if (right.type == TYPE_F_64 && right.compileTime) {
+            if (!isDoubleInt(right.token->attribute.decimal)) {
+                HANDLE_ERROR("Type compatibility error", TYPE_COMPATIBILITY_ERROR);
+            }
+
+            right.token->type = TOKEN_TYPE_INTEGER_VALUE;
+            right.token->attribute.integer = (long long)right.token->attribute.decimal;
+
+            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_I_32;
             return result;
         }
         break;
@@ -1184,9 +1218,25 @@ Operand determineNextOperand(Operand left, Operand right, ASTNode *node) {
                 return result;
             }
 
+            if (!right.isLiteral && right.compileTime) {
+                HANDLE_ERROR("Type compatibility error", TYPE_COMPATIBILITY_ERROR);
+            }
+
             result.type = TYPE_F_64;
             right.token->type = TOKEN_TYPE_DOUBLE_VALUE;
             right.token->attribute.decimal = (double)right.token->attribute.integer;
+            return result;
+        }
+
+        if (left.compileTime) {
+            if (!isDoubleInt(right.token->attribute.decimal)) {
+                HANDLE_ERROR("Type compatibility error", TYPE_COMPATIBILITY_ERROR);
+            }
+
+            left.token->type = TOKEN_TYPE_INTEGER_VALUE;
+            left.token->attribute.integer = (long long)left.token->attribute.decimal;
+
+            result.type = isRelationalOperator(operator) ? TYPE_BOOL : TYPE_I_32;
             return result;
         }
         break;
@@ -1243,14 +1293,21 @@ Operand expressionAnalysis(ASTNode *node) {
             varOperand.type =
                 getVariableType(symbolTableTop(&symbolTableStack), node->token->attribute.string);
 
+            varOperand.isLiteral = false;
+
             if (varOperand.compileTime) {
                 double constValue =
                     getConstValue(symbolTableTop(&symbolTableStack), node->token->attribute.string);
                 if (isDoubleInt(constValue)) {
-                    long long value = (long long)constValue;
-                    node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-                    node->token->attribute.integer = value;
-                    varOperand.type = TYPE_I_32;
+                    if (varOperand.type == TYPE_F_64) {
+                        node->token->type = TOKEN_TYPE_DOUBLE_VALUE;
+                        node->token->attribute.decimal = constValue;
+                    } else {
+                        long long value = (long long)constValue;
+                        node->token->type = TOKEN_TYPE_INTEGER_VALUE;
+                        node->token->attribute.integer = value;
+                        varOperand.type = TYPE_I_32;
+                    }
                 } else {
                     varOperand.compileTime = false;
                 }
@@ -1261,7 +1318,8 @@ Operand expressionAnalysis(ASTNode *node) {
         }
 
         if (node->token->type == TOKEN_TYPE_INTEGER_VALUE) {
-            return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+            return (Operand){
+                .type = TYPE_I_32, .compileTime = true, .token = node->token, .isLiteral = true};
         }
 
         if (node->token->type == TOKEN_TYPE_DOUBLE_VALUE) {
@@ -1269,19 +1327,27 @@ Operand expressionAnalysis(ASTNode *node) {
                 long long value = (long long)node->token->attribute.decimal;
                 node->token->type = TOKEN_TYPE_INTEGER_VALUE;
                 node->token->attribute.integer = value;
-                return (Operand){.type = TYPE_I_32, .compileTime = true, .token = node->token};
+                return (Operand){.type = TYPE_I_32,
+                                 .compileTime = true,
+                                 .token = node->token,
+                                 .isLiteral = true};
             }
 
-            return (Operand){.type = TYPE_F_64, .compileTime = true, .token = node->token};
+            return (Operand){
+                .type = TYPE_F_64, .compileTime = true, .token = node->token, .isLiteral = true};
         }
 
         if (node->token->type == TOKEN_TYPE_STRING_VALUE) {
-            return (Operand){.type = TYPE_U_8_ARRAY, .compileTime = true, .token = node->token};
+            return (Operand){.type = TYPE_U_8_ARRAY,
+                             .compileTime = true,
+                             .token = node->token,
+                             .isLiteral = true};
         }
 
         if (node->token->type == TOKEN_TYPE_KEYWORD &&
             node->token->attribute.keyword == KEYWORD_NULL) {
-            return (Operand){.type = TYPE_NULL, .compileTime = true, .token = node->token};
+            return (Operand){
+                .type = TYPE_NULL, .compileTime = true, .token = node->token, .isLiteral = true};
         }
 
         HANDLE_ERROR("Invalid token type", INTERNAL_ERROR);
