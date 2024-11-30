@@ -586,6 +586,10 @@ void parseVarDef() {
             getNextToken(currentToken);
         }
     }
+    // STRING VALUE
+    else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
+        HANDLE_ERROR("String value cannot be used to define a variable", TYPE_INFERENCE_ERROR);
+    }
     // NUMERICAL VALUE
     else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
         AST *exprTree = initAST();
@@ -712,6 +716,10 @@ void parseVarAss() {
             addLeftNode(ast, currentParent, exprNode);
             getNextToken(currentToken);
         }
+    }
+    // STRING VALUE
+    else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
+        HANDLE_ERROR("String value cannot be assigned to a variable", TYPE_COMPATIBILITY_ERROR);
     }
     // NUMERICAL VALUE
     else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
@@ -1041,6 +1049,10 @@ void parseDiscardCall() {
             addLeftNode(ast, currentParent, valueNode);
             getNextToken(currentToken);
         }
+    }
+    // STRING VALUE
+    else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
+        HANDLE_ERROR("String value cannot be assigned to _ ", TYPE_COMPATIBILITY_ERROR);
     }
     // NUMERICAL VALUE
     else {
