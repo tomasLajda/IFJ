@@ -1058,9 +1058,10 @@ void parseDiscardCall() {
     else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
         HANDLE_ERROR("String value cannot be assigned to _ ", TYPE_COMPATIBILITY_ERROR);
     }
-    // NUMERICAL VALUE
+    // NUMERICAL VALUE or null
     else if (currentToken->type == TOKEN_TYPE_INTEGER_VALUE ||
-             currentToken->type == TOKEN_TYPE_DOUBLE_VALUE) {
+             currentToken->type == TOKEN_TYPE_DOUBLE_VALUE ||
+             isTokenKeyword(currentToken, KEYWORD_NULL)) {
         AST *exprTree = initAST();
         ASTNode *valueNode = initASTNode();
         exprTree->root = valueNode;
@@ -1075,8 +1076,6 @@ void parseDiscardCall() {
 
         addLeftNode(ast, currentParent, valueNode);
         getNextToken(currentToken);
-    } else if (isTokenKeyword(currentToken, KEYWORD_NULL)) {
-        HANDLE_ERROR("Null value cannot be assigned to _ ", TYPE_COMPATIBILITY_ERROR);
     } else {
         HANDLE_ERROR("Unexpected token in discard call", SYNTAX_ERROR);
     }
