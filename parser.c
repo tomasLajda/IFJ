@@ -590,8 +590,10 @@ void parseVarDef() {
     else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
         HANDLE_ERROR("String value cannot be used to define a variable", TYPE_INFERENCE_ERROR);
     }
-    // NUMERICAL VALUE
-    else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+    // NUMERICAL VALUE or null
+    else if (currentToken->type == TOKEN_TYPE_INTEGER_VALUE ||
+             currentToken->type == TOKEN_TYPE_DOUBLE_VALUE ||
+             isTokenKeyword(currentToken, KEYWORD_NULL)) {
         AST *exprTree = initAST();
         ASTNode *exprNode = initASTNode();
         exprTree->root = exprNode;
@@ -721,8 +723,10 @@ void parseVarAss() {
     else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
         HANDLE_ERROR("String value cannot be assigned to a variable", TYPE_COMPATIBILITY_ERROR);
     }
-    // NUMERICAL VALUE
-    else if (currentToken->type != TOKEN_TYPE_IDENTIFIER) {
+    // NUMERICAL VALUE or null
+    else if (currentToken->type == TOKEN_TYPE_INTEGER_VALUE ||
+             currentToken->type == TOKEN_TYPE_DOUBLE_VALUE ||
+             isTokenKeyword(currentToken, KEYWORD_NULL)) {
         AST *exprTree = initAST();
         ASTNode *exprNode = initASTNode();
         exprTree->root = exprNode;
@@ -1055,7 +1059,8 @@ void parseDiscardCall() {
         HANDLE_ERROR("String value cannot be assigned to _ ", TYPE_COMPATIBILITY_ERROR);
     }
     // NUMERICAL VALUE
-    else {
+    else if (currentToken->type == TOKEN_TYPE_INTEGER_VALUE ||
+             currentToken->type == TOKEN_TYPE_DOUBLE_VALUE) {
         AST *exprTree = initAST();
         ASTNode *valueNode = initASTNode();
         exprTree->root = valueNode;
@@ -1070,6 +1075,10 @@ void parseDiscardCall() {
 
         addLeftNode(ast, currentParent, valueNode);
         getNextToken(currentToken);
+    } else if (isTokenKeyword(currentToken, KEYWORD_NULL)) {
+        HANDLE_ERROR("Null value cannot be assigned to _ ", TYPE_COMPATIBILITY_ERROR);
+    } else {
+        HANDLE_ERROR("Unexpected token in discard call", SYNTAX_ERROR);
     }
 }
 
