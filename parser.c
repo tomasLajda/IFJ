@@ -590,10 +590,11 @@ void parseVarDef() {
     else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
         HANDLE_ERROR("String value cannot be used to define a variable", TYPE_INFERENCE_ERROR);
     }
-    // NUMERICAL VALUE or null
+    // Expression start
     else if (currentToken->type == TOKEN_TYPE_INTEGER_VALUE ||
              currentToken->type == TOKEN_TYPE_DOUBLE_VALUE ||
-             isTokenKeyword(currentToken, KEYWORD_NULL)) {
+             isTokenKeyword(currentToken, KEYWORD_NULL) ||
+             currentToken->type == TOKEN_TYPE_LEFT_BR) {
         AST *exprTree = initAST();
         ASTNode *exprNode = initASTNode();
         exprTree->root = exprNode;
@@ -723,10 +724,11 @@ void parseVarAss() {
     else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
         HANDLE_ERROR("String value cannot be assigned to a variable", TYPE_COMPATIBILITY_ERROR);
     }
-    // NUMERICAL VALUE or null
+    // Expression start
     else if (currentToken->type == TOKEN_TYPE_INTEGER_VALUE ||
              currentToken->type == TOKEN_TYPE_DOUBLE_VALUE ||
-             isTokenKeyword(currentToken, KEYWORD_NULL)) {
+             isTokenKeyword(currentToken, KEYWORD_NULL) ||
+             currentToken->type == TOKEN_TYPE_LEFT_BR) {
         AST *exprTree = initAST();
         ASTNode *exprNode = initASTNode();
         exprTree->root = exprNode;
@@ -1058,10 +1060,11 @@ void parseDiscardCall() {
     else if (currentToken->type == TOKEN_TYPE_STRING_VALUE) {
         HANDLE_ERROR("String value cannot be assigned to _ ", TYPE_COMPATIBILITY_ERROR);
     }
-    // NUMERICAL VALUE or null
+    // Expression start
     else if (currentToken->type == TOKEN_TYPE_INTEGER_VALUE ||
              currentToken->type == TOKEN_TYPE_DOUBLE_VALUE ||
-             isTokenKeyword(currentToken, KEYWORD_NULL)) {
+             isTokenKeyword(currentToken, KEYWORD_NULL) ||
+             currentToken->type == TOKEN_TYPE_LEFT_BR) {
         AST *exprTree = initAST();
         ASTNode *valueNode = initASTNode();
         exprTree->root = valueNode;
