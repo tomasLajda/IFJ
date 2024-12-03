@@ -1,7 +1,7 @@
 /*
  * IFJ Project
- * @brief Implementation file for linked list
- *
+ * @brief Implementation file for linked list contains functions implementation for linked list
+ * operations.
  * @author Tomáš Lajda - xlajdat00
  *
  */

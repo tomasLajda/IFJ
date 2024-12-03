@@ -1,16 +1,13 @@
 /*
  * IFJ Project
- * @brief Implementation file for semantic analysis
+ * @brief Implementation file for semantic analysis - contains functions implementation for checking
+ * the semantics of the code based on the AST. It also contains helper functions for the semantic
+ * analysis.
  *
  * @author Tomáš Lajda - xlajdat00
  *
  */
 
-#include <math.h>
-#include <stdio.h>
-
-#include "ast.h"
-#include "helpers.h"
 #include "semantic_analysis.h"
 
 #define EPSILON 1e-15
@@ -476,6 +473,7 @@ void ifWhileAnalysis(ASTNode *node) {
 
     bool nullCond = false;
     char *oldName = NULL;
+    // Check for null condition (variable declaration)
     if (node->token->type == TOKEN_TYPE_VB) {
         if (checkDeclaration(symbolTableTop(&symbolTableStack),
                              node->right->token->attribute.string)) {
@@ -530,6 +528,7 @@ void ifWhileAnalysis(ASTNode *node) {
         free(oldName);
     }
 
+    // Check for else statement
     if (node->right == NULL) {
         return;
     }
@@ -567,6 +566,7 @@ void variableDefinitionAnalysis(ASTNode *node) {
         HANDLE_ERROR("Variable redefinition", REDEFINITION_ERROR);
     }
 
+    // Variable rename
     char *oldName = stringDuplicate(node->token->attribute.string);
     ASTNode *newNameNode = addVariableToASTList(node->token);
     free(node->token);
@@ -605,6 +605,7 @@ void variableDefinitionAnalysis(ASTNode *node) {
         expressionResult.compileTime = false;
     }
 
+    // Check if the expression is compile time and assign proper value
     if (expressionResult.compileTime && currentSymbol.constant &&
         !isNullableType(currentSymbol.type)) {
         currentSymbol.compileTime = true;
@@ -643,6 +644,7 @@ void variableDefinitionAnalysis(ASTNode *node) {
 void variableAssignmentAnalysis(ASTNode *node) {
     DataType valueType = TYPE_ANY;
 
+    // Check if it is variable or underscore
     if (node->token->type != TOKEN_TYPE_KEYWORD) {
         if (node->token->type != TOKEN_TYPE_IDENTIFIER) {
             HANDLE_ERROR("Expected variable id", INTERNAL_ERROR);
@@ -755,6 +757,7 @@ Operand functionCallAnalysis(ASTNode *node) {
         getFunctionParameterCount(symbolTableTop(&symbolTableStack), node->token->attribute.string);
     unsigned parameterIndex = 0;
 
+    // loop through parameters
     node = node->left;
     while (node != NULL) {
         DataType parameterType = getFunctionParameterType(symbolTableTop(&symbolTableStack),
@@ -793,7 +796,9 @@ Operand functionCallAnalysis(ASTNode *node) {
 
     Operand functionReturn =
         (Operand){.type = getVariableType(symbolTableTop(&symbolTableStack), functionKey),
-                  .compileTime = false};
+                  .compileTime = false,
+                  .token = NULL,
+                  .isLiteral = false};
 
     return functionReturn;
 }
@@ -875,6 +880,7 @@ Operand builtInFunctionAnalysis(ASTNode *node) {
         break;
     }
 
+    // parameter analysis
     node = node->left;
     for (int i = 0; i < 4; i++) {
         if (node == NULL && parameterType[i] == TYPE_VOID) {
@@ -919,12 +925,14 @@ Operand builtInFunctionAnalysis(ASTNode *node) {
 Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
     TokenType operator= node->token->type;
 
+    // converts double to int compile time consts if possible
     if (!left.isLiteral && left.type == TYPE_F_64 && right.type == TYPE_I_32) {
         left.type = TYPE_I_32;
         left.token->attribute.integer = (long long)left.token->attribute.decimal;
         left.token->type = TOKEN_TYPE_INTEGER_VALUE;
     }
 
+    // converts double to int compile time consts if possible
     if (!right.isLiteral && right.type == TYPE_F_64 && left.type == TYPE_I_32) {
         right.type = TYPE_I_32;
         right.token->attribute.integer = (long long)right.token->attribute.decimal;
@@ -959,7 +967,7 @@ Operand reduceExpression(Operand left, Operand right, ASTNode *node) {
                 (double)left.token->attribute.integer / (double)right.token->attribute.integer;
             result = floor(divisionResult);
             node->token->type = TOKEN_TYPE_INTEGER_VALUE;
-            node->token->attribute.integer = result;
+            node->token->attribute.integer = (long long)result;
             break;
 
         default:
@@ -1300,6 +1308,7 @@ Operand expressionAnalysis(ASTNode *node) {
 
             varOperand.isLiteral = false;
 
+            // convert compile time consts to literals if they are integers
             if (varOperand.compileTime) {
                 double constValue =
                     getConstValue(symbolTableTop(&symbolTableStack), node->token->attribute.string);
@@ -1411,6 +1420,7 @@ void semanticAnalysis() {
         HANDLE_ERROR("Main function not defined", UNDEFINED_ERROR);
     }
 
+    // main entry point for semantic analysis
     statementAnalysis(ast->root->right);
 
     symbolTablePop(&symbolTableStack);

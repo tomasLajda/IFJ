@@ -1,9 +1,11 @@
 /*
  * IFJ Project
- * @brief Header file for binary search tree
+ * @brief Header file for binary search tree and symbol table operations.
  *
- * @author Tomáš Lajda - xlajdat00
+ * This file contains the declarations for functions and structures used
+ * for managing a binary search tree and a symbol table.
  *
+ * Author: Tomáš Lajda - xlajdat00
  */
 
 #ifndef _BINARY_SEARCH_TREE_H
@@ -158,17 +160,12 @@ Symbol *treeGet(BinaryTreeNodePtr node, const char *key);
 /**
  * @brief Prints a specified number of spaces.
  *
- * This function prints a given number of spaces to the standard output.
- *
  * @param count The number of spaces to print.
  */
 void printSpaces(int count);
 
 /**
  * @brief Recursively prints a binary tree in a structured format.
- *
- * This function performs an in-order traversal of a binary tree and prints
- * each node's key with indentation corresponding to its level in the tree.
  *
  * @param node A pointer to the current node in the binary tree.
  * @param level The current level of the node in the binary tree.
@@ -178,20 +175,12 @@ void treePrint(BinaryTreeNodePtr node, int level);
 /**
  * @brief Checks if all symbols in the tree have been used.
  *
- * This function iterates through the given tree and verifies
- * whether each symbol has been used. It can be used to ensure that
- * there are no unused symbols in the tree.
- *
  * @param node The root node of the tree.
  */
 void treeCheckUsed(BinaryTreeNodePtr node);
 
 /**
  * @brief Checks if all symbols in the tree have been changed.
- *
- * This function iterates through the given tree and verifies
- * whether each symbol has been changed. It can be used to ensure that
- * there are no unchanged symbols in the tree.
  *
  * @param node The root node of the tree.
  */
@@ -207,9 +196,6 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
 
 /**
  * @brief Sets the function key for the given symbol table.
- *
- * This function updates the function key of the provided symbol table to the specified key,
- * allowing the function to be found in the symbol table when needed.
  *
  * @param table Pointer to the symbol table whose function key is to be set.
  * @param functionKey The key of the function to set in the symbol table.
@@ -315,9 +301,6 @@ void symbolTablePrint(SymbolTable *table);
 /**
  * @brief Copies function parameters into the symbol table.
  *
- * This function copies the parameters into the symbol table, ensuring that
- * the parameters are defined in the local scope and preventing shadowing.
- *
  * @param table Pointer to the symbol table.
  * @param params List of parameters to be copied.
  */
@@ -325,9 +308,6 @@ void symbolTableCopyFunctionParams(SymbolTable *table, List *params);
 
 /**
  * @brief Sets the values of a symbol.
- *
- * This function initializes a symbol with the provided key, data type,
- * function flag, constant flag, and used flag.
  *
  * @param symbol Pointer to the symbol to be initialized.
  * @param key The key associated with the symbol.
@@ -342,8 +322,6 @@ void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bo
 /**
  * @brief Resets the values of a symbol.
  *
- * This function resets the values of a symbol to their default state.
- *
  * @param symbol Pointer to the symbol to be reset.
  */
 void symbolResetValues(Symbol *symbol);
@@ -351,19 +329,12 @@ void symbolResetValues(Symbol *symbol);
 /**
  * @brief Checks if all symbols in the symbol table have been used.
  *
- * This function iterates through the given symbol table and verifies
- * whether each symbol has been used. It can be used to ensure that
- * there are no unused symbols in the table, if there is any unused
- * variable, it will throw an error.
  * @param table Pointer to the symbol table to be checked.
  */
 void symbolTableCheckUsed(SymbolTable *table);
 
 /**
  * @brief Marks a symbol table entry as changed.
- *
- * This function updates the status of a specific entry in the symbol table,
- * indicating that it has been modified.
  *
  * @param table A pointer to the symbol table.
  * @param key The key of the entry to mark as changed.
@@ -372,10 +343,6 @@ void symbolTableSetChanged(SymbolTable *table, const char *key);
 
 /**
  * @brief Checks if the symbol table has changed.
- *
- * This function examines the provided symbol table to determine if any changes
- * have been made since the last check. It is useful for ensuring that the symbol
- * table remains consistent and up-to-date.
  *
  * @param table A pointer to the SymbolTable to be checked.
  */

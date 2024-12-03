@@ -58,7 +58,7 @@ typedef enum {
 
 } ScannerState;
 
-// For the parts where we dont need all keywords
+// enum for semantic analysis where we don't need to distinguish between keywords and identifiers
 typedef enum {
     TYPE_I_32 = 0,
     TYPE_I_32_NULL,
@@ -154,14 +154,5 @@ typedef enum {
     // CODE GEN
     TOKEN_TYPE_NULL_COND // Null condition (if or while)
 } TokenType;
-
-// TODO: needs commenting
-typedef enum {
-    SCOPE_GLOBAL = 0,
-    SCOPE_FUNCTION = KEYWORD_FN,
-    SCOPE_WHILE = KEYWORD_WHILE,
-    SCOPE_IF = KEYWORD_IF,
-    SCOPE_ELSE = KEYWORD_ELSE
-} ScopeType;
 
 #endif

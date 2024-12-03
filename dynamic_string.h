@@ -1,6 +1,6 @@
 /*
  * IFJ Project
- * @brief Header file for dynamic string
+ * @brief Header file for dynamic string operations.
  *
  * @author Tomáš Lajda - xlajdat00
  *

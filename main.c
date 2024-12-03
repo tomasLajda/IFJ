@@ -13,7 +13,6 @@ Token *currentToken = NULL;
 AST *ast = NULL;
 
 int main() {
-
     sourceFile = stdin;
 
     currentToken = malloc(sizeof(Token));
@@ -32,11 +31,7 @@ int main() {
     }
 
     parse();
-    // printf("Finished parsing\n");
-
     semanticAnalysis();
-    // printf("Finished semantic analysis\n");
-
     generateCode(stdout, ast);
 
     free(currentToken);

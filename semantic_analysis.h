@@ -1,6 +1,8 @@
 /*
  * IFJ Project
- * @brief Header file for semantic analysis
+ * @brief Header file for semantic analysis - contains functions declaration for checking the
+ * semantics of the code based on the AST. It also contains helper functions for the semantic
+ * analysis.
  *
  * @author Tomáš Lajda - xlajdat00
  *
@@ -9,6 +11,11 @@
 #ifndef SEMANTIC_ANALYSIS_H
 #define SEMANTIC_ANALYSIS_H
 
+#include <math.h>
+#include <stdio.h>
+
+#include "ast.h"
+#include "helpers.h"
 #include "symtable.h"
 
 typedef struct Operand {
@@ -49,7 +56,7 @@ void checkDivisionByZero(double value);
 bool isDoubleInt(double number);
 
 /**
- * @brief Checks if the operator is an equality operator.
+ * @brief Checks if the operator is an equality/inequality operator.
  * @param operator The operator to check.
  * @return True if the operator is an equality operator, false otherwise.
  */
@@ -157,43 +164,43 @@ DataType convertNullableType(DataType type);
 
 /**
  * @brief Analyzes the parameters of a function.
- * @param node The AST node representing the function parameters.
+ * @param node The AST subtree representing the function parameters.
  */
 void functionParameterAnalysis(ASTNode *node);
 
 /**
  * @brief Analyzes a function definition.
- * @param node The AST node representing the function definition.
+ * @param node The AST subtree representing the function definition.
  */
 void functionAnalysis(ASTNode *node);
 
 /**
- * @brief Analyzes a statement.
- * @param node The AST node representing the statement.
+ * @brief Analyzes a statements recursively. It is entry point for the whole analysis.
+ * @param node The AST subtree representing the statement.
  */
 void statementAnalysis(ASTNode *node);
 
 /**
  * @brief Analyzes the body of a function.
- * @param node The AST node representing the function body.
+ * @param node The AST subtree representing the function body.
  */
 void functionBodyAnalysis(ASTNode *node);
 
 /**
  * @brief Analyzes an if/while statement.
- * @param node The AST node representing the if statement.
+ * @param node The AST subtree representing the if statement.
  */
 void ifWhileAnalysis(ASTNode *node);
 
 /**
  * @brief Analyzes a variable definition.
- * @param node The AST node representing the variable definition.
+ * @param node The AST subtree representing the variable definition.
  */
 void variableDefinitionAnalysis(ASTNode *node);
 
 /**
  * @brief Analyzes a variable assignment.
- * @param node The AST node representing the variable assignment.
+ * @param node The AST subtree representing the variable assignment.
  */
 void variableAssignmentAnalysis(ASTNode *node);
 
@@ -205,7 +212,7 @@ void returnAnalysis(ASTNode *node);
 
 /**
  * @brief Analyzes a function call.
- * @param node The AST node representing the function call.
+ * @param node The AST subtree representing the function call.
  * @return The operand representing the result of the function call.
  */
 Operand functionCallAnalysis(ASTNode *node);
@@ -241,8 +248,8 @@ char *createNewVariableName();
 
 /**
  * @brief Adds a variable to the AST list.
- * @param oldId The old token representing the variable.
- * @return The new AST node representing the variable.
+ * @param oldId The old token representing the variable's original name.
+ * @return The new AST node representing the variable's new generated name.
  */
 ASTNode *addVariableToASTList(Token *oldId);
 
@@ -251,69 +258,6 @@ ASTNode *addVariableToASTList(Token *oldId);
  * @param params The list of function parameters.
  */
 void insertParamsToASTList(List *params);
-
-/**
- * @brief Analyzes a function body.
- * @param node The AST node representing the function body.
- */
-void functionBodyAnalysis(ASTNode *node);
-
-/**
- * @brief Analyzes a variable definition.
- * @param node The AST node representing the variable definition.
- */
-void variableDefinitionAnalysis(ASTNode *node);
-
-/**
- * @brief Analyzes a variable assignment.
- * @param node The AST node representing the variable assignment.
- */
-void variableAssignmentAnalysis(ASTNode *node);
-
-/**
- * @brief Analyzes a return statement.
- * @param node The AST node representing the return statement.
- */
-void returnAnalysis(ASTNode *node);
-
-/**
- * @brief Analyzes a function call.
- * @param node The AST node representing the function call.
- * @return The operand representing the result of the function call.
- */
-Operand functionCallAnalysis(ASTNode *node);
-
-/**
- * @brief Analyzes a built-in function call.
- * @param node The AST node representing the built-in function call.
- * @return The operand representing the result of the built-in function call.
- */
-Operand builtInFunctionAnalysis(ASTNode *node);
-
-/**
- * @brief Reduces an expression to a single operand.
- * @param left The left operand.
- * @param right The right operand.
- * @param node The AST node representing the operator.
- * @return The operand representing the result of the reduction.
- */
-Operand reduceExpression(Operand left, Operand right, ASTNode *node);
-
-/**
- * @brief Determines the next operand in an expression.
- * @param left The left operand.
- * @param right The right operand.
- * @param node The AST node representing the operator.
- * @return The operand representing the result of the operation.
- */
-Operand determineNextOperand(Operand left, Operand right, ASTNode *node);
-
-/**
- * @brief Analyzes an expression.
- * @param node The AST node representing the expression.
- * @return The operand representing the result of the expression.
- */
-Operand expressionAnalysis(ASTNode *node);
 
 /**
  * @brief Recursively renames a variable in the Abstract Syntax Tree (AST).

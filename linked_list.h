@@ -1,6 +1,6 @@
 /*
  * IFJ Project
- * @brief Header file for linked list
+ * @brief Header file for linked list contains functions declaration for linked list operations.
  *
  * @author Tomáš Lajda - xlajdat00
  *
