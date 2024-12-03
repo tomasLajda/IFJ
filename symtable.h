@@ -48,6 +48,8 @@ typedef struct SymbolTable {
 /**
  * @brief Creates a new tree node with the given data.
  *
+ * This function initializes a new node in the binary search tree with the provided data.
+ *
  * @param node Pointer to the node to be created.
  * @param data Data to be stored in the new node.
  */
@@ -55,6 +57,8 @@ void treeCreate(BinaryTreeNodePtr *node, Symbol data);
 
 /**
  * @brief Returns the height of the tree.
+ *
+ * This function calculates and returns the height of the binary search tree.
  *
  * @param node The root node of the tree.
  * @return The height of the tree.
@@ -64,6 +68,8 @@ unsigned treeHeight(BinaryTreeNodePtr node);
 /**
  * @brief Calculates the balance factor of the node.
  *
+ * This function calculates the balance factor of a given node in the binary search tree.
+ *
  * @param node The node to calculate the balance factor for.
  * @return The balance factor of the node.
  */
@@ -72,12 +78,16 @@ int treeBalanceFactor(BinaryTreeNodePtr node);
 /**
  * @brief Updates the height of the node.
  *
+ * This function updates the height of a given node in the binary search tree.
+ *
  * @param node The node to update the height for.
  */
 void treeUpdateHeight(BinaryTreeNodePtr node);
 
 /**
  * @brief Performs a left rotation on the node.
+ *
+ * This function performs a left rotation on the specified node in the binary search tree.
  *
  * @param node The node to perform the left rotation on.
  */
@@ -86,12 +96,16 @@ void treeRotateLeft(BinaryTreeNodePtr *node);
 /**
  * @brief Performs a right rotation on the node.
  *
+ * This function performs a right rotation on the specified node in the binary search tree.
+ *
  * @param node The node to perform the right rotation on.
  */
 void treeRotateRight(BinaryTreeNodePtr *node);
 
 /**
  * @brief Rebalances the tree.
+ *
+ * This function rebalances the binary search tree to maintain its balance property.
  *
  * @param node The root node of the tree to rebalance.
  */
@@ -100,12 +114,16 @@ void treeRebalance(BinaryTreeNodePtr *node);
 /**
  * @brief Disposes of the tree.
  *
+ * This function frees all the nodes in the binary search tree.
+ *
  * @param node The root node of the tree to dispose of.
  */
 void treeDispose(BinaryTreeNodePtr node);
 
 /**
  * @brief Finds the node with the minimum value in the tree.
+ *
+ * This function finds and returns the node with the minimum value in the binary search tree.
  *
  * @param node The root node of the tree.
  * @return The node with the minimum value.
@@ -114,6 +132,8 @@ BinaryTreeNodePtr treeMinValueNode(BinaryTreeNodePtr node);
 
 /**
  * @brief Searches for a key in the tree.
+ *
+ * This function searches for a node with the specified key in the binary search tree.
  *
  * @param node The root node of the tree.
  * @param key The key to search for.
@@ -124,6 +144,8 @@ bool treeSearch(BinaryTreeNodePtr node, const char *key);
 /**
  * @brief Inserts a new node with the given data into the tree.
  *
+ * This function inserts a new node with the specified data into the binary search tree.
+ *
  * @param node The root node of the tree.
  * @param data The data to insert.
  * @return The new root node of the tree.
@@ -132,6 +154,8 @@ BinaryTreeNodePtr treeInsert(BinaryTreeNodePtr node, Symbol data);
 
 /**
  * @brief Deletes a node with the given key from the tree.
+ *
+ * This function deletes the node with the specified key from the binary search tree.
  *
  * @param node The root node of the tree.
  * @param key The key of the node to delete.
@@ -142,6 +166,8 @@ BinaryTreeNodePtr treeDelete(BinaryTreeNodePtr node, const char *key);
 /**
  * @brief Reassigns the data of a node with the given key.
  *
+ * This function reassigns the data of the node with the specified key in the binary search tree.
+ *
  * @param node The root node of the tree.
  * @param key The key of the node to reassign.
  * @param data The new data to assign.
@@ -150,6 +176,8 @@ void treeReassign(BinaryTreeNodePtr node, const char *key, Symbol data);
 
 /**
  * @brief Retrieves the data of a node with the given key.
+ *
+ * This function retrieves the data of the node with the specified key in the binary search tree.
  *
  * @param node The root node of the tree.
  * @param key The key of the node to retrieve.
@@ -160,12 +188,17 @@ Symbol *treeGet(BinaryTreeNodePtr node, const char *key);
 /**
  * @brief Prints a specified number of spaces.
  *
+ * This function prints a given number of spaces to the standard output.
+ *
  * @param count The number of spaces to print.
  */
 void printSpaces(int count);
 
 /**
  * @brief Recursively prints a binary tree in a structured format.
+ *
+ * This function performs an in-order traversal of a binary tree and prints
+ * each node's key with indentation corresponding to its level in the tree.
  *
  * @param node A pointer to the current node in the binary tree.
  * @param level The current level of the node in the binary tree.
@@ -175,6 +208,10 @@ void treePrint(BinaryTreeNodePtr node, int level);
 /**
  * @brief Checks if all symbols in the tree have been used.
  *
+ * This function iterates through the given tree and verifies
+ * whether each symbol has been used. It can be used to ensure that
+ * there are no unused symbols in the tree.
+ *
  * @param node The root node of the tree.
  */
 void treeCheckUsed(BinaryTreeNodePtr node);
@@ -182,12 +219,18 @@ void treeCheckUsed(BinaryTreeNodePtr node);
 /**
  * @brief Checks if all symbols in the tree have been changed.
  *
+ * This function iterates through the given tree and verifies
+ * whether each symbol has been changed. It can be used to ensure that
+ * there are no unchanged symbols in the tree.
+ *
  * @param node The root node of the tree.
  */
 void treeCheckChanged(BinaryTreeNodePtr node);
 
 /**
  * @brief Initializes the symbol table.
+ *
+ * This function initializes the symbol table with the provided previous table.
  *
  * @param table Pointer to the symbol table to be initialized.
  * @param previousTable Pointer to the previous symbol table.
@@ -197,6 +240,9 @@ void symbolTableInit(SymbolTable *table, SymbolTable *previousTable);
 /**
  * @brief Sets the function key for the given symbol table.
  *
+ * This function updates the function key of the provided symbol table to the specified key,
+ * allowing the function to be found in the symbol table when needed.
+ *
  * @param table Pointer to the symbol table whose function key is to be set.
  * @param functionKey The key of the function to set in the symbol table.
  */
@@ -205,12 +251,16 @@ void symbolTableSetFunctionKey(SymbolTable *table, char *functionKey);
 /**
  * @brief Frees the symbol table and all its nodes.
  *
+ * This function frees all the nodes in the symbol table and the table itself.
+ *
  * @param table Pointer to the symbol table to be freed.
  */
 void symbolTableDispose(SymbolTable *table);
 
 /**
  * @brief Inserts a new symbol into the symbol table.
+ *
+ * This function inserts a new symbol into the symbol table.
  *
  * @param table Pointer to the symbol table.
  * @param data Symbol to be inserted.
@@ -219,6 +269,8 @@ void symbolTableInsert(SymbolTable *table, Symbol data);
 
 /**
  * @brief Searches for a symbol in the symbol table by its key.
+ *
+ * This function searches for a symbol with the specified key in the symbol table.
  *
  * @param table Pointer to the symbol table.
  * @param key The key of the symbol to search for.
@@ -229,6 +281,8 @@ bool symbolTableSearch(SymbolTable *table, const char *key);
 /**
  * @brief Deletes a symbol from the symbol table by its key.
  *
+ * This function deletes the symbol with the specified key from the symbol table.
+ *
  * @param table Pointer to the symbol table.
  * @param key The key of the symbol to delete.
  */
@@ -236,6 +290,8 @@ void symbolTableDelete(SymbolTable *table, const char *key);
 
 /**
  * @brief Reassigns a symbol in the symbol table by its key.
+ *
+ * This function reassigns the data of the symbol with the specified key in the symbol table.
  *
  * @param table Pointer to the symbol table.
  * @param key The key of the symbol to reassign.
@@ -246,6 +302,8 @@ void symbolTableReassign(SymbolTable *table, const char *key, Symbol data);
 /**
  * @brief Sets the used flag of a symbol in the symbol table by its key.
  *
+ * This function sets the used flag of the symbol with the specified key in the symbol table.
+ *
  * @param table Pointer to the symbol table.
  * @param key The key of the symbol to set the used flag for.
  */
@@ -253,6 +311,8 @@ void symbolTableSetUsed(SymbolTable *table, const char *key);
 
 /**
  * @brief Pushes the symbol table onto the stack.
+ *
+ * This function pushes the provided symbol table onto the stack.
  *
  * @param stack Pointer to the stack.
  * @param table Pointer to the symbol table.
@@ -262,6 +322,8 @@ void symbolTablePush(Stack *stack, SymbolTable *table);
 /**
  * @brief Gets the top symbol table from the stack.
  *
+ * This function retrieves the top symbol table from the stack.
+ *
  * @param stack Pointer to the stack.
  * @return Pointer to the top symbol table.
  */
@@ -270,12 +332,16 @@ SymbolTable *symbolTableTop(Stack *stack);
 /**
  * @brief Pops the top symbol table from the stack.
  *
+ * This function pops the top symbol table from the stack.
+ *
  * @param stack Pointer to the stack.
  */
 void symbolTablePop(Stack *stack);
 
 /**
  * @brief Gets the previous symbol table.
+ *
+ * This function retrieves the previous symbol table from the current symbol table.
  *
  * @param table Pointer to the current symbol table.
  * @return Pointer to the previous symbol table.
@@ -284,6 +350,8 @@ SymbolTable *symbolTableGetPrevious(SymbolTable *table);
 
 /**
  * @brief Gets a symbol from the symbol table by its key.
+ *
+ * This function retrieves the symbol with the specified key from the symbol table.
  *
  * @param table Pointer to the symbol table.
  * @param key The key of the symbol to get.
@@ -294,12 +362,17 @@ Symbol *symbolTableGetSymbol(SymbolTable *table, const char *key);
 /**
  * @brief Prints the symbol table.
  *
+ * This function prints the contents of the symbol table.
+ *
  * @param table Pointer to the symbol table.
  */
 void symbolTablePrint(SymbolTable *table);
 
 /**
  * @brief Copies function parameters into the symbol table.
+ *
+ * This function copies the parameters into the symbol table, ensuring that
+ * the parameters are defined in the local scope and preventing shadowing.
  *
  * @param table Pointer to the symbol table.
  * @param params List of parameters to be copied.
@@ -308,6 +381,9 @@ void symbolTableCopyFunctionParams(SymbolTable *table, List *params);
 
 /**
  * @brief Sets the values of a symbol.
+ *
+ * This function initializes a symbol with the provided key, data type,
+ * function flag, constant flag, and used flag.
  *
  * @param symbol Pointer to the symbol to be initialized.
  * @param key The key associated with the symbol.
@@ -322,12 +398,19 @@ void symbolSetValues(Symbol *symbol, char *key, DataType type, bool function, bo
 /**
  * @brief Resets the values of a symbol.
  *
+ * This function resets the values of a symbol to their default state.
+ *
  * @param symbol Pointer to the symbol to be reset.
  */
 void symbolResetValues(Symbol *symbol);
 
 /**
  * @brief Checks if all symbols in the symbol table have been used.
+ *
+ * This function iterates through the given symbol table and verifies
+ * whether each symbol has been used. It can be used to ensure that
+ * there are no unused symbols in the table, if there is any unused
+ * variable, it will throw an error.
  *
  * @param table Pointer to the symbol table to be checked.
  */
@@ -336,6 +419,9 @@ void symbolTableCheckUsed(SymbolTable *table);
 /**
  * @brief Marks a symbol table entry as changed.
  *
+ * This function updates the status of a specific entry in the symbol table,
+ * indicating that it has been modified.
+ *
  * @param table A pointer to the symbol table.
  * @param key The key of the entry to mark as changed.
  */
@@ -343,6 +429,10 @@ void symbolTableSetChanged(SymbolTable *table, const char *key);
 
 /**
  * @brief Checks if the symbol table has changed.
+ *
+ * This function examines the provided symbol table to determine if any changes
+ * have been made since the last check. It is useful for ensuring that the symbol
+ * table remains consistent and up-to-date.
  *
  * @param table A pointer to the SymbolTable to be checked.
  */
