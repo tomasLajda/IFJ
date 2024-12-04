@@ -115,18 +115,6 @@ void generateBuiltInFunctions() {
 }
 
 void generateFuncBody(ASTNode *node) {
-
-    // // DEFVAR for all variables
-    // if (node->parent->parent->exprTree != NULL) {
-    //     ASTNode *currentVarible = node->parent->parent->exprTree->root;
-    //     while (currentVarible != NULL && currentVarible->token->type == TOKEN_TYPE_IDENTIFIER) {
-    //         ADD_TO_BUFFER("DEFVAR LF@");
-    //         ADD_TO_BUFFER(currentVarible->token->attribute.string);
-    //         ADD_TO_BUFFER("\n");
-    //         currentVarible = currentVarible->right;
-    //     }
-    // }
-
     // DEFVAR for all variables
     if (node->parent->parent->exprTree != NULL) {
         ASTNode *currentVarible = node->parent->parent->exprTree->root;
@@ -160,7 +148,6 @@ void generateFuncBody(ASTNode *node) {
 
 void processNode(ASTNode *node) {
     if (node == NULL) {
-        // HANDLE_ERROR("ASTNode in processNode func (code gen) is NULL", INTERNAL_ERROR);
         return;
     }
 
@@ -207,7 +194,6 @@ void processNode(ASTNode *node) {
                 ADD_TO_BUFFER(" LF@");
                 ADD_TO_BUFFER(conditionNode->exprTree->root->token->attribute.string);
                 ADD_TO_BUFFER("\n");
-                // processNode(conditionNode->left);
                 // true
                 ASTNode *trueNode = conditionNode->left;
                 while (trueNode != NULL) {
@@ -219,7 +205,6 @@ void processNode(ASTNode *node) {
                 addLabelToBuffer("NULL_if", "end", currentLabelCounter);
                 ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("NULL_if", "false", currentLabelCounter);
-                // processNode(conditionNode->right);
                 // false
                 ASTNode *falseNode = conditionNode->right;
                 while (falseNode != NULL) {
@@ -251,7 +236,6 @@ void processNode(ASTNode *node) {
                 ADD_TO_BUFFER("PUSHS bool@false\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
                 addLabelToBuffer("if", "false", currentLabelCounter);
-                // processNode(conditionNode->left);
                 // true
                 ASTNode *trueNode = conditionNode->left;
                 while (trueNode != NULL) {
@@ -263,7 +247,6 @@ void processNode(ASTNode *node) {
                 addLabelToBuffer("if", "end", currentLabelCounter);
                 ADD_TO_BUFFER("LABEL ");
                 addLabelToBuffer("if", "false", currentLabelCounter);
-                // processNode(conditionNode->right);
                 // false
                 ASTNode *falseNode = conditionNode->right;
                 while (falseNode != NULL) {
@@ -305,8 +288,6 @@ void processNode(ASTNode *node) {
                 ADD_TO_BUFFER(" LF@");
                 ADD_TO_BUFFER(conditionNode->exprTree->root->token->attribute.string);
                 ADD_TO_BUFFER("\n");
-
-                // processNode(conditionNode->left);
                 // while body
                 ASTNode *whileBody = conditionNode->left;
                 while (whileBody != NULL) {
@@ -341,7 +322,6 @@ void processNode(ASTNode *node) {
                 ADD_TO_BUFFER("PUSHS bool@false\n");
                 ADD_TO_BUFFER("JUMPIFEQS ");
                 addLabelToBuffer("while", "end", currentLabelCounter);
-                // processNode(conditionNode->left);
                 // while body
                 ASTNode *whileBody = conditionNode->left;
                 while (whileBody != NULL) {
@@ -367,8 +347,6 @@ void processNode(ASTNode *node) {
             }
 
         } else if (node->token->attribute.keyword == KEYWORD_RETURN) {
-            // generateExpression(node->exprTree->root);
-            // ADD_TO_BUFFER("POPS LF@%%retval\n");
             if (node->exprTree != NULL) {
                 generateExpression(node->exprTree->root);
                 ADD_TO_BUFFER("POPS LF@%%retval\n");
@@ -426,7 +404,6 @@ int mainEnd() {
 
 int functionStart(char *functionName) {
     ADD_TO_BUFFER("# Start of function ");
-    // token.atribute.string = function name
     ADD_TO_BUFFER(functionName);
     ADD_TO_BUFFER(":\n");
     ADD_TO_BUFFER("LABEL $");
@@ -562,7 +539,6 @@ int generateFuncCall(ASTNode *node) {
     ASTNode *currentNode = node->left;
     // currentNode - each parameter
     while (currentNode != NULL) {
-        // TODO u defvaru pouzit unikatni jmeno?
 
         int enoughSpaceForInt = 12;
         char intStr[enoughSpaceForInt];
