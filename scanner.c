@@ -25,8 +25,6 @@ int freeAndReturn(DynamicString *string, int errorCode) {
 
 void stringFormatting(DynamicString *string) {
     unsigned char c;
-    // printf("%d\n", string->length);
-    // fflush(stdout);
     int i = string->length - 1;
     if (i < 0) {
         return;
@@ -44,8 +42,6 @@ void stringFormatting(DynamicString *string) {
 }
 
 int checkTypeValid(DynamicString *string, Token *token) {
-    // TODO: DELETE DEBUG
-    // printf("STRING: %s\n", dynamicStringToCString(string));
 
     if (dynamicStringCompare(string, "?i32")) {
         token->type = TOKEN_TYPE_KEYWORD;
@@ -156,11 +152,6 @@ int getNextToken(Token *token) {
 
         int current = getc(sourceFile);
 
-        // TODO: delete debug
-        // // DEBUG
-        // printf("CURRENT: %c\n", current);
-        // printf("STATE: %d\n", state);
-
         switch (state) {
 
         // START
@@ -267,9 +258,7 @@ int getNextToken(Token *token) {
             else if (isalpha(current) || current == '_') {
                 dynamicStringAddChar(&buffer, current);
                 state = STATE_IDENTIFIER_OR_KEYWORD;
-            }
-            // else
-            else {
+            } else {
                 HANDLE_ERROR("Invalid character", LEXICAL_ERROR, LEXICAL_ERROR);
                 return freeAndReturn(&buffer, LEXICAL_ERROR);
             }
