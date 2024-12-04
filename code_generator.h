@@ -335,20 +335,21 @@ int generateParam(ASTNode *node, int paramID);
 int generateFuncCall(ASTNode *node);
 
 /**
- * @brief Adds an integer to the buffer as string. Formatted like this: int@<num>\n.
+ * @brief Adds an integer to the buffer as string. Formatted like this: int@@<num>\\n.
  *
  * @param num The integer value to be added to the buffer.
  */
 void addIntToBuffer(int num);
 
 /**
- * @brief Adds a float to the buffer as string. Formatted like this: float@<num>\n.
+ * @brief Adds a float to the buffer as string. Formatted like this: float@@<num>\\n.
  *
  * @param num The float value to be added to the buffer.
  */
 void addFloatToBuffer(float num);
+
 /**
- * @brief Adds a label to the buffer in the format `$<labelType>_<suffix>_<labelCounter>\n`.
+ * @brief Adds a label to the buffer in the format `$<labelType>_<suffix>_<labelCounter>\\n`.
  *
  * @param labelType The type of the label (e.g., "if", "while").
  * @param currentLabelCounter The label counter.
