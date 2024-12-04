@@ -31,46 +31,60 @@ typedef struct {
 /**
  * @brief Retrieves the next token from the input stream.
  *
+ * Implements the scanner's main logic as a state machine to analyze the
+ * input and generate a token. Handles various token types such as keywords,
+ * identifiers, literals, operators, and special characters.
+ *
  * @param token Pointer to a Token structure where the next token will be stored.
  * @return int Returns TOKEN_OK on success, or an error code on failure.
  */
 int getNextToken(Token *token);
 
 /**
- * @brief Frees the memory allocated for a DynamicString and returns an error code.
+ * @brief Frees a dynamic string and returns the specified error code.
  *
- * @param string Pointer to the DynamicString to be freed.
- * @param errorCode The error code to be returned.
- * @return int Returns the provided error code.
+ * Cleans up the memory allocated for the dynamic string and ensures
+ * proper error handling by propagating the provided error code.
+ *
+ * @param string Pointer to the dynamic string to free.
+ * @param errorCode Error code to return after freeing the string.
+ * @return The provided error code.
  */
 int freeAndReturn(DynamicString *string, int errorCode);
 
 /**
- * @brief Handles the processing of an identifier or keyword.
+ * @brief Determines if a string represents a keyword or identifier.
  *
- * @param string Pointer to the DynamicString containing the identifier or keyword.
- * @param token Pointer to a Token structure where the processed token will be stored.
- * @return Returns TOKEN_OK and calls freeAndReturn()
+ * Checks the provided string against a list of keywords. If a match is
+ * found, assigns the appropriate token attributes. Otherwise, treats the
+ * string as an identifier.
+ *
+ * @param string Pointer to the dynamic string containing the token text.
+ * @param token Pointer to the token to classify.
+ * @return TOKEN_OK on success.
  */
 int handleIdentifierOrKeyword(DynamicString *string, Token *token);
 
 /**
- * @brief Checks if the type specified in the DynamicString is valid.
+ * @brief Validates and assigns a type keyword to a token.
  *
- * @param string Pointer to the DynamicString containing the type to be checked.
- * @param token Pointer to a Token structure where the result will be stored.
- * @return int Returns TOKEN_OK  if the type is valid, or an LEXICAL_ERROR if invalid.
+ * Checks if the provided string matches a valid type keyword and assigns
+ * the corresponding token attributes. If the type is invalid, returns a
+ * lexical error.
+ *
+ * @param string Pointer to the dynamic string containing the type.
+ * @param token Pointer to the token to assign the type attributes.
+ * @return TOKEN_OK on success, or LEXICAL_ERROR on invalid type.
  */
 int checkTypeValid(DynamicString *string, Token *token);
 
 /**
- * @brief Formats a dynamic string for IFJcode printing.
+ * @brief Formats a string for safe storage in IFJcode24.
  *
- * This function takes a DynamicString and converts it to a format suitable
- * for printing in IFJcode. It ensures that the string adheres to the
- * required formatting rules for IFJcode output.
+ * Replaces specific characters in the dynamic string with their escape
+ * sequence equivalents to ensure compatibility with IFJcode24.
  *
- * @param string Pointer to the DynamicString to be formatted.
+ * @param string Pointer to the dynamic string to format.
  */
 void stringFormatting(DynamicString *string);
 
