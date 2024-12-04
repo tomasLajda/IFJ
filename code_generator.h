@@ -235,7 +235,7 @@ IFJ project
 int generateCode(FILE *outputFile, AST *ast);
 
 /**
- * @brief Generates the header for the code.
+ * @brief Generates the header for the code. Inluding the built-in functions.
  *
  * This function writes the necessary header information.
  *
@@ -246,38 +246,29 @@ int generateCodeHeader();
 /**
  * @brief Flushes the contents of the code generator to the specified output file.
  *
- * This function writes any buffered data to the given output file, ensuring that
- * all generated code is properly saved.
- *
  * @param outputFile A pointer to the FILE object where the generated code will be written.
  */
 void codeGeneratorFlush(FILE *outputFile);
 
 /**
- * @brief Generates the start of the main function.
- *
- * This function is responsible for generating the start of the main function,
- * setting up the initial frame and performing any necessary initialization steps.
+ * @brief Generates the start of the main function. Sets up the initial frame and creates main
+ * label.
  *
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
 int mainStart();
 
 /**
- * @brief Generates the end of the main function.
- *
- * This function is responsible for generating the end of the main function,
- * performing any necessary cleanup and finalization steps.
+ * @brief Generates the end of the main function. Performs any necessary cleanup and jump to the end
+ * of the code.
  *
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
 int mainEnd();
 
 /**
- * @brief Generates code for a given expression represented by an AST node.
- *
- * This function takes an abstract syntax tree (AST) node representing an expression
- * and generates the corresponding code for it.
+ * @brief Generates code for a given expression represented by an AST node. Leaving the result on
+ * top of the data stack.
  *
  * @param node A pointer to the AST node representing the expression.
  * @return int Returns 0 on success, or a non-zero error code on failure.
@@ -285,18 +276,18 @@ int mainEnd();
 int generateExpression(ASTNode *node);
 
 /**
- * @brief Generates code for a given function call, creating a new frame and pushing it onto the
- * stack.
+ * @brief Generates code for a given function, creating a new frame and creating a label for the
+ * function.
  *
- * @param node A pointer to the AST node representing the function call.
+ * @param functionName The name of the function to generate start of.
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
 int functionStart(char *functionName);
 
 /**
- * @brief Generates code for the end of a function, popping the frame from the stack.
+ * @brief Generates code for the end of a function, popping the frame from the stack and returning.
  *
- * @param functionName The name of the function to end.
+ * @param functionName The name of the function to generate end of.
  * @return int Returns 0 on success, or a non-zero error code on failure.
  */
 int functionEnd(char *functionName);
@@ -307,20 +298,18 @@ int functionEnd(char *functionName);
 void generateBuiltInFunctions();
 
 /**
- * @brief Processes a function declaration node in the abstract syntax tree (AST).
- *
- * This function takes an AST node representing the start of a function declaration,
- * traverses the entire subtree, and generates the function body.
+ * @brief Processes a function declaration node in the abstract syntax tree (AST). Takes an AST node
+ * representing the start of a function declaration, traverses the entire subtree, and generates the
+ * function body using processNode() function.
  *
  * @param node A pointer to the AST node representing the function declaration to be processed.
  */
 void generateFuncBody(ASTNode *node);
 
 /**
- * @brief Processes an AST node representing a command in IFJ24.
- *
- * This function generates instructions according to the command type
- * (e.g., if, while, assignment, etc.) represented by the given AST node.
+ * @brief Processes an AST node representing a command in IFJ24. Generates instructions according to
+ * the command type (e.g., if, while, assignment, etc.) represented by the given AST node. This
+ * includes traversing subtrees inside if and while statements.
  *
  * @param node Pointer to the AST node to be processed.
  */
@@ -336,25 +325,24 @@ void processNode(ASTNode *node);
 int generateParam(ASTNode *node, int paramID);
 
 /**
- * @brief Generates the code for a function call.
+ * @brief Processes the AST node representing a function call by generating code for parameter
+ preparation, temporary frame creation, and the function call itself. Handles both user-defined and
+ built-in functions.
  *
- * This function takes an AST (Abstract Syntax Tree) node representing a function call
- * and generates the corresponding code for it.
- *
- * @param node A pointer to the ASTNode representing the function call.
- * @return An integer indicating the success or failure of the code generation.
+ * @param node ASTNode representing the function call, with parameters as its children.
+ * @return 0 on success, or INTERNAL_ERROR for invalid input or unsupported parameter types.
  */
 int generateFuncCall(ASTNode *node);
 
 /**
- * @brief Adds an integer to the buffer as string.
+ * @brief Adds an integer to the buffer as string. Formatted like this: int@<num>\n.
  *
  * @param num The integer value to be added to the buffer.
  */
 void addIntToBuffer(int num);
 
 /**
- * @brief Adds a float to the buffer as string.
+ * @brief Adds a float to the buffer as string. Formatted like this: float@<num>\n.
  *
  * @param num The float value to be added to the buffer.
  */
