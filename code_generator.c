@@ -1,10 +1,10 @@
-/*
-IFJ project
-
-@brief Code generator implementation
-
-@author Vojtěch Gajdušek - xgajduv00
-*/
+/**
+ * IFJ project
+ *
+ * @brief Code generator implementation
+ *
+ * @author Vojtěch Gajdušek - xgajduv00
+ */
 #include "code_generator.h"
 #include "enums.h"
 #include "error_codes.h"

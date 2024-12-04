@@ -1,10 +1,10 @@
-/*
-IFJ project
-
-@brief Scanner header file
-
-@author Vojtěch Gajdušek - xgajduv00
-*/
+/**
+ * IFJ project
+ *
+ * @brief Scanner header file
+ *
+ * @author Vojtěch Gajdušek - xgajduv00
+ */
 
 #ifndef _SCANNER_H
 #define _SCANNER_H

@@ -1,10 +1,11 @@
-/*
-IFJ Project
 
-@brief Implementation of scanner
-
-@author Vojtěch Gajdušek - xgajduv00
-*/
+/**
+ * IFJ project
+ *
+ * @brief Implementation of scanner
+ *
+ * @author Vojtěch Gajdušek - xgajduv00
+ */
 
 #include "scanner.h"
 #include "error_codes.h"

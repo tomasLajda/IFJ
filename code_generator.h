@@ -1,10 +1,11 @@
-/*
-IFJ project
 
-@brief Header file for code generator
-
-@author Vojtěch Gajdušek - xgajduv00
-*/
+/**
+ * IFJ project
+ *
+ * @brief Header file for code generator
+ *
+ * @author Vojtěch Gajdušek - xgajduv00
+ */
 
 #ifndef _CODE_GENERATOR_H
 #define _CODE_GENERATOR_H
