@@ -4,7 +4,6 @@
 #include "parser.h"
 #include "scanner.h"
 #include "semantic_analysis.h"
-#include "testing_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 
