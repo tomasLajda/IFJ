@@ -11,7 +11,6 @@
 
 #include "parser.h"
 #include "helpers.h"
-#include "testing_utils.h"
 #include <string.h>
 
 // Global variables
@@ -460,7 +459,6 @@ void parseStatement() {
         }
         break;
     default:
-        printTokenInfo(currentToken);
         HANDLE_ERROR("Unexpected token in statement", SYNTAX_ERROR);
         break;
     }
