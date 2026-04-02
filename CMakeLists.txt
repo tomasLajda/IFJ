@@ -10,7 +10,10 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g -lm")
 
 # Find all source files
-file(GLOB SRCS "*.c")
+file(GLOB SRCS "src/*.c")
+
+# Add include directory
+include_directories(include)
 
 # Add executable target
 add_executable(program ${SRCS})

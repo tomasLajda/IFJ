@@ -1,9 +1,9 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra -std=c99 -Iinclude
 
 # Source files (dynamically find all .c files)
-SRCS = $(wildcard *.c)
+SRCS = $(wildcard src/*.c)
 OBJS = $(SRCS:.c=.o)
 
 EXEC = compiler
@@ -24,7 +24,7 @@ clean:
 	rm -f $(EXEC) $(OBJS) xcsirim00.zip
 
 pack: clean
-	zip -r xcsirim00.zip *.c *.h Makefile rozdeleni dokumentace.pdf
+	zip -j xcsirim00.zip src/*.c include/*.h Makefile rozdeleni dokumentace.pdf
 
 .PHONY: all clean build build_test
 
