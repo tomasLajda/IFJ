@@ -53,5 +53,12 @@ dkms.conf
 
 # Folders
 build/
+bin/
+.vscode/
 
-program
+# Python
+__pycache__/
+.pytest_cache/
+
+test_input.txt
+test_results.log
